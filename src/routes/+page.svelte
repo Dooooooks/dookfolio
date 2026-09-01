@@ -110,8 +110,9 @@
 
 		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
 			<p>
-				Hi, I'm Lloyd — a software developer from Bulacan, Philippines. I enjoy building clean,
-				modern web applications and turning ideas into products people can actually use.
+				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan,
+				Philippines. I enjoy building clean, modern web applications and turning ideas into products
+				people can actually use.
 			</p>
 			<p>
 				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
