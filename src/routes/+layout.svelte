@@ -13,9 +13,9 @@
 
 	const links = [
 		{ href: '/', label: 'Home', icon: House },
+    { href: '/#about', label: 'About', icon: User },
 		{ href: '/projects', label: 'Projects', icon: Newspaper },
-		{ href: '/experiences', label: 'Experiences', icon: Briefcase },
-		{ href: '/about', label: 'About', icon: User }
+		{ href: '/experiences', label: 'Experiences', icon: Briefcase }
 	] as const;
 </script>
 
@@ -35,7 +35,12 @@
 
 		<nav class="mt-12 flex flex-col gap-1.5">
 			{#each links as link (link.href)}
-				{@const active = page.url.pathname === link.href}
+				{@const active =
+					link.href === '/#about'
+						? page.url.pathname === '/' && page.url.hash === '#about'
+						: link.href === '/'
+							? page.url.pathname === '/' && !page.url.hash
+							: page.url.pathname === link.href}
 				<a
 					href={resolve(link.href)}
 					aria-current={active ? 'page' : undefined}
