@@ -8,3 +8,14 @@ export interface Project {
 	cover_url: string | null;
 	created_at: string;
 }
+
+export interface Experience {
+	id: string;
+	period: string;
+	role: string;
+	company: string;
+	description: string;
+	order_num?: number;
+	created_at?: string;
+}
+

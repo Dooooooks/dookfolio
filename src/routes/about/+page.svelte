@@ -1,3 +1,13 @@
-<div class="flex min-h-screen items-center justify-center">
-	<h1 class="text-3xl font-extrabold text-accent">About</h1>
-</div>
+<script lang="ts">
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
+	onMount(() => {
+		goto('/#about', { replaceState: true });
+	});
+</script>
+
+<svelte:head>
+	<title>About — Lloyd Nicolas</title>
+</svelte:head>
+
