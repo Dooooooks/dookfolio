@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import '@fontsource-variable/nunito';
 	import '@fontsource-variable/pixelify-sans';
 	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import duckWhite from '$lib/assets/duck_white.png';
+	import duckYellow from '$lib/assets/duck_yellow.png';
 	import profile from '$lib/assets/profile.png';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
@@ -13,6 +15,12 @@
 
 	let isOpen = $state(true);
 
+	onMount(() => {
+		if (window.innerWidth < 768) {
+			isOpen = false;
+		}
+	});
+
 	const links = [
 		{ href: '/', label: 'Home', icon: House },
 		{ href: '/#about', label: 'About', icon: User },
@@ -21,16 +29,18 @@
 	] as const;
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head>
+	<link rel="icon" type="image/png" href={gameDevMode.active ? duckYellow : duckWhite} />
+</svelte:head>
 
 <div class="min-h-screen bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
-	<!-- Minimal Floating Open Button when Sidebar is closed -->
+	<!-- Floating Open Button with background when Sidebar is closed -->
 	{#if !isOpen}
 		<button
 			type="button"
 			onclick={() => (isOpen = true)}
 			aria-label="Open sidebar"
-			class="fixed top-3.5 left-3 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg text-muted transition-colors hover:bg-white/5 hover:text-white"
+			class="fixed top-3.5 left-3 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white"
 		>
 			<ChevronRight class="size-4.5" strokeWidth={1.75} />
 		</button>

@@ -26,9 +26,9 @@
 </svelte:head>
 
 <section
-	class="relative flex items-center justify-center overflow-hidden pt-12 pb-6 md:pt-20 md:pb-8 lg:pt-24"
+	class="relative flex items-center justify-center overflow-hidden px-12 pb-6 md:px-20 md:pb-8 lg:px-24"
 >
-	<div class="flex items-center gap-8 md:gap-16">
+	<div class="flex items-center gap-2 sm:gap-8 md:gap-16">
 		<div class="max-w-2xl">
 			<h1 class="text-4xl leading-tight font-extrabold md:text-5xl">
 				Hi, I am <span class="text-accent">Lloyd</span>,<br />
