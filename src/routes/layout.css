@@ -1,2 +1,24 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--color-bg: #111019;
+	--color-surface: #171622;
+	--color-accent: #b694ff;
+	--color-accent-soft: #cbb1ff;
+	--color-muted: #a49bbd;
+	--color-faint: #6f6890;
+
+	--font-sans: 'Nunito Variable', ui-sans-serif, system-ui, sans-serif;
+	--font-pixel: 'Pixelify Sans Variable', ui-monospace, monospace;
+}
+
+@layer base {
+	body {
+		@apply bg-bg font-sans text-white antialiased;
+	}
+}
+
+@utility pixelated {
+	image-rendering: pixelated;
+}
