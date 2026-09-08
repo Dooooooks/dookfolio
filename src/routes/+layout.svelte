@@ -8,7 +8,15 @@
 	import profile from '$lib/assets/profile.png';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { Briefcase, ChevronLeft, ChevronRight, House, Newspaper, User } from '@lucide/svelte';
+	import {
+		Briefcase,
+		ChevronLeft,
+		ChevronRight,
+		House,
+		Mail,
+		Newspaper,
+		User
+	} from '@lucide/svelte';
 	import { gameDevMode } from '$lib/game-mode.svelte';
 
 	let { children } = $props();
@@ -25,7 +33,8 @@
 		{ href: '/', label: 'Home', icon: House },
 		{ href: '/#about', label: 'About', icon: User },
 		{ href: '/projects', label: 'Projects', icon: Newspaper },
-		{ href: '/experiences', label: 'Experiences', icon: Briefcase }
+		{ href: '/experiences', label: 'Experiences', icon: Briefcase },
+		{ href: '/contacts', label: 'Contacts', icon: Mail }
 	] as const;
 </script>
 
@@ -103,9 +112,7 @@
 	</aside>
 
 	<!-- Main Content Area -->
-	<main
-		class="min-h-screen transition-all duration-300 ease-in-out {isOpen ? 'md:ml-52' : 'ml-0'}"
-	>
+	<main class="min-h-screen transition-all duration-300 ease-in-out {isOpen ? 'md:ml-52' : 'ml-0'}">
 		{@render children()}
 	</main>
 </div>
