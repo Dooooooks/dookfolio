@@ -1,6 +1,6 @@
 # dookfolio
 
-Personal portfolio for Lloyd Nicolas — software developer based in Bulacan, Philippines. Built with **SvelteKit 2**, **Svelte 5 (runes)**, **TypeScript**, **Tailwind CSS v4**, and **Supabase**.
+Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in Bulacan, Philippines. Built with **SvelteKit 2**, **Svelte 5 (runes)**, **TypeScript**, **Tailwind CSS v4**, and **Supabase**.
 
 ## Features
 
