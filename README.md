@@ -23,28 +23,6 @@ Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in
 | Backend   | [Supabase](https://supabase.com) (Postgres + Auth) |
 | Fonts     | Nunito + Pixelify Sans (via Fontsource)            |
 
-## Getting started
-
-```sh
-npm install
-npm run dev
-```
-
-The dev server runs at `http://localhost:5173` (open it automatically with `npm run dev -- --open`).
-
-## Environment variables
-
-Copy `.env.example` to `.env` and fill in your Supabase project values:
-
-```
-PUBLIC_SUPABASE_URL=...
-PUBLIC_SUPABASE_ANON_KEY=...
-```
-
-## Database
-
-Create the tables, Row Level Security policies, and seed data by running [`supabase/schema.sql`](supabase/schema.sql) in your Supabase project's SQL editor.
-
 ## Admin dashboard
 
 Projects and experiences are managed from `/admin`. Sign in with any user registered in your Supabase project's Auth (Email + Password provider). The server hook in `src/hooks.server.ts` guards all `/admin` routes.
