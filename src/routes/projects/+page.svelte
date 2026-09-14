@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ArrowLeft, ExternalLink, FolderGit2 } from '@lucide/svelte';
-	import { resolve } from '$app/paths';
+	import { base, resolve } from '$app/paths';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -41,7 +41,7 @@
 						<div class="relative aspect-[16/10] w-full overflow-hidden bg-bg">
 							{#if project.cover_url}
 								<img
-									src={project.cover_url}
+									src="{base}{project.cover_url}"
 									alt={project.title}
 									class="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-108"
 								/>

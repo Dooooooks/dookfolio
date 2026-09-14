@@ -140,11 +140,13 @@
 			<img src={profile} alt="Lloyd Nicolas" class="size-9 shrink-0 rounded-full object-cover" />
 			<div>
 				<p class="text-sm font-extrabold text-white">Lloyd Nicolas</p>
-				<p class="text-xs font-bold text-accent">Developer</p>
+				<p class="text-xs font-bold text-accent">
+					{gameDevMode.active ? 'Game' : 'Software'} Developer
+				</p>
 			</div>
 		</div>
 
-		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-y-auto">
+		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-x-hidden overflow-y-auto">
 			<!-- Home and its Subsections -->
 			<div class="flex flex-col gap-1">
 				<a
@@ -231,21 +233,33 @@
 				onclick={openReactionModal}
 				class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-muted shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
 			>
-				<span class="text-center text-[11px] font-bold">Are you faster than a duck?</span>
+				<span class="text-center text-[10px] font-bold">Are you faster than a duck?</span>
 			</button>
 
-			<!-- Email Address -->
+			<!-- Email Address (Affected by Game Mode Switch) -->
 			<div class="border-t border-white/6 pt-1">
 				<a
 					href="mailto:dook13s@proton.me"
-					class="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted transition-all duration-150 hover:bg-white/5 hover:text-white"
+					class="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-150 {gameDevMode.active
+						? 'border border-amber-400/25 bg-amber-400/10 hover:border-amber-400/40 hover:bg-amber-400/20 hover:shadow-xs hover:shadow-amber-400/15'
+						: 'hover:bg-white/5'}"
 					title="Send email to dook13s@proton.me"
 				>
-					<Mail
-						class="size-4 shrink-0 text-accent transition-transform duration-200 group-hover:scale-110"
-					/>
+					{#if gameDevMode.active}
+						<img
+							src={duckYellow}
+							alt="Duck"
+							class="size-4 shrink-0 transition-transform duration-200 pixelated group-hover:scale-110 group-hover:rotate-12"
+						/>
+					{:else}
+						<Mail
+							class="size-4 shrink-0 text-accent transition-transform duration-200 group-hover:scale-110"
+						/>
+					{/if}
 					<span
-						class="truncate font-mono text-[11px] font-medium tracking-tight text-muted transition-colors group-hover:text-accent"
+						class="truncate font-medium transition-colors {gameDevMode.active
+							? 'font-pixel text-xs tracking-wider text-amber-300 group-hover:text-amber-200'
+							: 'font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
 					>
 						dook13s@proton.me
 					</span>

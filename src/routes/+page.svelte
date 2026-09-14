@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { MapPin } from '@lucide/svelte';
+	import { base } from '$app/paths';
 	import { gameDevMode, handleDuckClick } from '$lib/game-mode.svelte';
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
@@ -46,7 +47,7 @@
 			</p>
 
 			<a
-				href="/Resume.pdf"
+				href="{base}/Resume.pdf"
 				rel="external"
 				download="Lloyd_Nicolas_Resume.pdf"
 				class="anim-fade-in-up border-accent-tr mt-9 inline-block cursor-pointer rounded-full border px-7 py-2.5 text-sm font-extrabold text-accent transition-all duration-200 hover:scale-105 hover:bg-accent/15 active:scale-95"

@@ -70,7 +70,7 @@
 	}
 </script>
 
-<section id="activity" class="px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
+<section id="activity" class="mt-18 px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
 	<div class="mx-auto w-full max-w-3xl">
 		<!-- Section Header -->
 		<div class="flex items-center justify-between">

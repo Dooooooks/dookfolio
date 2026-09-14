@@ -17,7 +17,7 @@
 	let bestTime: number | null = $state(null);
 	let waitTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const DUCK_REFLEX_MS = 110;
+	const DUCK_REFLEX_MS = 80;
 
 	function close() {
 		cleanup();
@@ -113,7 +113,7 @@
 	// Dynamic comparison rating
 	const resultTier = $derived.by(() => {
 		if (reactionTime === null) return null;
-		if (reactionTime < 110) {
+		if (reactionTime < 80) {
 			return {
 				title: 'Superhuman Avian Master!',
 				badge: 'Faster than a Duck',
