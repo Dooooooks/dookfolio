@@ -171,14 +171,6 @@
 
 			<!-- Heatmap Footer -->
 			<div class="mt-3 flex flex-wrap items-center justify-between gap-3 pt-1">
-				<a
-					href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/managing-contribution-settings-on-your-profile/why-are-my-contributions-not-showing-up-on-my-profile"
-					target="_blank"
-					rel="external noreferrer"
-					class="text-xs font-semibold text-muted transition-colors hover:text-accent"
-				>
-					Learn how we count contributions
-				</a>
 
 				<!-- Legend: Less [0][1][2][3][4] More -->
 				<div class="flex items-center gap-1.5 text-xs font-bold text-muted">
