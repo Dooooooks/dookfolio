@@ -1,15 +1,15 @@
 # dookfolio
 
-Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in Bulacan, Philippines. Built with **SvelteKit 2**, **Svelte 5 (runes)**, **TypeScript**, **Tailwind CSS v4**, and **Supabase**.
+Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in Bulacan, Philippines. Built with **SvelteKit 2**, **Svelte 5 (runes)**, **TypeScript**, and **Tailwind CSS v4**.
 
 ## Features
 
 - Landing page with an interactive easter egg (click the duck to switch into "game dev" mode)
 - **About** section with a skills list
-- **Projects** and **Experiences** pages backed by Supabase
+- **Projects** and **Experiences** showcases driven by clean, version-controlled JSON data
 - **Contacts** page (email, phone, GitHub, LinkedIn)
-- Admin dashboard (`/admin`) to manage projects and experiences
 - Responsive sidebar layout with smooth hash scrolling
+- Zero external database or backend services required
 
 ## Tech stack
 
@@ -20,33 +20,76 @@ Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in
 | Language  | TypeScript                                         |
 | Styling   | [Tailwind CSS v4](https://tailwindcss.com)         |
 | Icons     | [lucide-svelte](https://lucide.dev)                |
-| Backend   | [Supabase](https://supabase.com) (Postgres + Auth) |
+| Data      | Local JSON (`src/lib/data/`)                       |
 | Fonts     | Nunito + Pixelify Sans (via Fontsource)            |
 
-## Admin dashboard
+## Getting started
 
-Projects and experiences are managed from `/admin`. Sign in with any user registered in your Supabase project's Auth (Email + Password provider). The server hook in `src/hooks.server.ts` guards all `/admin` routes.
+```sh
+npm install
+npm run dev
+```
+
+The dev server runs at `http://localhost:5173` (open it automatically with `npm run dev -- --open`).
+
+## Managing Portfolio Content
+
+Portfolio content is stored directly in type-safe JSON files under `src/lib/data/`:
+
+### Adding or Editing Projects
+
+Edit [`src/lib/data/projects.json`](src/lib/data/projects.json). Each project has the following structure:
+
+```json
+{
+	"id": "my-project",
+	"title": "Project Title",
+	"description": "Short project description...",
+	"tags": ["TypeScript", "SvelteKit"],
+	"demo_url": "https://...",
+	"github_url": "https://github.com/...",
+	"cover_url": "/ProjectPictures/my-image.png",
+	"created_at": "2026-09-14T00:00:00.000Z"
+}
+```
+
+Place project cover images in `static/ProjectPictures/` and reference them with `/ProjectPictures/<filename>`.
+
+### Adding or Editing Experiences
+
+Edit [`src/lib/data/experiences.json`](src/lib/data/experiences.json). Each experience has the following structure:
+
+```json
+{
+	"id": "role-identifier",
+	"period": "2025 — PRESENT",
+	"role": "Role Title",
+	"company": "Company Name",
+	"description": "Description of responsibilities and achievements...",
+	"order_num": 1
+}
+```
+
+Experiences are ordered by `order_num` ascending.
 
 ## Project structure
 
 ```
 src/
 ├── app.html
-├── hooks.server.ts          # admin route auth guard
 ├── lib/
 │   ├── assets/              # images (profile, duck, spotlight)
-│   ├── supabase/            # Supabase client helpers
+│   ├── data/                # portfolio JSON data (projects.json, experiences.json)
 │   ├── game-mode.svelte.ts  # duck easter-egg state
-│   ├── types.ts             # Project / Experience types
-│   └── project-form.ts / experience-form.ts
+│   ├── index.ts             # library exports
+│   └── types.ts             # Project / Experience interfaces
 └── routes/
     ├── +layout.svelte       # sidebar + nav
     ├── +page.svelte         # landing / about
     ├── about/               # redirects to /#about
     ├── contacts/            # contact info
-    ├── projects/
-    ├── experiences/
-    └── admin/               # auth + CRUD forms
+    ├── projects/            # projects showcase
+    └── experiences/         # experiences timeline
 ```
 
 ## Scripts

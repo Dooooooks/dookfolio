@@ -44,18 +44,16 @@
 				href="/Resume.pdf"
 				rel="external"
 				download="Lloyd_Nicolas_Resume.pdf"
-				class="mt-9 inline-block cursor-pointer rounded-full border border-accent-tr px-7 py-2.5 text-sm font-extrabold text-accent transition-colors hover:bg-accent/10"
+				class="border-accent-tr mt-9 inline-block cursor-pointer rounded-full border px-7 py-2.5 text-sm font-extrabold text-accent transition-colors hover:bg-accent/10"
 			>
 				Download CV / Resume
 			</a>
 		</div>
 
-		<div class="relative w-28 shrink-0 aspect-[141/762] -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60">
-			<img
-				src={spotlight}
-				alt=""
-				class="pointer-events-none size-full select-none"
-			/>
+		<div
+			class="relative aspect-[141/762] w-28 shrink-0 -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60"
+		>
+			<img src={spotlight} alt="" class="pointer-events-none size-full select-none" />
 
 			<button
 				type="button"
@@ -68,13 +66,13 @@
 				<img
 					src={gameDevMode.active ? duckYellow : duckWhite}
 					alt=""
-					class="w-14 sm:w-16 md:w-18 pixelated"
+					class="w-14 pixelated sm:w-16 md:w-18"
 				/>
 			</button>
 
 			{#each quacks as quack (quack.id)}
 				<span
-					class="quack-anim pointer-events-none absolute bottom-[2%] left-1/2 select-none text-xs font-extrabold text-accent font-pixel"
+					class="quack-anim pointer-events-none absolute bottom-[2%] left-1/2 font-pixel text-xs font-extrabold text-accent select-none"
 					style="margin-left: {quack.x}px;"
 				>
 					Quack!
@@ -84,35 +82,15 @@
 	</div>
 </section>
 
-<style>
-	@keyframes quackDown {
-		0% {
-			opacity: 1;
-			transform: translate(-50%, 0) scale(1.1);
-		}
-		50% {
-			opacity: 0.8;
-		}
-		100% {
-			opacity: 0;
-			transform: translate(-50%, 26px) scale(0.85);
-		}
-	}
-
-	.quack-anim {
-		animation: quackDown 0.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
-	}
-</style>
-
 <section id="about" class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
 	<div class="mx-auto w-full max-w-2xl">
 		<h2 class="text-3xl font-extrabold md:text-4xl">About</h2>
 
 		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
 			<p>
-				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan,
-				Philippines. I enjoy building clean, modern web applications and turning ideas into products
-				people can actually use.
+				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan, Philippines.
+				I enjoy building clean, modern web applications and turning ideas into products people can actually
+				use.
 			</p>
 			<p>
 				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
@@ -135,3 +113,23 @@
 		</ul>
 	</div>
 </section>
+
+<style>
+	@keyframes quackDown {
+		0% {
+			opacity: 1;
+			transform: translate(-50%, 0) scale(1.1);
+		}
+		50% {
+			opacity: 0.8;
+		}
+		100% {
+			opacity: 0;
+			transform: translate(-50%, 26px) scale(0.85);
+		}
+	}
+
+	.quack-anim {
+		animation: quackDown 0.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+	}
+</style>

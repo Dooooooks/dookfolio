@@ -13,7 +13,7 @@
 <section class="relative flex min-h-screen flex-col px-8 py-16 pb-[40vh] md:px-12">
 	<a
 		href={resolve('/')}
-		class="absolute top-8 left-8 md:top-10 md:left-12 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white"
+		class="absolute top-8 left-8 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white md:top-10 md:left-12"
 	>
 		<ArrowLeft class="size-4" />
 		Back to Home
