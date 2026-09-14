@@ -97,10 +97,8 @@
 			</a>
 		</div>
 
-		<!-- GitHub Contribution Heatmap Card -->
-		<div
-			class="heatmap-container anim-fade-in-up relative mt-6 rounded-2xl border border-white/8 bg-surface/70 p-5 shadow-xl backdrop-blur-sm transition-all duration-300 hover:border-accent/30 md:p-6"
-		>
+		<!-- GitHub Contribution Heatmap -->
+		<div class="heatmap-container anim-fade-in-up relative mt-6">
 			<!-- Responsive Scroll Container -->
 			<div class="scrollbar-thin overflow-x-auto pb-2">
 				<div class="min-w-[690px]">
@@ -139,7 +137,7 @@
 													? '#cbb1ff'
 													: 'transparent'}
 											stroke-width={day.level === 0 ? 0.75 : day.level === 4 ? 0.5 : 0}
-											class="cursor-pointer transition-transform duration-150 hover:scale-135 hover:stroke-white hover:stroke-1 focus:stroke-white focus:stroke-1 focus:outline-none"
+											class="cursor-pointer transition-colors duration-100 hover:stroke-white hover:stroke-1 focus:stroke-white focus:stroke-1 focus:outline-none"
 											role="button"
 											tabindex="0"
 											aria-label="{day.count} contributions on {day.date}"
@@ -171,10 +169,8 @@
 				</div>
 			{/if}
 
-			<!-- Heatmap Footer (matching user screenshot) -->
-			<div
-				class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-3"
-			>
+			<!-- Heatmap Footer -->
+			<div class="mt-3 flex flex-wrap items-center justify-between gap-3 pt-1">
 				<a
 					href="https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-github-profile/managing-contribution-settings-on-your-profile/why-are-my-contributions-not-showing-up-on-my-profile"
 					target="_blank"
