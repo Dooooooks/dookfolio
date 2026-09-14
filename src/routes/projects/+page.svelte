@@ -19,7 +19,7 @@
 		Back to Home
 	</a>
 
-	<div class="mx-auto my-auto w-full max-w-4xl pt-8 sm:pt-0">
+	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
 		<div class="anim-fade-in-up">
 			<h1 class="text-3xl font-extrabold md:text-4xl">Projects</h1>
 			<p class="mt-2 text-sm text-muted md:text-base">

@@ -30,11 +30,9 @@
 	</title>
 </svelte:head>
 
-<section
-	class="relative flex items-center justify-center overflow-hidden px-12 pb-6 md:px-20 md:pb-8 lg:px-24"
->
-	<div class="flex items-center gap-2 sm:gap-8 md:gap-16">
-		<div class="max-w-2xl">
+<section class="relative overflow-hidden px-8 pb-6 md:px-12 md:pb-8">
+	<div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 sm:gap-8 md:gap-12">
+		<div class="max-w-xl flex-1">
 			<h1 class="anim-fade-in-up text-4xl leading-tight font-extrabold md:text-5xl">
 				Hi, I am <span class="text-accent">Lloyd</span>,<br />
 				<span class="text-accent">{gameDevMode.active ? 'Game' : 'Software'}</span> Developer
@@ -92,7 +90,7 @@
 </section>
 
 <section id="about" class="px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
-	<div class="mx-auto w-full max-w-2xl">
+	<div class="mx-auto w-full max-w-3xl">
 		<h2 class="anim-fade-in-up text-3xl font-extrabold md:text-4xl">About</h2>
 
 		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">

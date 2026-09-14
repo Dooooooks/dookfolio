@@ -43,7 +43,7 @@
 		Back to Home
 	</a>
 
-	<div class="mx-auto my-auto w-full max-w-2xl pt-8 sm:pt-0">
+	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
 		<div class="anim-fade-in-up">
 			<h1 class="text-3xl font-extrabold md:text-4xl">Contacts</h1>
 			<p class="mt-2 text-base leading-relaxed text-muted md:text-lg">
