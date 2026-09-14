@@ -9,34 +9,88 @@
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
 	import {
+		Activity,
 		Briefcase,
 		ChevronLeft,
 		ChevronRight,
+		Gamepad2,
 		House,
 		Mail,
 		Newspaper,
 		User
 	} from '@lucide/svelte';
-	import { gameDevMode } from '$lib/game-mode.svelte';
+	import { gameDevMode, openReactionModal } from '$lib/game-mode.svelte';
 	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
+	import DuckReactionModal from '$lib/components/DuckReactionModal.svelte';
 
 	let { children } = $props();
 
 	let isOpen = $state(true);
+	let activeSection = $state<'home' | 'about' | 'activity'>('home');
 
 	onMount(() => {
 		if (window.innerWidth < 768) {
 			isOpen = false;
 		}
+
+		function updateSectionOnScroll() {
+			if (page.url.pathname !== '/') return;
+			const scrollY = window.scrollY;
+			const activityEl = document.getElementById('activity');
+			const aboutEl = document.getElementById('about');
+
+			const activityTop = activityEl ? activityEl.offsetTop - 280 : Infinity;
+			const aboutTop = aboutEl ? aboutEl.offsetTop - 280 : Infinity;
+
+			if (aboutTop > activityTop) {
+				if (scrollY >= aboutTop) {
+					activeSection = 'about';
+				} else if (scrollY >= activityTop) {
+					activeSection = 'activity';
+				} else {
+					activeSection = 'home';
+				}
+			} else {
+				if (scrollY >= activityTop) {
+					activeSection = 'activity';
+				} else if (scrollY >= aboutTop) {
+					activeSection = 'about';
+				} else {
+					activeSection = 'home';
+				}
+			}
+		}
+
+		window.addEventListener('scroll', updateSectionOnScroll, { passive: true });
+		updateSectionOnScroll();
+
+		return () => {
+			window.removeEventListener('scroll', updateSectionOnScroll);
+		};
 	});
 
-	const links = [
-		{ href: '/', label: 'Home', icon: House },
-		{ href: '/#about', label: 'About', icon: User },
+	$effect(() => {
+		if (page.url.pathname === '/') {
+			if (page.url.hash === '#about') {
+				activeSection = 'about';
+			} else if (page.url.hash === '#activity') {
+				activeSection = 'activity';
+			}
+		}
+	});
+
+	const homeSubsections = [
+		{ href: '/#activity', label: 'Activity', icon: Activity, id: 'activity' as const },
+		{ href: '/#about', label: 'About', icon: User, id: 'about' as const }
+	] as const;
+
+	const otherLinks = [
 		{ href: '/projects', label: 'Projects', icon: Newspaper },
 		{ href: '/experiences', label: 'Experiences', icon: Briefcase },
 		{ href: '/contacts', label: 'Contacts', icon: Mail }
 	] as const;
+
+	const isHomeActive = $derived(page.url.pathname === '/' && activeSection === 'home');
 </script>
 
 <svelte:head>
@@ -90,16 +144,62 @@
 			</div>
 		</div>
 
-		<nav class="mt-10 flex flex-col gap-1.5">
-			{#each links as link (link.href)}
-				{@const active =
-					link.href === '/#about'
-						? page.url.pathname === '/' && page.url.hash === '#about'
-						: link.href === '/'
-							? page.url.pathname === '/' && !page.url.hash
-							: page.url.pathname === link.href}
+		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-y-auto">
+			<!-- Home and its Subsections -->
+			<div class="flex flex-col gap-1">
+				<a
+					href={resolve('/')}
+					onclick={() => {
+						activeSection = 'home';
+						if (window.innerWidth < 768) isOpen = false;
+					}}
+					aria-current={isHomeActive ? 'page' : undefined}
+					class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all duration-150 {isHomeActive
+						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
+						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
+				>
+					<House
+						class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isHomeActive
+							? 'text-accent'
+							: 'text-muted group-hover:text-white'}"
+					/>
+					<span>Home</span>
+				</a>
+
+				<!-- Subsections under Home -->
+				<div class="ml-4.5 flex flex-col gap-0.5 border-l border-white/10 pl-3">
+					{#each homeSubsections as sub (sub.href)}
+						{@const isSubActive = page.url.pathname === '/' && activeSection === sub.id}
+						<a
+							href={resolve(sub.href)}
+							onclick={() => {
+								activeSection = sub.id;
+								if (window.innerWidth < 768) isOpen = false;
+							}}
+							aria-current={isSubActive ? 'page' : undefined}
+							class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition-all duration-150 {isSubActive
+								? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
+								: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
+						>
+							<sub.icon
+								class="size-3.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isSubActive
+									? 'text-accent'
+									: 'text-muted group-hover:text-white'}"
+							/>
+							<span>{sub.label}</span>
+						</a>
+					{/each}
+				</div>
+			</div>
+
+			<!-- Other Main Links -->
+			{#each otherLinks as link (link.href)}
+				{@const active = page.url.pathname === link.href}
 				<a
 					href={resolve(link.href)}
+					onclick={() => {
+						if (window.innerWidth < 768) isOpen = false;
+					}}
 					aria-current={active ? 'page' : undefined}
 					class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all duration-150 {active
 						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
@@ -114,10 +214,51 @@
 				</a>
 			{/each}
 		</nav>
+
+		<!-- Playground Section & Email Address (Bottom of Sidebar) -->
+		<div class="mt-auto flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
+			<!-- Playground Header -->
+			<div class="flex items-center gap-1.5 px-1">
+				<Gamepad2 class="size-3.5 text-accent" />
+				<span class="text-[10px] font-extrabold tracking-wider text-muted uppercase">
+					Playground
+				</span>
+			</div>
+
+			<!-- Reaction Time Test Button with centered content -->
+			<button
+				type="button"
+				onclick={openReactionModal}
+				class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-muted shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+			>
+				<span class="text-center text-[11px] font-bold">Are you faster than a duck?</span>
+			</button>
+
+			<!-- Email Address -->
+			<div class="border-t border-white/6 pt-1">
+				<a
+					href="mailto:dook13s@proton.me"
+					class="group flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-semibold text-muted transition-all duration-150 hover:bg-white/5 hover:text-white"
+					title="Send email to dook13s@proton.me"
+				>
+					<Mail
+						class="size-4 shrink-0 text-accent transition-transform duration-200 group-hover:scale-110"
+					/>
+					<span
+						class="truncate font-mono text-[11px] font-medium tracking-tight text-muted transition-colors group-hover:text-accent"
+					>
+						dook13s@proton.me
+					</span>
+				</a>
+			</div>
+		</div>
 	</aside>
 
 	<!-- Animated Geometric Triangle Flanks (Dynamic Per Tab) -->
 	<AbstractTriangleFlanks {isOpen} />
+
+	<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
+	<DuckReactionModal />
 
 	<!-- Main Content Area -->
 	<main

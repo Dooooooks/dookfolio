@@ -8,7 +8,6 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-
 	let quacks = $state<Array<{ id: number; x: number; rot: number }>>([]);
 	let nextQuackId = 0;
 
@@ -89,7 +88,10 @@
 	</div>
 </section>
 
-<section id="about" class="px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
+<!-- GitHub Contribution Activity Heatmap -->
+<GithubActivity contributions={data.contributions} />
+
+<section id="about" class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
 	<div class="mx-auto w-full max-w-3xl">
 		<h2 class="anim-fade-in-up text-3xl font-extrabold md:text-4xl">About</h2>
 
@@ -128,9 +130,6 @@
 		</ul>
 	</div>
 </section>
-
-<!-- GitHub Contribution Activity Heatmap -->
-<GithubActivity contributions={data.contributions} />
 
 <style>
 	@keyframes quackDown {

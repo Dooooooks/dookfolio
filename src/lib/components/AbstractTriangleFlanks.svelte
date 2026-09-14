@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
-	import { gameDevMode } from '$lib/game-mode.svelte';
+	import { gameDevMode, reactionModal } from '$lib/game-mode.svelte';
 	import {
 		PALETTE,
 		SHARD_BASE_SHAPES,
@@ -21,6 +21,7 @@
 	const currentLayout = $derived(ROUTE_LAYOUTS[getRouteLayoutKey(page.url.pathname)]);
 
 	function handleMouseMove(e: MouseEvent) {
+		if (reactionModal.open) return;
 		const normX = (e.clientX / window.innerWidth - 0.5) * 2;
 		const normY = (e.clientY / window.innerHeight - 0.5) * 2;
 		targetX = normX * 8;
@@ -30,8 +31,11 @@
 	onMount(() => {
 		let rafId: number;
 		function lerp() {
-			mouseX += (targetX - mouseX) * 0.05;
-			mouseY += (targetY - mouseY) * 0.05;
+			// Suspend work during reaction test modal to grant 100% CPU/GPU headroom
+			if (!reactionModal.open) {
+				mouseX += (targetX - mouseX) * 0.05;
+				mouseY += (targetY - mouseY) * 0.05;
+			}
 			rafId = requestAnimationFrame(lerp);
 		}
 		rafId = requestAnimationFrame(lerp);
