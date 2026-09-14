@@ -118,7 +118,7 @@
 				title: 'Superhuman Avian Master!',
 				badge: 'Faster than a Duck',
 				badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-				comparison: `Incredible! You reacted in ${reactionTime}ms, beating the mallard duck benchmark (~${DUCK_REFLEX_MS}ms)!`,
+				comparison: `You reacted in ${reactionTime}ms. The duck felt that you cheated (~${DUCK_REFLEX_MS}ms)!`,
 				icon: Trophy
 			};
 		}
