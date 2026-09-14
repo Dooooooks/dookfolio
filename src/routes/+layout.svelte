@@ -100,11 +100,15 @@
 				<a
 					href={resolve(link.href)}
 					aria-current={active ? 'page' : undefined}
-					class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-colors {active
-						? 'bg-white/6 text-white'
-						: 'text-muted hover:bg-white/4 hover:text-white'}"
+					class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all duration-150 {active
+						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
+						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
 				>
-					<link.icon class="size-4.5 shrink-0" />
+					<link.icon
+						class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {active
+							? 'text-accent'
+							: 'text-muted group-hover:text-white'}"
+					/>
 					<span>{link.label}</span>
 				</a>
 			{/each}
@@ -113,6 +117,10 @@
 
 	<!-- Main Content Area -->
 	<main class="min-h-screen transition-all duration-300 ease-in-out {isOpen ? 'md:ml-52' : 'ml-0'}">
-		{@render children()}
+		{#key page.url.pathname}
+			<div class="anim-page-transition">
+				{@render children()}
+			</div>
+		{/key}
 	</main>
 </div>

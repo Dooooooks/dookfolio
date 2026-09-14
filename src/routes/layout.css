@@ -25,3 +25,87 @@
 @utility pixelated {
 	image-rendering: pixelated;
 }
+
+@keyframes spotlightPulse {
+	0%,
+	100% {
+		opacity: 0.88;
+		filter: drop-shadow(0 0 15px rgba(182, 148, 255, 0.08));
+	}
+	50% {
+		opacity: 1;
+		filter: drop-shadow(0 0 28px rgba(182, 148, 255, 0.22));
+	}
+}
+
+@keyframes duckIdle {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
+}
+
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(16px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes pageTransition {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes pulseGlow {
+	0%,
+	100% {
+		box-shadow: 0 0 0 0 rgba(182, 148, 255, 0.4);
+	}
+	50% {
+		box-shadow: 0 0 12px 3px rgba(182, 148, 255, 0.25);
+	}
+}
+
+.anim-spotlight {
+	animation: spotlightPulse 5s ease-in-out infinite;
+}
+
+.anim-duck-idle {
+	animation: duckIdle 2.6s ease-in-out infinite;
+}
+
+.anim-fade-in-up {
+	animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-page-transition {
+	animation: pageTransition 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-pulse-glow {
+	animation: pulseGlow 2.5s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.anim-spotlight,
+	.anim-duck-idle,
+	.anim-fade-in-up,
+	.anim-page-transition,
+	.anim-pulse-glow {
+		animation: none !important;
+	}
+}
