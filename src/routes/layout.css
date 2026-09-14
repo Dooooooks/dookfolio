@@ -80,6 +80,98 @@
 	}
 }
 
+@keyframes shardFloat1 {
+	0%,
+	100% {
+		transform: translateY(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-14px) rotate(2deg);
+	}
+}
+
+@keyframes shardFloat2 {
+	0%,
+	100% {
+		transform: translateY(0px) translateX(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-18px) translateX(6px) rotate(-3deg);
+	}
+}
+
+@keyframes shardFloat3 {
+	0%,
+	100% {
+		transform: translateY(0px) translateX(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-10px) translateX(-5px) rotate(1.5deg);
+	}
+}
+
+@keyframes shardPulse {
+	0%,
+	100% {
+		transform: scale(1);
+		filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.2));
+	}
+	50% {
+		transform: scale(1.04);
+		filter: drop-shadow(0 0 16px rgba(182, 148, 255, 0.45));
+	}
+}
+
+@keyframes shardAscend1 {
+	0%,
+	100% {
+		transform: translateY(0px) scale(1);
+	}
+	50% {
+		transform: translateY(-22px) scale(1.03);
+	}
+}
+
+@keyframes shardAscend2 {
+	0%,
+	100% {
+		transform: translateY(0px) scale(1);
+	}
+	50% {
+		transform: translateY(-16px) scale(1.02);
+	}
+}
+
+@keyframes shardAscend3 {
+	0%,
+	100% {
+		transform: translateY(0px) scale(1);
+	}
+	50% {
+		transform: translateY(-26px) scale(1.04);
+	}
+}
+
+@keyframes shardConvergeL {
+	0%,
+	100% {
+		transform: translateX(0px) scale(1);
+	}
+	50% {
+		transform: translateX(12px) scale(1.03);
+	}
+}
+
+@keyframes shardConvergeR {
+	0%,
+	100% {
+		transform: translateX(0px) scale(1);
+	}
+	50% {
+		transform: translateX(-12px) scale(1.03);
+	}
+}
+
 .anim-spotlight {
 	animation: spotlightPulse 5s ease-in-out infinite;
 }
@@ -100,12 +192,66 @@
 	animation: pulseGlow 2.5s infinite;
 }
 
+.anim-shard-float-1 {
+	animation: shardFloat1 6s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-float-2 {
+	animation: shardFloat2 7.5s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-float-3 {
+	animation: shardFloat3 8.5s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-pulse {
+	animation: shardPulse 4s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-ascend-1 {
+	animation: shardAscend1 5.5s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-ascend-2 {
+	animation: shardAscend2 6.8s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-ascend-3 {
+	animation: shardAscend3 7.2s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-converge-l {
+	animation: shardConvergeL 5s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-converge-r {
+	animation: shardConvergeR 5s ease-in-out infinite;
+	transform-origin: center;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.anim-spotlight,
 	.anim-duck-idle,
 	.anim-fade-in-up,
 	.anim-page-transition,
-	.anim-pulse-glow {
+	.anim-pulse-glow,
+	.anim-shard-float-1,
+	.anim-shard-float-2,
+	.anim-shard-float-3,
+	.anim-shard-pulse,
+	.anim-shard-ascend-1,
+	.anim-shard-ascend-2,
+	.anim-shard-ascend-3,
+	.anim-shard-converge-l,
+	.anim-shard-converge-r {
 		animation: none !important;
 	}
 }

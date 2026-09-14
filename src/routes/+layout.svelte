@@ -18,6 +18,7 @@
 		User
 	} from '@lucide/svelte';
 	import { gameDevMode } from '$lib/game-mode.svelte';
+	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
 
 	let { children } = $props();
 
@@ -115,8 +116,15 @@
 		</nav>
 	</aside>
 
+	<!-- Animated Geometric Triangle Flanks (Dynamic Per Tab) -->
+	<AbstractTriangleFlanks {isOpen} />
+
 	<!-- Main Content Area -->
-	<main class="min-h-screen transition-all duration-300 ease-in-out {isOpen ? 'md:ml-52' : 'ml-0'}">
+	<main
+		class="relative z-10 min-h-screen transition-all duration-300 ease-in-out {isOpen
+			? 'md:ml-52'
+			: 'ml-0'}"
+	>
 		{#key page.url.pathname}
 			<div class="anim-page-transition">
 				{@render children()}
