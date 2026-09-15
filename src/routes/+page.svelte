@@ -1,26 +1,68 @@
 <script lang="ts">
 	import { MapPin } from '@lucide/svelte';
 	import { base } from '$app/paths';
-	import { gameDevMode, handleDuckClick } from '$lib/game-mode.svelte';
+	import { gameDevMode, handleDuckClick, feedDuck } from '$lib/game-mode.svelte';
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
 	import spotlight from '$lib/assets/Spotlight.svg';
 	import GithubActivity from '$lib/components/GithubActivity.svelte';
+	import FlyingBreadcrumbs from '$lib/components/FlyingBreadcrumbs.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	let quacks = $state<Array<{ id: number; x: number; rot: number }>>([]);
+	let quacks = $state<Array<{ id: number; x: number; rot: number; text: string }>>([]);
 	let nextQuackId = 0;
+	let duckButtonEl = $state<HTMLElement | null>(null);
+	let isChomping = $state(false);
+
+	// Scale progression: fed 0 -> 1.0, fed 1 -> 1.15, fed 2 -> 1.30, fed 3 -> 1.45
+	const duckScale = $derived(
+		gameDevMode.fedCount === 0
+			? 1
+			: gameDevMode.fedCount === 1
+				? 1.15
+				: gameDevMode.fedCount === 2
+					? 1.3
+					: 1.45
+	);
+
+	const warningText = $derived(
+		gameDevMode.active || gameDevMode.fedCount >= 3
+			? 'GREAT, ENJOY YOUR NEW SOULMATE.'
+			: gameDevMode.fedCount === 2
+				? 'THIS IS YOUR FINAL WARNING.'
+				: gameDevMode.fedCount === 1
+					? 'SERIOUSLY. STOP FEEDING HIM.'
+					: "DON'T FEED THE DUCK"
+	);
 
 	function onDuckClick() {
 		handleDuckClick();
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 26) - 13;
 		const rot = Math.floor(Math.random() * 16) - 8;
-		quacks = [...quacks, { id, x, rot }];
+		const text = gameDevMode.active ? 'Quack! ✨' : 'Quack! 🍞';
+		quacks = [...quacks, { id, x, rot, text }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
 		}, 800);
+	}
+
+	function onCrumbFed() {
+		const newCount = feedDuck();
+		isChomping = true;
+		setTimeout(() => {
+			isChomping = false;
+		}, 450);
+
+		const id = nextQuackId++;
+		const x = Math.floor(Math.random() * 26) - 13;
+		const rot = Math.floor(Math.random() * 16) - 8;
+		const text = newCount === 1 ? 'Nom!' : newCount === 2 ? 'Chomp!' : 'QUACK!! ✨';
+		quacks = [...quacks, { id, x, rot, text }];
+		setTimeout(() => {
+			quacks = quacks.filter((q) => q.id !== id);
+		}, 900);
 	}
 </script>
 
@@ -30,7 +72,11 @@
 	</title>
 </svelte:head>
 
+<!-- Main Hero Section with Flying Breadcrumbs -->
 <section class="relative overflow-hidden px-8 pb-6 md:px-12 md:pb-8">
+	<!-- Flying Breadcrumbs Overlay (Purple/Lavender Palette - Zero Yellow) -->
+	<FlyingBreadcrumbs onFeed={onCrumbFed} duckElement={duckButtonEl} />
+
 	<div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 sm:gap-8 md:gap-12">
 		<div class="max-w-xl flex-1">
 			<h1 class="anim-fade-in-up text-4xl leading-tight font-extrabold md:text-5xl">
@@ -62,32 +108,71 @@
 		>
 			<img src={spotlight} alt="" class="pointer-events-none size-full select-none" />
 
-			<button
-				type="button"
-				onclick={onDuckClick}
-				aria-label={gameDevMode.active
-					? 'Revert to Software Developer mode'
-					: 'A pixel duck standing in the spotlight'}
-				class="anim-duck-idle absolute bottom-[2.5%] left-1/2 origin-bottom -translate-x-1/2 cursor-pointer transition-transform duration-200 hover:scale-115 active:scale-[1.35]"
+			<!-- Duck Container with Dynamic Scale Progression -->
+			<div
+				class="absolute bottom-[2.5%] left-1/2 origin-bottom transition-transform duration-300 ease-out"
+				style="transform: translateX(-50%) scale({duckScale});"
 			>
-				<img
-					src={gameDevMode.active ? duckYellow : duckWhite}
-					alt=""
-					class="w-14 pixelated sm:w-16 md:w-18"
-				/>
-			</button>
+				<button
+					id="hero-duck-button"
+					bind:this={duckButtonEl}
+					type="button"
+					onclick={onDuckClick}
+					aria-label={gameDevMode.active
+						? 'Revert to Software Developer mode'
+						: 'A pixel duck standing in the spotlight'}
+					class="anim-duck-idle cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
+						? 'anim-duck-chomp'
+						: ''}"
+				>
+					<img
+						src={gameDevMode.active ? duckYellow : duckWhite}
+						alt=""
+						class="w-14 pixelated sm:w-16 md:w-18"
+					/>
+				</button>
+			</div>
 
 			{#each quacks as quack (quack.id)}
 				<span
 					class="quack-anim pointer-events-none absolute bottom-[2%] left-1/2 font-pixel text-xs font-extrabold text-accent select-none"
 					style="margin-left: {quack.x}px; --rot: {quack.rot}deg;"
 				>
-					Quack!
+					{quack.text}
 				</span>
 			{/each}
 		</div>
 	</div>
 </section>
+
+<!-- Easter Egg Warning Notice: Don't feed the duck -->
+<div
+	class="anim-fade-in-up -mt-2 mb-10 flex flex-col items-center justify-center px-8 select-none"
+	style="animation-delay: 280ms;"
+>
+	<div class="flex items-center gap-2.5 transition-all duration-300">
+		<p
+			class="font-pixel text-xs tracking-widest uppercase transition-colors duration-300 sm:text-sm {gameDevMode.active
+				? 'font-extrabold text-accent drop-shadow-[0_0_12px_rgba(182,148,255,0.7)]'
+				: gameDevMode.fedCount === 2
+					? 'font-bold text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.45)]'
+					: gameDevMode.fedCount === 1
+						? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
+						: 'font-medium text-accent/80'}"
+		>
+			{warningText}
+		</p>
+	</div>
+	<div
+		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active
+			? 'w-56 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
+			: gameDevMode.fedCount === 2
+				? 'w-48 bg-rose-400/40'
+				: gameDevMode.fedCount === 1
+					? 'w-40 bg-purple-400/35'
+					: 'w-24 bg-accent/25'}"
+	></div>
+</div>
 
 <!-- GitHub Contribution Activity Heatmap -->
 <GithubActivity contributions={data.contributions} />
@@ -104,8 +189,8 @@
 			</p>
 			<p class="anim-fade-in-up" style="animation-delay: 140ms;">
 				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
-				playtesting with friends, and chasing that perfect game feel. (Psst… try clicking the duck
-				on the home page.)
+				playtesting with friends, and chasing that perfect game feel. (Psst… whatever you do, don't
+				feed the duck on the home page.)
 			</p>
 			<p class="anim-fade-in-up" style="animation-delay: 200ms;">
 				I care about thoughtful UI, pixel-perfect details, and code that stays simple. Currently

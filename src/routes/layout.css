@@ -48,6 +48,51 @@
 	}
 }
 
+@keyframes duckChomp {
+	0% {
+		transform: scale(1, 1);
+	}
+	30% {
+		transform: scale(1.22, 0.78);
+	}
+	65% {
+		transform: scale(0.88, 1.16);
+	}
+	100% {
+		transform: scale(1, 1);
+	}
+}
+
+@keyframes crumbBob1 {
+	0%,
+	100% {
+		transform: translateY(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-9px) rotate(8deg);
+	}
+}
+
+@keyframes crumbBob2 {
+	0%,
+	100% {
+		transform: translateY(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-13px) rotate(-10deg);
+	}
+}
+
+@keyframes crumbBob3 {
+	0%,
+	100% {
+		transform: translateY(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-7px) rotate(6deg);
+	}
+}
+
 @keyframes fadeInUp {
 	from {
 		opacity: 0;
@@ -267,9 +312,29 @@
 	transform-origin: center;
 }
 
+.anim-duck-chomp {
+	animation: duckChomp 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+.anim-crumb-1 {
+	animation: crumbBob1 3.2s ease-in-out infinite;
+}
+
+.anim-crumb-2 {
+	animation: crumbBob2 4.1s ease-in-out infinite;
+}
+
+.anim-crumb-3 {
+	animation: crumbBob3 3.6s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.anim-spotlight,
 	.anim-duck-idle,
+	.anim-duck-chomp,
+	.anim-crumb-1,
+	.anim-crumb-2,
+	.anim-crumb-3,
 	.anim-fade-in-up,
 	.anim-page-transition,
 	.anim-pulse-glow,

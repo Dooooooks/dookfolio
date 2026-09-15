@@ -22,6 +22,7 @@
 	import { gameDevMode, openReactionModal } from '$lib/game-mode.svelte';
 	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
 	import DuckReactionModal from '$lib/components/DuckReactionModal.svelte';
+	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
 
 	let { children } = $props();
 
@@ -273,6 +274,9 @@
 
 	<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
 	<DuckReactionModal />
+
+	<!-- Break Contract Confirmation Modal -->
+	<BreakContractModal />
 
 	<!-- Main Content Area -->
 	<main
