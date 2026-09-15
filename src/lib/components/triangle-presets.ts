@@ -1,3 +1,6 @@
+export type ShardVariant = 'equilateral' | 'acute' | 'wide' | 'splinter' | 'scalene' | 'chip';
+export type DepthLayer = 'bg' | 'mg' | 'fg';
+
 export interface ShardTransform {
 	x: number; // percentage (0 - 100)
 	y: number; // percentage (0 - 100)
@@ -7,11 +10,14 @@ export interface ShardTransform {
 
 export interface ShardDefinition {
 	id: string;
-	variant: 'equilateral' | 'acute' | 'wide';
+	variant: ShardVariant;
 	animClass: string;
 	delay: string;
 	fill: string;
 	stroke: string;
+	strokeWidth?: number;
+	opacity?: number;
+	layer?: DepthLayer;
 }
 
 export interface RouteLayout {
@@ -19,192 +25,526 @@ export interface RouteLayout {
 	right: ShardTransform[];
 }
 
-// Consistent color palette across all pages AND gaming mode
+// Consistent crystalline broken glass color palette across all pages AND gaming mode
 export const PALETTE = {
 	fillGrad1: 'url(#flank-grad-1)',
 	fillGrad2: 'url(#flank-grad-2)',
-	fillSolid: 'rgba(182, 148, 255, 0.09)',
-	stroke: 'rgba(182, 148, 255, 0.5)',
-	strokeSoft: 'rgba(203, 177, 255, 0.35)',
-	strokeWidth: 1.5
+	fillGradGlass: 'url(#flank-grad-glass)',
+	fillSolid: 'rgba(182, 148, 255, 0.08)',
+	fillGlint: 'rgba(235, 225, 255, 0.18)',
+	stroke: 'rgba(182, 148, 255, 0.52)',
+	strokeSoft: 'rgba(203, 177, 255, 0.32)',
+	strokeSharp: 'rgba(238, 228, 255, 0.78)',
+	strokeWidth: 1.5,
+	strokeHairline: 1.0,
+	strokeBold: 1.8
 };
 
-// Mathematically symmetrical, pixel-perfect 8-bit stepped shapes
-export const SHARD_BASE_SHAPES = {
+// Mathematically symmetrical & razor-angled broken glass shapes with pixel-perfect 8-bit stepped equivalents
+export const SHARD_BASE_SHAPES: Record<
+	ShardVariant,
+	{
+		smooth: string;
+		pixel: string;
+	}
+> = {
+	// Balanced faceted plate
 	equilateral: {
 		smooth: '0,-32 66,36 -66,36',
 		pixel:
 			'M -2,-32 H 2 V -28 H 6 V -24 H 10 V -20 H 14 V -16 H 18 V -12 H 22 V -8 H 26 V -4 H 30 V 0 H 34 V 4 H 38 V 8 H 42 V 12 H 46 V 16 H 50 V 20 H 54 V 24 H 58 V 28 H 62 V 32 H 66 V 36 H -66 V 32 H -62 V 28 H -58 V 24 H -54 V 20 H -50 V 16 H -46 V 12 H -42 V 8 H -38 V 4 H -34 V 0 H -30 V -4 H -26 V -8 H -22 V -12 H -18 V -16 H -14 V -20 H -10 V -24 H -6 V -28 H -2 Z'
 	},
+	// Tall needle shard
 	acute: {
 		smooth: '0,-36 38,40 -38,40',
 		pixel:
 			'M -2,-36 H 2 V -28 H 6 V -20 H 10 V -12 H 14 V -4 H 18 V 4 H 22 V 12 H 26 V 20 H 30 V 28 H 34 V 36 H 38 V 40 H -38 V 36 H -34 V 28 H -30 V 20 H -26 V 12 H -22 V 4 H -18 V -4 H -14 V -12 H -10 V -20 H -6 V -28 H -2 Z'
 	},
+	// Wide wedge shard
 	wide: {
 		smooth: '0,-24 68,28 -68,28',
 		pixel:
 			'M -4,-24 H 4 V -18 H 12 V -12 H 20 V -6 H 28 V 0 H 36 V 6 H 44 V 12 H 52 V 18 H 60 V 24 H 68 V 28 H -68 V 24 H -60 V 18 H -52 V 12 H -44 V 6 H -36 V 0 H -28 V -6 H -20 V -12 H -12 V -18 H -4 Z'
+	},
+	// Razor-thin glass sliver / splinter
+	splinter: {
+		smooth: '0,-44 14,44 -14,44',
+		pixel:
+			'M -2,-44 H 2 V -36 H 4 V -28 H 6 V -20 H 8 V -12 H 10 V -4 H 12 V 8 H 13 V 20 H 14 V 44 H -14 V 20 H -13 V 8 H -12 V -4 H -10 V -12 H -8 V -20 H -6 V -28 H -4 V -36 H -2 Z'
+	},
+	// Sheared asymmetric fracture shard
+	scalene: {
+		smooth: '-18,-38 52,32 -44,38',
+		pixel:
+			'M -20,-38 H -16 V -30 H -8 V -22 H 0 V -14 H 8 V -6 H 16 V 2 H 24 V 10 H 32 V 18 H 40 V 26 H 46 V 32 H 52 V 36 H 4 V 38 H -44 V 28 H -40 V 16 H -36 V 4 H -32 V -8 H -28 V -20 H -24 V -32 H -20 V -38 Z'
+	},
+	// Micro crystal chip / dust spark
+	chip: {
+		smooth: '0,-20 24,18 -24,18',
+		pixel:
+			'M -2,-20 H 2 V -14 H 6 V -8 H 10 V -2 H 14 V 4 H 18 V 10 H 21 V 14 H 24 V 18 H -24 V 14 H -21 V 10 H -18 V 4 H -14 V -2 H -10 V -8 H -6 V -14 H -2 Z'
 	}
 };
 
+// 14 Left Flank Shards with 3 Depth Tiers (Foreground, Midground, Background)
 export const LEFT_SHARDS: ShardDefinition[] = [
 	{
 		id: 'shard-l-0',
 		variant: 'equilateral',
+		layer: 'fg',
 		animClass: 'anim-shard-float-1',
 		delay: '0s',
-		fill: PALETTE.fillGrad1,
-		stroke: PALETTE.stroke
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.95
 	},
 	{
 		id: 'shard-l-1',
 		variant: 'acute',
+		layer: 'mg',
 		animClass: 'anim-shard-float-2',
-		delay: '0.8s',
+		delay: '0.7s',
 		fill: PALETTE.fillSolid,
-		stroke: PALETTE.strokeSoft
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeWidth,
+		opacity: 0.75
 	},
 	{
 		id: 'shard-l-2',
-		variant: 'wide',
+		variant: 'scalene',
+		layer: 'fg',
 		animClass: 'anim-shard-float-3',
 		delay: '1.4s',
 		fill: PALETTE.fillGrad2,
-		stroke: PALETTE.stroke
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.92
 	},
 	{
 		id: 'shard-l-3',
-		variant: 'equilateral',
-		animClass: 'anim-shard-float-1',
+		variant: 'splinter',
+		layer: 'mg',
+		animClass: 'anim-shard-float-4',
 		delay: '2.1s',
-		fill: PALETTE.fillSolid,
-		stroke: PALETTE.strokeSoft
+		fill: PALETTE.fillGrad1,
+		stroke: PALETTE.stroke,
+		strokeWidth: 1.3,
+		opacity: 0.8
 	},
 	{
 		id: 'shard-l-4',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-5',
+		delay: '0.3s',
+		fill: PALETTE.fillGlint,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.48
+	},
+	{
+		id: 'shard-l-5',
+		variant: 'wide',
+		layer: 'mg',
+		animClass: 'anim-shard-float-1',
+		delay: '1.8s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.3,
+		opacity: 0.72
+	},
+	{
+		id: 'shard-l-6',
 		variant: 'acute',
+		layer: 'fg',
 		animClass: 'anim-shard-float-2',
-		delay: '1.1s',
+		delay: '2.8s',
 		fill: PALETTE.fillGrad1,
-		stroke: PALETTE.stroke
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.94
+	},
+	{
+		id: 'shard-l-7',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-3',
+		delay: '3.5s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.42
+	},
+	{
+		id: 'shard-l-8',
+		variant: 'splinter',
+		layer: 'mg',
+		animClass: 'anim-shard-float-4',
+		delay: '1.1s',
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.stroke,
+		strokeWidth: 1.4,
+		opacity: 0.82
+	},
+	{
+		id: 'shard-l-9',
+		variant: 'scalene',
+		layer: 'mg',
+		animClass: 'anim-shard-float-5',
+		delay: '2.4s',
+		fill: PALETTE.fillGrad2,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.3,
+		opacity: 0.76
+	},
+	{
+		id: 'shard-l-10',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-1',
+		delay: '4.2s',
+		fill: PALETTE.fillGlint,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.45
+	},
+	{
+		id: 'shard-l-11',
+		variant: 'wide',
+		layer: 'fg',
+		animClass: 'anim-shard-float-2',
+		delay: '1.6s',
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.95
+	},
+	{
+		id: 'shard-l-12',
+		variant: 'acute',
+		layer: 'mg',
+		animClass: 'anim-shard-float-3',
+		delay: '0.9s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.2,
+		opacity: 0.7
+	},
+	{
+		id: 'shard-l-13',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-5',
+		delay: '3.1s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 0.9,
+		opacity: 0.38
 	}
 ];
 
+// 14 Right Flank Shards with 3 Depth Tiers (Foreground, Midground, Background)
 export const RIGHT_SHARDS: ShardDefinition[] = [
 	{
 		id: 'shard-r-0',
-		variant: 'equilateral',
+		variant: 'scalene',
+		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '0.4s',
-		fill: PALETTE.fillGrad2,
-		stroke: PALETTE.stroke
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.95
 	},
 	{
 		id: 'shard-r-1',
 		variant: 'wide',
+		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '1.2s',
 		fill: PALETTE.fillSolid,
-		stroke: PALETTE.strokeSoft
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.4,
+		opacity: 0.74
 	},
 	{
 		id: 'shard-r-2',
-		variant: 'acute',
+		variant: 'splinter',
+		layer: 'fg',
 		animClass: 'anim-shard-float-1',
 		delay: '0.2s',
 		fill: PALETTE.fillGrad1,
-		stroke: PALETTE.stroke
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.92
 	},
 	{
 		id: 'shard-r-3',
-		variant: 'equilateral',
-		animClass: 'anim-shard-float-2',
-		delay: '1.8s',
+		variant: 'acute',
+		layer: 'mg',
+		animClass: 'anim-shard-float-4',
+		delay: '1.9s',
 		fill: PALETTE.fillGrad2,
-		stroke: PALETTE.strokeSoft
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.3,
+		opacity: 0.78
 	},
 	{
 		id: 'shard-r-4',
-		variant: 'wide',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-5',
+		delay: '0.8s',
+		fill: PALETTE.fillGlint,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.46
+	},
+	{
+		id: 'shard-r-5',
+		variant: 'equilateral',
+		layer: 'fg',
+		animClass: 'anim-shard-float-2',
+		delay: '2.5s',
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.96
+	},
+	{
+		id: 'shard-r-6',
+		variant: 'scalene',
+		layer: 'mg',
 		animClass: 'anim-shard-float-3',
-		delay: '0.9s',
+		delay: '1.5s',
 		fill: PALETTE.fillSolid,
-		stroke: PALETTE.stroke
+		stroke: PALETTE.stroke,
+		strokeWidth: 1.3,
+		opacity: 0.75
+	},
+	{
+		id: 'shard-r-7',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-1',
+		delay: '3.7s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.42
+	},
+	{
+		id: 'shard-r-8',
+		variant: 'splinter',
+		layer: 'mg',
+		animClass: 'anim-shard-float-4',
+		delay: '2.2s',
+		fill: PALETTE.fillGrad1,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.2,
+		opacity: 0.8
+	},
+	{
+		id: 'shard-r-9',
+		variant: 'acute',
+		layer: 'fg',
+		animClass: 'anim-shard-float-5',
+		delay: '1.0s',
+		fill: PALETTE.fillGrad2,
+		stroke: PALETTE.strokeSharp,
+		strokeWidth: PALETTE.strokeBold,
+		opacity: 0.94
+	},
+	{
+		id: 'shard-r-10',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-2',
+		delay: '4.0s',
+		fill: PALETTE.fillGlint,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: PALETTE.strokeHairline,
+		opacity: 0.45
+	},
+	{
+		id: 'shard-r-11',
+		variant: 'wide',
+		layer: 'mg',
+		animClass: 'anim-shard-float-3',
+		delay: '2.7s',
+		fill: PALETTE.fillGradGlass,
+		stroke: PALETTE.stroke,
+		strokeWidth: 1.4,
+		opacity: 0.82
+	},
+	{
+		id: 'shard-r-12',
+		variant: 'scalene',
+		layer: 'mg',
+		animClass: 'anim-shard-float-1',
+		delay: '1.3s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 1.3,
+		opacity: 0.72
+	},
+	{
+		id: 'shard-r-13',
+		variant: 'chip',
+		layer: 'bg',
+		animClass: 'anim-shard-float-4',
+		delay: '3.3s',
+		fill: PALETTE.fillSolid,
+		stroke: PALETTE.strokeSoft,
+		strokeWidth: 0.9,
+		opacity: 0.38
 	}
 ];
 
-// Layout & Rotations per route (using percentage coordinates for un-stretched, resolution-independent positioning)
+// Layout, Rotations, and Wide Variety of Scales per Route
 export const ROUTE_LAYOUTS: Record<string, RouteLayout> = {
-	// Home: Floating ambient dispersion with relaxed organic angles
+	// Home: Radiating shattered glass constellation with organic drift and dramatic scale range (0.24 to 1.35)
 	home: {
 		left: [
-			{ x: 35, y: 12, rot: 15, scale: 1.0 },
-			{ x: 65, y: 30, rot: -35, scale: 0.9 },
-			{ x: 30, y: 50, rot: 40, scale: 1.15 },
-			{ x: 70, y: 70, rot: -25, scale: 0.9 },
-			{ x: 40, y: 88, rot: 30, scale: 1.05 }
+			{ x: 38, y: 12, rot: 18, scale: 1.25 },
+			{ x: 70, y: 22, rot: -32, scale: 0.82 },
+			{ x: 32, y: 34, rot: 42, scale: 1.35 },
+			{ x: 74, y: 44, rot: -55, scale: 0.68 },
+			{ x: 50, y: 18, rot: 65, scale: 0.28 },
+			{ x: 42, y: 56, rot: 15, scale: 0.92 },
+			{ x: 68, y: 68, rot: -28, scale: 1.3 },
+			{ x: 22, y: 48, rot: -70, scale: 0.32 },
+			{ x: 28, y: 78, rot: 50, scale: 0.62 },
+			{ x: 62, y: 84, rot: -40, scale: 0.88 },
+			{ x: 80, y: 60, rot: 35, scale: 0.36 },
+			{ x: 44, y: 92, rot: 25, scale: 1.22 },
+			{ x: 20, y: 26, rot: -15, scale: 0.75 },
+			{ x: 55, y: 75, rot: 80, scale: 0.24 }
 		],
 		right: [
-			{ x: 65, y: 12, rot: -15, scale: 1.0 },
-			{ x: 35, y: 30, rot: 35, scale: 0.9 },
-			{ x: 70, y: 50, rot: -40, scale: 1.15 },
-			{ x: 30, y: 70, rot: 25, scale: 0.9 },
-			{ x: 60, y: 88, rot: -30, scale: 1.05 }
+			{ x: 62, y: 12, rot: -18, scale: 1.25 },
+			{ x: 30, y: 22, rot: 32, scale: 0.82 },
+			{ x: 68, y: 34, rot: -42, scale: 1.35 },
+			{ x: 26, y: 44, rot: 55, scale: 0.68 },
+			{ x: 50, y: 18, rot: -65, scale: 0.28 },
+			{ x: 58, y: 56, rot: -15, scale: 1.28 },
+			{ x: 32, y: 68, rot: 28, scale: 0.88 },
+			{ x: 78, y: 48, rot: 70, scale: 0.32 },
+			{ x: 72, y: 78, rot: -50, scale: 0.62 },
+			{ x: 38, y: 84, rot: 40, scale: 1.3 },
+			{ x: 20, y: 60, rot: -35, scale: 0.36 },
+			{ x: 56, y: 92, rot: -25, scale: 0.95 },
+			{ x: 80, y: 26, rot: 15, scale: 0.75 },
+			{ x: 45, y: 75, rot: -80, scale: 0.24 }
 		]
 	},
 
-	// Projects: Sharp technical rotations (90°, -80°, 135°, -125°) and structural interlocking
+	// Projects: Sharp technical fractured lattice with structural interlocking rotations (0°, 45°, 90°, 135°, 180°)
 	projects: {
 		left: [
-			{ x: 65, y: 10, rot: 90, scale: 1.1 },
-			{ x: 25, y: 28, rot: -80, scale: 0.95 },
-			{ x: 70, y: 48, rot: 135, scale: 1.2 },
-			{ x: 30, y: 68, rot: -125, scale: 0.88 },
-			{ x: 65, y: 86, rot: 175, scale: 1.05 }
+			{ x: 62, y: 9, rot: 90, scale: 1.32 },
+			{ x: 28, y: 18, rot: -45, scale: 0.85 },
+			{ x: 72, y: 28, rot: 135, scale: 1.38 },
+			{ x: 24, y: 38, rot: -90, scale: 0.7 },
+			{ x: 48, y: 14, rot: 45, scale: 0.26 },
+			{ x: 66, y: 48, rot: 0, scale: 0.95 },
+			{ x: 30, y: 58, rot: -135, scale: 1.4 },
+			{ x: 80, y: 42, rot: 90, scale: 0.34 },
+			{ x: 68, y: 68, rot: 45, scale: 0.65 },
+			{ x: 26, y: 76, rot: -90, scale: 0.88 },
+			{ x: 42, y: 64, rot: 135, scale: 0.3 },
+			{ x: 64, y: 86, rot: 180, scale: 1.25 },
+			{ x: 22, y: 92, rot: -45, scale: 0.78 },
+			{ x: 52, y: 80, rot: 0, scale: 0.24 }
 		],
 		right: [
-			{ x: 35, y: 10, rot: -90, scale: 1.1 },
-			{ x: 75, y: 28, rot: 80, scale: 0.95 },
-			{ x: 30, y: 48, rot: -135, scale: 1.2 },
-			{ x: 70, y: 68, rot: 125, scale: 0.88 },
-			{ x: 35, y: 86, rot: -175, scale: 1.05 }
+			{ x: 38, y: 9, rot: -90, scale: 1.32 },
+			{ x: 72, y: 18, rot: 45, scale: 0.85 },
+			{ x: 28, y: 28, rot: -135, scale: 1.38 },
+			{ x: 76, y: 38, rot: 90, scale: 0.7 },
+			{ x: 52, y: 14, rot: -45, scale: 0.26 },
+			{ x: 34, y: 48, rot: 0, scale: 1.28 },
+			{ x: 70, y: 58, rot: 135, scale: 0.92 },
+			{ x: 20, y: 42, rot: -90, scale: 0.34 },
+			{ x: 32, y: 68, rot: -45, scale: 0.65 },
+			{ x: 74, y: 76, rot: 90, scale: 1.35 },
+			{ x: 58, y: 64, rot: -135, scale: 0.3 },
+			{ x: 36, y: 86, rot: -180, scale: 0.95 },
+			{ x: 78, y: 92, rot: 45, scale: 0.78 },
+			{ x: 48, y: 80, rot: 0, scale: 0.24 }
 		]
 	},
 
-	// Experiences: Aligned vertical ladder / ascending chevron column with uniform upward tilt
+	// Experiences: Ascending crystalline cascade / vertical fracture ladder (-90° / +90° ascending flow)
 	experiences: {
 		left: [
-			{ x: 45, y: 14, rot: -90, scale: 0.9 },
-			{ x: 45, y: 32, rot: -90, scale: 1.0 },
-			{ x: 45, y: 50, rot: -90, scale: 1.15 },
-			{ x: 45, y: 68, rot: -90, scale: 1.0 },
-			{ x: 45, y: 86, rot: -90, scale: 0.95 }
+			{ x: 48, y: 8, rot: -90, scale: 1.25 },
+			{ x: 32, y: 16, rot: -75, scale: 0.8 },
+			{ x: 52, y: 24, rot: -90, scale: 1.35 },
+			{ x: 68, y: 32, rot: -105, scale: 0.65 },
+			{ x: 26, y: 20, rot: -90, scale: 0.28 },
+			{ x: 44, y: 40, rot: -90, scale: 0.92 },
+			{ x: 54, y: 49, rot: -90, scale: 1.42 },
+			{ x: 72, y: 44, rot: -85, scale: 0.32 },
+			{ x: 30, y: 58, rot: -95, scale: 0.6 },
+			{ x: 58, y: 66, rot: -90, scale: 0.86 },
+			{ x: 22, y: 62, rot: -90, scale: 0.35 },
+			{ x: 46, y: 75, rot: -90, scale: 1.26 },
+			{ x: 34, y: 85, rot: -80, scale: 0.76 },
+			{ x: 64, y: 80, rot: -90, scale: 0.24 }
 		],
 		right: [
-			{ x: 55, y: 14, rot: 90, scale: 0.9 },
-			{ x: 55, y: 32, rot: 90, scale: 1.0 },
-			{ x: 55, y: 50, rot: 90, scale: 1.15 },
-			{ x: 55, y: 68, rot: 90, scale: 1.0 },
-			{ x: 55, y: 86, rot: 90, scale: 0.95 }
+			{ x: 52, y: 8, rot: 90, scale: 1.25 },
+			{ x: 68, y: 16, rot: 75, scale: 0.8 },
+			{ x: 48, y: 24, rot: 90, scale: 1.35 },
+			{ x: 32, y: 32, rot: 105, scale: 0.65 },
+			{ x: 74, y: 20, rot: 90, scale: 0.28 },
+			{ x: 56, y: 40, rot: 90, scale: 1.3 },
+			{ x: 46, y: 49, rot: 90, scale: 0.88 },
+			{ x: 28, y: 44, rot: 85, scale: 0.32 },
+			{ x: 70, y: 58, rot: 95, scale: 0.6 },
+			{ x: 42, y: 66, rot: 90, scale: 1.38 },
+			{ x: 78, y: 62, rot: 90, scale: 0.35 },
+			{ x: 54, y: 75, rot: 90, scale: 0.95 },
+			{ x: 66, y: 85, rot: 80, scale: 0.76 },
+			{ x: 36, y: 80, rot: 90, scale: 0.24 }
 		]
 	},
 
-	// Contacts: Inward-pointing focal arrows guiding attention to central interaction area
+	// Contacts: Shattered convergence / inward-pointing focal arrows guiding attention to interaction center
 	contacts: {
 		left: [
-			{ x: 60, y: 12, rot: 45, scale: 1.0 },
-			{ x: 75, y: 31, rot: 25, scale: 1.1 },
-			{ x: 82, y: 50, rot: 0, scale: 1.25 },
-			{ x: 75, y: 69, rot: -25, scale: 1.1 },
-			{ x: 60, y: 88, rot: -45, scale: 1.0 }
+			{ x: 58, y: 8, rot: 55, scale: 1.22 },
+			{ x: 68, y: 17, rot: 42, scale: 0.85 },
+			{ x: 78, y: 26, rot: 30, scale: 1.35 },
+			{ x: 62, y: 35, rot: 20, scale: 0.68 },
+			{ x: 42, y: 22, rot: 45, scale: 0.26 },
+			{ x: 80, y: 44, rot: 10, scale: 0.94 },
+			{ x: 85, y: 52, rot: 0, scale: 1.4 },
+			{ x: 50, y: 48, rot: 5, scale: 0.34 },
+			{ x: 76, y: 61, rot: -12, scale: 0.62 },
+			{ x: 80, y: 70, rot: -25, scale: 0.9 },
+			{ x: 46, y: 66, rot: -20, scale: 0.3 },
+			{ x: 72, y: 80, rot: -38, scale: 1.28 },
+			{ x: 56, y: 89, rot: -52, scale: 0.78 },
+			{ x: 38, y: 76, rot: -35, scale: 0.24 }
 		],
 		right: [
-			{ x: 40, y: 12, rot: -45, scale: 1.0 },
-			{ x: 25, y: 31, rot: -25, scale: 1.1 },
-			{ x: 18, y: 50, rot: 0, scale: 1.25 },
-			{ x: 25, y: 69, rot: 25, scale: 1.1 },
-			{ x: 40, y: 88, rot: 45, scale: 1.0 }
+			{ x: 42, y: 8, rot: -55, scale: 1.22 },
+			{ x: 32, y: 17, rot: -42, scale: 0.85 },
+			{ x: 22, y: 26, rot: -30, scale: 1.35 },
+			{ x: 38, y: 35, rot: -20, scale: 0.68 },
+			{ x: 58, y: 22, rot: -45, scale: 0.26 },
+			{ x: 24, y: 44, rot: -10, scale: 1.28 },
+			{ x: 15, y: 52, rot: 0, scale: 0.92 },
+			{ x: 50, y: 48, rot: -5, scale: 0.34 },
+			{ x: 24, y: 61, rot: 12, scale: 0.62 },
+			{ x: 20, y: 70, rot: 25, scale: 1.38 },
+			{ x: 54, y: 66, rot: 20, scale: 0.3 },
+			{ x: 28, y: 80, rot: 38, scale: 0.95 },
+			{ x: 44, y: 89, rot: 52, scale: 0.78 },
+			{ x: 62, y: 76, rot: 35, scale: 0.24 }
 		]
 	}
 };

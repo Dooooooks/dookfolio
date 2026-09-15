@@ -52,12 +52,19 @@
 <svg class="absolute size-0 overflow-hidden" aria-hidden="true" focusable="false">
 	<defs>
 		<linearGradient id="flank-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
-			<stop offset="0%" stop-color="#b694ff" stop-opacity="0.26" />
+			<stop offset="0%" stop-color="#b694ff" stop-opacity="0.28" />
 			<stop offset="100%" stop-color="#7c3aed" stop-opacity="0.04" />
 		</linearGradient>
 		<linearGradient id="flank-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
-			<stop offset="0%" stop-color="#cbb1ff" stop-opacity="0.2" />
+			<stop offset="0%" stop-color="#cbb1ff" stop-opacity="0.22" />
 			<stop offset="100%" stop-color="#4c1d95" stop-opacity="0.03" />
+		</linearGradient>
+
+		<!-- Crystalline broken glass facet gradient with specular edge sheen -->
+		<linearGradient id="flank-grad-glass" x1="20%" y1="0%" x2="80%" y2="100%">
+			<stop offset="0%" stop-color="#f5eeff" stop-opacity="0.34" />
+			<stop offset="40%" stop-color="#c084fc" stop-opacity="0.14" />
+			<stop offset="100%" stop-color="#6366f1" stop-opacity="0.02" />
 		</linearGradient>
 
 		<!-- Subtle Glow Filter -->
@@ -85,7 +92,11 @@
 			<!-- Outer container: smooth transitions of position, rotation, and scale when navigating -->
 			<div
 				class="absolute transition-all duration-850 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
-				style="left: {t.x}%; top: {t.y}%; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
+				style="left: {t.x}%; top: {t.y}%; z-index: {shard.layer === 'fg'
+					? 3
+					: shard.layer === 'bg'
+						? 1
+						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
 			>
 				<!-- Inner container: continuous floating drift -->
 				<div class={shard.animClass} style="animation-delay: {shard.delay};">
@@ -95,10 +106,10 @@
 							points={shape.smooth}
 							fill={shard.fill}
 							stroke={shard.stroke}
-							stroke-width={PALETTE.strokeWidth}
+							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
 							filter="url(#shard-glow)"
 							class="transition-opacity duration-500 ease-in-out"
-							style="opacity: {gameDevMode.active ? 0 : 1};"
+							style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
 						/>
 
 						<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
@@ -106,10 +117,10 @@
 							d={shape.pixel}
 							fill={shard.fill}
 							stroke={shard.stroke}
-							stroke-width={PALETTE.strokeWidth}
+							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
 							filter="url(#shard-glow)"
 							class="transition-opacity duration-500 ease-in-out pixelated"
-							style="opacity: {gameDevMode.active ? 1 : 0};"
+							style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 						/>
 					</svg>
 				</div>
@@ -133,7 +144,11 @@
 			<!-- Outer container: smooth transitions of position, rotation, and scale when navigating -->
 			<div
 				class="absolute transition-all duration-850 ease-[cubic-bezier(0.2,0.9,0.3,1)]"
-				style="left: {t.x}%; top: {t.y}%; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
+				style="left: {t.x}%; top: {t.y}%; z-index: {shard.layer === 'fg'
+					? 3
+					: shard.layer === 'bg'
+						? 1
+						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
 			>
 				<!-- Inner container: continuous floating drift -->
 				<div class={shard.animClass} style="animation-delay: {shard.delay};">
@@ -143,10 +158,10 @@
 							points={shape.smooth}
 							fill={shard.fill}
 							stroke={shard.stroke}
-							stroke-width={PALETTE.strokeWidth}
+							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
 							filter="url(#shard-glow)"
 							class="transition-opacity duration-500 ease-in-out"
-							style="opacity: {gameDevMode.active ? 0 : 1};"
+							style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
 						/>
 
 						<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
@@ -154,10 +169,10 @@
 							d={shape.pixel}
 							fill={shard.fill}
 							stroke={shard.stroke}
-							stroke-width={PALETTE.strokeWidth}
+							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
 							filter="url(#shard-glow)"
 							class="transition-opacity duration-500 ease-in-out pixelated"
-							style="opacity: {gameDevMode.active ? 1 : 0};"
+							style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 						/>
 					</svg>
 				</div>

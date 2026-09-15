@@ -110,6 +110,26 @@
 	}
 }
 
+@keyframes shardFloat4 {
+	0%,
+	100% {
+		transform: translateY(0px) translateX(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-12px) translateX(4px) rotate(-2deg);
+	}
+}
+
+@keyframes shardFloat5 {
+	0%,
+	100% {
+		transform: translateY(0px) translateX(0px) rotate(0deg);
+	}
+	50% {
+		transform: translateY(-8px) translateX(-3px) rotate(2.5deg);
+	}
+}
+
 @keyframes shardPulse {
 	0%,
 	100% {
@@ -207,6 +227,16 @@
 	transform-origin: center;
 }
 
+.anim-shard-float-4 {
+	animation: shardFloat4 9.5s ease-in-out infinite;
+	transform-origin: center;
+}
+
+.anim-shard-float-5 {
+	animation: shardFloat5 11s ease-in-out infinite;
+	transform-origin: center;
+}
+
 .anim-shard-pulse {
 	animation: shardPulse 4s ease-in-out infinite;
 	transform-origin: center;
@@ -246,6 +276,8 @@
 	.anim-shard-float-1,
 	.anim-shard-float-2,
 	.anim-shard-float-3,
+	.anim-shard-float-4,
+	.anim-shard-float-5,
 	.anim-shard-pulse,
 	.anim-shard-ascend-1,
 	.anim-shard-ascend-2,
