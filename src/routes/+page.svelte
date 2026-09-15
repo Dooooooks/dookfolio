@@ -173,11 +173,11 @@
 			gameDevMode.fedCount >= 5
 				? 'font-extrabold text-accent drop-shadow-[0_0_12px_rgba(182,148,255,0.7)]'
 				: gameDevMode.fedCount === 4
-					? 'font-extrabold text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.55)]'
+					? 'font-extrabold text-[#ff9494] drop-shadow-[0_0_10px_rgba(255,148,148,0.55)]'
 					: gameDevMode.fedCount === 3
-						? 'font-bold text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.45)]'
+						? 'font-bold text-[#ffb194] drop-shadow-[0_0_8px_rgba(255,177,148,0.45)]'
 						: gameDevMode.fedCount === 2
-							? 'font-bold text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.4)]'
+							? 'font-bold text-[#ffe794] drop-shadow-[0_0_8px_rgba(255,231,148,0.4)]'
 							: gameDevMode.fedCount === 1
 								? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
 								: 'font-medium text-accent/80'}"
@@ -190,11 +190,11 @@
 		gameDevMode.fedCount >= 5
 			? 'w-72 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
 			: gameDevMode.fedCount === 4
-				? 'w-60 bg-rose-400/50'
+				? 'w-60 bg-[#ff9494]/50'
 				: gameDevMode.fedCount === 3
-					? 'w-48 bg-orange-400/45'
+					? 'w-48 bg-[#ffb194]/45'
 					: gameDevMode.fedCount === 2
-						? 'w-40 bg-amber-400/40'
+						? 'w-40 bg-[#ffe794]/40'
 						: gameDevMode.fedCount === 1
 							? 'w-32 bg-purple-400/35'
 							: 'w-24 bg-accent/25'}"

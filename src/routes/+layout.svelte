@@ -258,7 +258,7 @@
 				<a
 					href="mailto:dook13s@proton.me"
 					class="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-150 {gameDevMode.active
-						? 'border border-amber-400/25 bg-amber-400/10 hover:border-amber-400/40 hover:bg-amber-400/20 hover:shadow-xs hover:shadow-amber-400/15'
+						? 'border border-[#ffe794]/25 bg-[#ffe794]/10 hover:border-[#ffe794]/45 hover:bg-[#ffe794]/20 hover:shadow-xs hover:shadow-[#ffe794]/15'
 						: 'hover:bg-white/5'}"
 					title="Send email to dook13s@proton.me"
 				>
@@ -275,7 +275,7 @@
 					{/if}
 					<span
 						class="truncate font-medium transition-colors {gameDevMode.active
-							? 'font-pixel text-xs tracking-wider text-amber-300 group-hover:text-amber-200'
+							? 'font-pixel text-xs tracking-wider text-[#ffe794] group-hover:text-white'
 							: 'font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
 					>
 						dook13s@proton.me

@@ -101,7 +101,7 @@
 		<div class="heatmap-container anim-fade-in-up relative mt-6">
 			<!-- Responsive Scroll Container -->
 			<div class="scrollbar-thin overflow-x-auto pb-2 overscroll-x-contain touch-pan-x">
-				<div class="min-w-[690px]">
+				<div class="min-w-[720px]">
 					<svg
 						viewBox="0 0 735 125"
 						class="h-auto w-full overflow-visible select-none"

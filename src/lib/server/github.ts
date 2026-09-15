@@ -13,13 +13,16 @@ export interface MonthLabel {
 
 export interface ContributionCalendar {
 	total: number;
-	year: number;
+	year: string | number;
 	weeks: Array<Array<ContributionDay | null>>;
 	months: MonthLabel[];
 }
 
-// Fallback active contribution days for 2026
+// Fallback active contribution days across trailing year (e.g. Sep last year to Sep present)
 const fallbackActiveDays: Array<{ date: string; count: number; level: 0 | 1 | 2 | 3 | 4 }> = [
+	{ date: '2025-10-15', count: 4, level: 3 },
+	{ date: '2025-11-02', count: 6, level: 4 },
+	{ date: '2025-12-20', count: 2, level: 2 },
 	{ date: '2026-03-13', count: 3, level: 3 },
 	{ date: '2026-03-14', count: 1, level: 1 },
 	{ date: '2026-03-15', count: 3, level: 3 },
@@ -31,10 +34,24 @@ const fallbackActiveDays: Array<{ date: string; count: number; level: 0 | 1 | 2 
 	{ date: '2026-09-09', count: 10, level: 4 }
 ];
 
+function getDefaultTrailingDateRange(): { startDate: string; endDate: string } {
+	const now = new Date();
+	const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+	const endDate = todayUTC.toISOString().slice(0, 10);
+
+	// 52 weeks ago, aligned to Sunday (just like GitHub's trailing year)
+	const dayOfWeek = todayUTC.getUTCDay();
+	const startUTC = new Date(todayUTC.getTime() - (52 * 7 + dayOfWeek) * 24 * 60 * 60 * 1000);
+	const startDate = startUTC.toISOString().slice(0, 10);
+
+	return { startDate, endDate };
+}
+
 export function buildContributionCalendar(
 	contributions: Array<{ date: string; count: number; level: number }>,
-	year = 2026,
-	totalCount?: number
+	yearOrPeriod: string | number = 'the last year',
+	totalCount?: number,
+	options?: { startDate?: string; endDate?: string }
 ): ContributionCalendar {
 	const map = new Map<string, { count: number; level: 0 | 1 | 2 | 3 | 4 }>();
 	let calculatedTotal = 0;
@@ -45,8 +62,15 @@ export function buildContributionCalendar(
 		calculatedTotal += c.count;
 	}
 
-	const start = new Date(Date.UTC(year, 0, 1));
-	const end = new Date(Date.UTC(year, 11, 31));
+	const fallbackRange = getDefaultTrailingDateRange();
+	const startDateStr =
+		options?.startDate ?? (contributions.length > 0 ? contributions[0].date : fallbackRange.startDate);
+	const endDateStr =
+		options?.endDate ??
+		(contributions.length > 0 ? contributions[contributions.length - 1].date : fallbackRange.endDate);
+
+	const start = new Date(startDateStr + 'T00:00:00Z');
+	const end = new Date(endDateStr + 'T00:00:00Z');
 
 	const weeks: Array<Array<ContributionDay | null>> = [];
 	let currentWeek: Array<ContributionDay | null> = [];
@@ -65,10 +89,14 @@ export function buildContributionCalendar(
 		const dateStr = d.toISOString().slice(0, 10);
 		const m = d.getUTCMonth();
 		if (m !== lastMonth) {
-			months.push({
-				name: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
-				colIndex: weeks.length
-			});
+			const colIndex = weeks.length;
+			const prevMonth = months[months.length - 1];
+			if (!prevMonth || colIndex - prevMonth.colIndex >= 2) {
+				months.push({
+					name: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+					colIndex
+				});
+			}
 			lastMonth = m;
 		}
 
@@ -95,7 +123,7 @@ export function buildContributionCalendar(
 
 	return {
 		total: totalCount ?? calculatedTotal,
-		year,
+		year: yearOrPeriod,
 		weeks,
 		months
 	};
@@ -105,13 +133,12 @@ let contributionsCache: { data: ContributionCalendar; timestamp: number } | null
 const CACHE_TTL_MS = 1000 * 60 * 10; // 10 minutes cache
 
 async function fetchGraphQLContributions(
-	token: string,
-	year = 2026
+	token: string
 ): Promise<ContributionCalendar | null> {
 	const query = `
-		query($username: String!, $from: DateTime!, $to: DateTime!) {
+		query($username: String!) {
 			user(login: $username) {
-				contributionsCollection(from: $from, to: $to) {
+				contributionsCollection {
 					contributionCalendar {
 						totalContributions
 						weeks {
@@ -137,9 +164,7 @@ async function fetchGraphQLContributions(
 		body: JSON.stringify({
 			query,
 			variables: {
-				username: 'Dooooooks',
-				from: `${year}-01-01T00:00:00Z`,
-				to: `${year}-12-31T23:59:59Z`
+				username: 'Dooooooks'
 			}
 		})
 	});
@@ -195,7 +220,7 @@ async function fetchGraphQLContributions(
 		}
 	}
 
-	return buildContributionCalendar(rawContributions, year, calendar.totalContributions);
+	return buildContributionCalendar(rawContributions, 'the last year', calendar.totalContributions);
 }
 
 export async function getGithubContributions(): Promise<ContributionCalendar> {
@@ -203,11 +228,11 @@ export async function getGithubContributions(): Promise<ContributionCalendar> {
 		return contributionsCache.data;
 	}
 
-	// 1. If GITHUB_TOKEN is available, query official GitHub GraphQL API (supports private contributions directly)
+	// 1. If GITHUB_TOKEN is available, query official GitHub GraphQL API (trailing year)
 	const token = env.GITHUB_TOKEN;
 	if (token) {
 		try {
-			const gqlCalendar = await fetchGraphQLContributions(token, 2026);
+			const gqlCalendar = await fetchGraphQLContributions(token);
 			if (gqlCalendar) {
 				contributionsCache = { data: gqlCalendar, timestamp: Date.now() };
 				return gqlCalendar;
@@ -217,9 +242,9 @@ export async function getGithubContributions(): Promise<ContributionCalendar> {
 		}
 	}
 
-	// 2. Query contributions endpoint (reflects private contributions if enabled on GitHub profile)
+	// 2. Query contributions endpoint with y=last for the trailing year
 	try {
-		const res = await fetch('https://github-contributions-api.jogruber.de/v4/Dooooooks?y=2026', {
+		const res = await fetch('https://github-contributions-api.jogruber.de/v4/Dooooooks?y=last', {
 			headers: {
 				'User-Agent': 'Dookfolio'
 			}
@@ -227,13 +252,13 @@ export async function getGithubContributions(): Promise<ContributionCalendar> {
 
 		if (res.ok) {
 			const data = (await res.json()) as {
-				total?: { [year: string]: number };
+				total?: { [key: string]: number };
 				contributions?: Array<{ date: string; count: number; level: number }>;
 			};
 
 			const list = data.contributions || [];
-			const total = data.total?.['2026'] ?? 53;
-			const calendar = buildContributionCalendar(list, 2026, total);
+			const total = data.total?.['lastYear'] ?? data.total?.[Object.keys(data.total || {})[0]] ?? 399;
+			const calendar = buildContributionCalendar(list, 'the last year', total);
 
 			contributionsCache = { data: calendar, timestamp: Date.now() };
 			return calendar;
@@ -242,7 +267,7 @@ export async function getGithubContributions(): Promise<ContributionCalendar> {
 		// Fallback to offline data
 	}
 
-	// 3. Resilient offline fallback
-	const fallback = buildContributionCalendar(fallbackActiveDays, 2026, 53);
+	// 3. Resilient offline fallback across trailing year
+	const fallback = buildContributionCalendar(fallbackActiveDays, 'the last year', 399);
 	return contributionsCache?.data ?? fallback;
 }
