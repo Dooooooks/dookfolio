@@ -18,6 +18,12 @@
 	let targetX = $state(0);
 	let targetY = $state(0);
 
+	let scrollY = $state(0);
+	let scrollVelocity = $state(0);
+	let targetScrollY = 0;
+	let lastScrollY = 0;
+	let prefersReducedMotion = false;
+
 	const currentLayout = $derived(ROUTE_LAYOUTS[getRouteLayoutKey(page.url.pathname)]);
 
 	function handleMouseMove(e: MouseEvent) {
@@ -28,22 +34,75 @@
 		targetY = normY * 8;
 	}
 
+	function handleScroll() {
+		if (reactionModal.open || prefersReducedMotion) return;
+		targetScrollY = window.scrollY;
+	}
+
+	function getShardScrollTransform(
+		layer: 'fg' | 'mg' | 'bg' | undefined,
+		index: number,
+		isLeft: boolean,
+		sY: number,
+		sVel: number
+	) {
+		if (prefersReducedMotion) return 'none';
+		const layerSpeed = layer === 'fg' ? 0.085 : layer === 'bg' ? 0.022 : 0.048;
+		const partingFactor = layer === 'fg' ? 0.22 : layer === 'bg' ? 0.07 : 0.14;
+		const torqueFactor = layer === 'fg' ? 0.32 : layer === 'bg' ? 0.12 : 0.22;
+		const clampedVel = Math.max(-35, Math.min(35, sVel));
+
+		const transY = -(sY * layerSpeed) - clampedVel * 0.25 * (layerSpeed / 0.048);
+		const transX = (isLeft ? -1 : 1) * clampedVel * partingFactor;
+		const rot = (index % 2 === 0 ? 1 : -1) * (isLeft ? 1 : -1) * clampedVel * torqueFactor;
+
+		return `translate3d(${transX.toFixed(2)}px, ${transY.toFixed(2)}px, 0) rotate(${rot.toFixed(2)}deg)`;
+	}
+
 	onMount(() => {
+		prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		targetScrollY = window.scrollY;
+		scrollY = window.scrollY;
+		lastScrollY = window.scrollY;
+
 		let rafId: number;
 		function lerp() {
 			// Suspend work during reaction test modal to grant 100% CPU/GPU headroom
-			if (!reactionModal.open) {
+			if (!reactionModal.open && !prefersReducedMotion) {
+				// Mouse parallax lerp
 				mouseX += (targetX - mouseX) * 0.05;
 				mouseY += (targetY - mouseY) * 0.05;
+
+				// Scroll parallax & aerodynamic velocity physics
+				const dScroll = targetScrollY - scrollY;
+				scrollY += dScroll * 0.08;
+
+				const currentVel = targetScrollY - lastScrollY;
+				scrollVelocity += (currentVel - scrollVelocity) * 0.14;
+				lastScrollY = targetScrollY;
 			}
 			rafId = requestAnimationFrame(lerp);
 		}
 		rafId = requestAnimationFrame(lerp);
 
 		window.addEventListener('mousemove', handleMouseMove, { passive: true });
+		window.addEventListener('scroll', handleScroll, { passive: true });
+
+		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const handleMotionChange = (e: MediaQueryListEvent) => {
+			prefersReducedMotion = e.matches;
+			if (prefersReducedMotion) {
+				scrollY = 0;
+				scrollVelocity = 0;
+			}
+		};
+		mediaQuery.addEventListener('change', handleMotionChange);
+
 		return () => {
 			cancelAnimationFrame(rafId);
 			window.removeEventListener('mousemove', handleMouseMove);
+			window.removeEventListener('scroll', handleScroll);
+			mediaQuery.removeEventListener('change', handleMotionChange);
 		};
 	});
 </script>
@@ -58,13 +117,6 @@
 		<linearGradient id="flank-grad-2" x1="100%" y1="0%" x2="0%" y2="100%">
 			<stop offset="0%" stop-color="#cbb1ff" stop-opacity="0.22" />
 			<stop offset="100%" stop-color="#4c1d95" stop-opacity="0.03" />
-		</linearGradient>
-
-		<!-- Crystalline broken glass facet gradient with specular edge sheen -->
-		<linearGradient id="flank-grad-glass" x1="20%" y1="0%" x2="80%" y2="100%">
-			<stop offset="0%" stop-color="#f5eeff" stop-opacity="0.34" />
-			<stop offset="40%" stop-color="#c084fc" stop-opacity="0.14" />
-			<stop offset="100%" stop-color="#6366f1" stop-opacity="0.02" />
 		</linearGradient>
 
 		<!-- Subtle Glow Filter -->
@@ -98,31 +150,43 @@
 						? 1
 						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
 			>
-				<!-- Inner container: continuous floating drift -->
-				<div class={shard.animClass} style="animation-delay: {shard.delay};">
-					<svg viewBox="-80 -50 160 100" class="size-20 overflow-visible sm:size-28 lg:size-36">
-						<!-- Smooth Triangle: active in normal mode -->
-						<polygon
-							points={shape.smooth}
-							fill={shard.fill}
-							stroke={shard.stroke}
-							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-							filter="url(#shard-glow)"
-							class="transition-opacity duration-500 ease-in-out"
-							style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
-						/>
+				<!-- Scroll Parallax & Aerodynamic Inertia Layer -->
+				<div
+					class="will-change-transform"
+					style="transform: {getShardScrollTransform(
+						shard.layer,
+						i,
+						true,
+						scrollY,
+						scrollVelocity
+					)};"
+				>
+					<!-- Inner container: continuous floating drift -->
+					<div class={shard.animClass} style="animation-delay: {shard.delay};">
+						<svg viewBox="-80 -50 160 100" class="size-20 overflow-visible sm:size-28 lg:size-36">
+							<!-- Smooth Triangle: active in normal mode -->
+							<polygon
+								points={shape.smooth}
+								fill={shard.fill}
+								stroke={shard.stroke}
+								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
+								filter="url(#shard-glow)"
+								class="transition-opacity duration-500 ease-in-out"
+								style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
+							/>
 
-						<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
-						<path
-							d={shape.pixel}
-							fill={shard.fill}
-							stroke={shard.stroke}
-							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-							filter="url(#shard-glow)"
-							class="transition-opacity duration-500 ease-in-out pixelated"
-							style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
-						/>
-					</svg>
+							<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
+							<path
+								d={shape.pixel}
+								fill={shard.fill}
+								stroke={shard.stroke}
+								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
+								filter="url(#shard-glow)"
+								class="transition-opacity duration-500 ease-in-out pixelated"
+								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
+							/>
+						</svg>
+					</div>
 				</div>
 			</div>
 		{/each}
@@ -150,31 +214,43 @@
 						? 1
 						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
 			>
-				<!-- Inner container: continuous floating drift -->
-				<div class={shard.animClass} style="animation-delay: {shard.delay};">
-					<svg viewBox="-80 -50 160 100" class="size-20 overflow-visible sm:size-28 lg:size-36">
-						<!-- Smooth Triangle: active in normal mode -->
-						<polygon
-							points={shape.smooth}
-							fill={shard.fill}
-							stroke={shard.stroke}
-							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-							filter="url(#shard-glow)"
-							class="transition-opacity duration-500 ease-in-out"
-							style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
-						/>
+				<!-- Scroll Parallax & Aerodynamic Inertia Layer -->
+				<div
+					class="will-change-transform"
+					style="transform: {getShardScrollTransform(
+						shard.layer,
+						i,
+						false,
+						scrollY,
+						scrollVelocity
+					)};"
+				>
+					<!-- Inner container: continuous floating drift -->
+					<div class={shard.animClass} style="animation-delay: {shard.delay};">
+						<svg viewBox="-80 -50 160 100" class="size-20 overflow-visible sm:size-28 lg:size-36">
+							<!-- Smooth Triangle: active in normal mode -->
+							<polygon
+								points={shape.smooth}
+								fill={shard.fill}
+								stroke={shard.stroke}
+								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
+								filter="url(#shard-glow)"
+								class="transition-opacity duration-500 ease-in-out"
+								style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
+							/>
 
-						<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
-						<path
-							d={shape.pixel}
-							fill={shard.fill}
-							stroke={shard.stroke}
-							stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-							filter="url(#shard-glow)"
-							class="transition-opacity duration-500 ease-in-out pixelated"
-							style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
-						/>
-					</svg>
+							<!-- Pixel-Perfect Stepped Triangle: smooth crossfade in gaming mode (same consistent colors) -->
+							<path
+								d={shape.pixel}
+								fill={shard.fill}
+								stroke={shard.stroke}
+								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
+								filter="url(#shard-glow)"
+								class="transition-opacity duration-500 ease-in-out pixelated"
+								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
+							/>
+						</svg>
+					</div>
 				</div>
 			</div>
 		{/each}

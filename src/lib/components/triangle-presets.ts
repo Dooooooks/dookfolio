@@ -25,19 +25,14 @@ export interface RouteLayout {
 	right: ShardTransform[];
 }
 
-// Consistent crystalline broken glass color palette across all pages AND gaming mode
+// Consistent color palette across all pages AND gaming mode
 export const PALETTE = {
 	fillGrad1: 'url(#flank-grad-1)',
 	fillGrad2: 'url(#flank-grad-2)',
-	fillGradGlass: 'url(#flank-grad-glass)',
-	fillSolid: 'rgba(182, 148, 255, 0.08)',
-	fillGlint: 'rgba(235, 225, 255, 0.18)',
-	stroke: 'rgba(182, 148, 255, 0.52)',
-	strokeSoft: 'rgba(203, 177, 255, 0.32)',
-	strokeSharp: 'rgba(238, 228, 255, 0.78)',
-	strokeWidth: 1.5,
-	strokeHairline: 1.0,
-	strokeBold: 1.8
+	fillSolid: 'rgba(182, 148, 255, 0.09)',
+	stroke: 'rgba(182, 148, 255, 0.5)',
+	strokeSoft: 'rgba(203, 177, 255, 0.35)',
+	strokeWidth: 1.5
 };
 
 // Mathematically symmetrical & razor-angled broken glass shapes with pixel-perfect 8-bit stepped equivalents
@@ -94,9 +89,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'fg',
 		animClass: 'anim-shard-float-1',
 		delay: '0s',
-		fill: PALETTE.fillGradGlass,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		fill: PALETTE.fillGrad1,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.95
 	},
 	{
@@ -118,7 +113,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '1.4s',
 		fill: PALETTE.fillGrad2,
 		stroke: PALETTE.stroke,
-		strokeWidth: PALETTE.strokeBold,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.92
 	},
 	{
@@ -129,7 +124,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '2.1s',
 		fill: PALETTE.fillGrad1,
 		stroke: PALETTE.stroke,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.8
 	},
 	{
@@ -138,9 +133,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'bg',
 		animClass: 'anim-shard-float-5',
 		delay: '0.3s',
-		fill: PALETTE.fillGlint,
+		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.48
 	},
 	{
@@ -151,7 +146,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '1.8s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.72
 	},
 	{
@@ -160,9 +155,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '2.8s',
-		fill: PALETTE.fillGrad1,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		fill: PALETTE.fillGrad2,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.94
 	},
 	{
@@ -173,7 +168,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '3.5s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.42
 	},
 	{
@@ -182,9 +177,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'mg',
 		animClass: 'anim-shard-float-4',
 		delay: '1.1s',
-		fill: PALETTE.fillGradGlass,
+		fill: PALETTE.fillGrad1,
 		stroke: PALETTE.stroke,
-		strokeWidth: 1.4,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.82
 	},
 	{
@@ -195,7 +190,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '2.4s',
 		fill: PALETTE.fillGrad2,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.76
 	},
 	{
@@ -204,9 +199,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'bg',
 		animClass: 'anim-shard-float-1',
 		delay: '4.2s',
-		fill: PALETTE.fillGlint,
+		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.45
 	},
 	{
@@ -215,9 +210,9 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '1.6s',
-		fill: PALETTE.fillGradGlass,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		fill: PALETTE.fillGrad1,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.95
 	},
 	{
@@ -228,7 +223,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '0.9s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.2,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.7
 	},
 	{
@@ -239,7 +234,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 		delay: '3.1s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 0.9,
+		strokeWidth: 1.0,
 		opacity: 0.38
 	}
 ];
@@ -252,9 +247,9 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '0.4s',
-		fill: PALETTE.fillGradGlass,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		fill: PALETTE.fillGrad2,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.95
 	},
 	{
@@ -265,7 +260,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '1.2s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.4,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.74
 	},
 	{
@@ -275,8 +270,8 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		animClass: 'anim-shard-float-1',
 		delay: '0.2s',
 		fill: PALETTE.fillGrad1,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.92
 	},
 	{
@@ -287,7 +282,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '1.9s',
 		fill: PALETTE.fillGrad2,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.78
 	},
 	{
@@ -296,9 +291,9 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		layer: 'bg',
 		animClass: 'anim-shard-float-5',
 		delay: '0.8s',
-		fill: PALETTE.fillGlint,
+		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.46
 	},
 	{
@@ -307,9 +302,9 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '2.5s',
-		fill: PALETTE.fillGradGlass,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		fill: PALETTE.fillGrad1,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.96
 	},
 	{
@@ -320,7 +315,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '1.5s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.stroke,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.75
 	},
 	{
@@ -331,7 +326,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '3.7s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.42
 	},
 	{
@@ -342,7 +337,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '2.2s',
 		fill: PALETTE.fillGrad1,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.2,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.8
 	},
 	{
@@ -352,8 +347,8 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		animClass: 'anim-shard-float-5',
 		delay: '1.0s',
 		fill: PALETTE.fillGrad2,
-		stroke: PALETTE.strokeSharp,
-		strokeWidth: PALETTE.strokeBold,
+		stroke: PALETTE.stroke,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.94
 	},
 	{
@@ -362,9 +357,9 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		layer: 'bg',
 		animClass: 'anim-shard-float-2',
 		delay: '4.0s',
-		fill: PALETTE.fillGlint,
+		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: PALETTE.strokeHairline,
+		strokeWidth: 1.2,
 		opacity: 0.45
 	},
 	{
@@ -373,9 +368,9 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '2.7s',
-		fill: PALETTE.fillGradGlass,
+		fill: PALETTE.fillGrad1,
 		stroke: PALETTE.stroke,
-		strokeWidth: 1.4,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.82
 	},
 	{
@@ -386,7 +381,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '1.3s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 1.3,
+		strokeWidth: PALETTE.strokeWidth,
 		opacity: 0.72
 	},
 	{
@@ -397,7 +392,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 		delay: '3.3s',
 		fill: PALETTE.fillSolid,
 		stroke: PALETTE.strokeSoft,
-		strokeWidth: 0.9,
+		strokeWidth: 1.0,
 		opacity: 0.38
 	}
 ];
