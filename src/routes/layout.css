@@ -334,6 +334,62 @@
 	animation: crumbBob3 3.6s ease-in-out infinite;
 }
 
+@keyframes modalBackdropFadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes modalBackdropFadeOut {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes modalSpringIn {
+	0% {
+		opacity: 0;
+		transform: scale(0.93) translateY(14px);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+}
+
+@keyframes modalSpringOut {
+	0% {
+		opacity: 1;
+		transform: scale(1) translateY(0);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(0.96) translateY(8px);
+	}
+}
+
+.anim-modal-backdrop-in {
+	animation: modalBackdropFadeIn 0.24s ease-out both;
+}
+
+.anim-modal-backdrop-out {
+	animation: modalBackdropFadeOut 0.18s ease-in both;
+}
+
+.anim-modal-in {
+	animation: modalSpringIn 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.anim-modal-out {
+	animation: modalSpringOut 0.18s ease-in both;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.anim-spotlight,
 	.anim-duck-idle,
@@ -354,7 +410,11 @@
 	.anim-shard-ascend-2,
 	.anim-shard-ascend-3,
 	.anim-shard-converge-l,
-	.anim-shard-converge-r {
+	.anim-shard-converge-r,
+	.anim-modal-backdrop-in,
+	.anim-modal-backdrop-out,
+	.anim-modal-in,
+	.anim-modal-out {
 		animation: none !important;
 	}
 }

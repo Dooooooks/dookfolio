@@ -1,9 +1,12 @@
 <script lang="ts">
 	import { ArrowLeft, ExternalLink, FolderGit2 } from '@lucide/svelte';
 	import { base, resolve } from '$app/paths';
+	import ProjectModal from '$lib/components/ProjectModal.svelte';
+	import type { Project } from '$lib/types';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+	let selectedProject = $state<Project | null>(null);
 </script>
 
 <svelte:head>
@@ -34,8 +37,17 @@
 		{:else}
 			<div class="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
 				{#each data.projects as project, i (project.id)}
-					<article
-						class="anim-fade-in-up group flex flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10"
+					<div
+						role="button"
+						tabindex="0"
+						onclick={() => (selectedProject = project)}
+						onkeydown={(e) => {
+							if (e.key === 'Enter' || e.key === ' ') {
+								e.preventDefault();
+								selectedProject = project;
+							}
+						}}
+						class="anim-fade-in-up group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
 						style="animation-delay: {100 + i * 80}ms;"
 					>
 						<div class="relative aspect-[16/10] w-full overflow-hidden bg-bg">
@@ -66,6 +78,7 @@
 											rel="external"
 											target="_blank"
 											title="Demo"
+											onclick={(e) => e.stopPropagation()}
 											class="text-muted transition-all duration-200 hover:scale-115 hover:text-accent"
 										>
 											<ExternalLink class="size-3.5" />
@@ -77,6 +90,7 @@
 											rel="external"
 											target="_blank"
 											title="GitHub"
+											onclick={(e) => e.stopPropagation()}
 											class="text-muted transition-all duration-200 hover:scale-115 hover:text-accent"
 										>
 											<FolderGit2 class="size-3.5" />
@@ -89,9 +103,11 @@
 								{project.description}
 							</p>
 						</div>
-					</article>
+					</div>
 				{/each}
 			</div>
 		{/if}
 	</div>
 </section>
+
+<ProjectModal project={selectedProject} onclose={() => (selectedProject = null)} />

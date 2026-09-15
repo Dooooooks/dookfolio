@@ -49,11 +49,12 @@ Edit [`src/lib/data/projects.json`](src/lib/data/projects.json). Each project ha
 	"demo_url": "https://...",
 	"github_url": "https://github.com/...",
 	"cover_url": "/ProjectPictures/my-image.png",
+	"date": "2026-09",
 	"created_at": "2026-09-14T00:00:00.000Z"
 }
 ```
 
-Place project cover images in `static/ProjectPictures/` and reference them with `/ProjectPictures/<filename>`.
+Projects are automatically sorted by `date` descending (most recent first). Place project cover images in `static/ProjectPictures/` and reference them with `/ProjectPictures/<filename>`.
 
 ### Adding or Editing Experiences
 
@@ -66,11 +67,12 @@ Edit [`src/lib/data/experiences.json`](src/lib/data/experiences.json). Each expe
 	"role": "Role Title",
 	"company": "Company Name",
 	"description": "Description of responsibilities and achievements...",
+	"date": "2025-03",
 	"order_num": 1
 }
 ```
 
-Experiences are ordered by `order_num` ascending.
+Experiences are sorted by `date` descending (most recent first).
 
 ## Project structure
 
