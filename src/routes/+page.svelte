@@ -96,7 +96,7 @@
 
 	<div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 sm:gap-8 md:gap-12">
 		<div class="max-w-xl flex-1">
-			<h1 class="anim-fade-in-up text-4xl leading-tight font-extrabold md:text-5xl">
+			<h1 class="anim-fade-in-up text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold">
 				Hi, I am <span class="text-accent">Lloyd</span>,<br />
 				<span class="text-accent">{gameDevMode.active ? 'Game' : 'Software'}</span> Developer
 			</h1>
@@ -121,7 +121,7 @@
 		</div>
 
 		<div
-			class="anim-spotlight relative aspect-[141/762] w-28 shrink-0 -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60"
+			class="anim-spotlight relative aspect-[141/762] w-24 shrink-0 -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60"
 		>
 			<img src={spotlight} alt="" class="pointer-events-none size-full select-none" />
 
@@ -138,7 +138,7 @@
 					aria-label={gameDevMode.active
 						? 'Revert to Software Developer mode'
 						: 'A pixel duck standing in the spotlight'}
-					class="anim-duck-idle cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
+					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
 						? 'anim-duck-chomp'
 						: ''}"
 				>

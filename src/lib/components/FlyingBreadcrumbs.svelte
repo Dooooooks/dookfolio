@@ -24,13 +24,13 @@
 
 	const ANIM_CLASSES = ['anim-crumb-1', 'anim-crumb-2', 'anim-crumb-3'];
 
-	// Distributed spawn sectors across the main hero section to guarantee natural spread
+	// Distributed spawn sectors clustered closer to the middle while avoiding the left-side text
 	const SPAWN_SECTORS = [
-		{ minX: 8, maxX: 30, minY: 16, maxY: 46 }, // Top left
-		{ minX: 10, maxX: 34, minY: 56, maxY: 82 }, // Bottom left
-		{ minX: 36, maxX: 62, minY: 14, maxY: 42 }, // Top center
-		{ minX: 40, maxX: 66, minY: 52, maxY: 80 }, // Bottom center
-		{ minX: 68, maxX: 88, minY: 18, maxY: 62 } // Right / near spotlight
+		{ minX: 44, maxX: 56, minY: 14, maxY: 32 }, // Upper center
+		{ minX: 48, maxX: 62, minY: 36, maxY: 56 }, // Mid center
+		{ minX: 42, maxX: 56, minY: 62, maxY: 82 }, // Lower center
+		{ minX: 58, maxX: 72, minY: 16, maxY: 40 }, // Upper right-center
+		{ minX: 60, maxX: 74, minY: 48, maxY: 72 } // Lower right-center
 	];
 
 	function createRandomCrumb(id: number, sectorIndex?: number): Crumb {
@@ -75,8 +75,9 @@
 		}
 	});
 
-	function handleCrumbInteract(crumb: Crumb, e: MouseEvent | TouchEvent) {
+	function handleCrumbInteract(crumb: Crumb, e: PointerEvent | MouseEvent | TouchEvent) {
 		if (crumb.status !== 'floating' || gameDevMode.fedCount >= 5) return;
+		if (e.cancelable) e.preventDefault();
 
 		let targetX = 0;
 		let targetY = 0;
@@ -140,10 +141,9 @@
 			>
 				<button
 					type="button"
-					onclick={(e) => handleCrumbInteract(crumb, e)}
-					ontouchstart={(e) => handleCrumbInteract(crumb, e)}
+					onpointerdown={(e) => handleCrumbInteract(crumb, e)}
 					aria-label="Feed breadcrumb to duck"
-					class="group pointer-events-auto cursor-pointer focus:outline-hidden"
+					class="group pointer-events-auto relative cursor-pointer touch-manipulation p-2 -m-2 focus:outline-hidden"
 					style={crumb.status === 'flying'
 						? `transform: translate3d(${crumb.targetX}px, ${crumb.targetY}px, 0) scale(0.35) rotate(220deg); opacity: 0; transition: transform 0.42s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.42s ease-in;`
 						: `transform: rotate(${crumb.rot}deg); transition: transform 0.25s ease-out;`}

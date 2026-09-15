@@ -9,6 +9,21 @@
 
 	const isOpen = $derived(reactionModal.open || open);
 
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			if (isOpen) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = '';
+			}
+		}
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		};
+	});
+
 	type TestState = 'idle' | 'waiting' | 'early' | 'active' | 'result';
 
 	let testPhase: TestState = $state('idle');

@@ -92,6 +92,22 @@
 	] as const;
 
 	const isHomeActive = $derived(page.url.pathname === '/' && activeSection === 'home');
+
+	// Lock body scroll on mobile when sidebar drawer is open
+	$effect(() => {
+		if (typeof window !== 'undefined' && window.innerWidth < 768) {
+			if (isOpen) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = '';
+			}
+		}
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		};
+	});
 </script>
 
 <svelte:head>
@@ -117,7 +133,7 @@
 			type="button"
 			onclick={() => (isOpen = false)}
 			aria-label="Close sidebar backdrop"
-			class="fixed inset-0 z-10 bg-black/50 backdrop-blur-xs md:hidden"
+			class="fixed inset-0 z-10 bg-black/50 backdrop-blur-xs touch-none md:hidden"
 		></button>
 	{/if}
 
@@ -147,7 +163,7 @@
 			</div>
 		</div>
 
-		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-x-hidden overflow-y-auto">
+		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-x-hidden overflow-y-auto overscroll-contain">
 			<!-- Home and its Subsections -->
 			<div class="flex flex-col gap-1">
 				<a

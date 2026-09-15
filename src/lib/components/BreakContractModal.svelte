@@ -13,6 +13,21 @@
 			closeBreakContractModal();
 		}
 	}
+
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			if (breakContractModal.open) {
+				document.body.style.overflow = 'hidden';
+			} else {
+				document.body.style.overflow = '';
+			}
+		}
+		return () => {
+			if (typeof document !== 'undefined') {
+				document.body.style.overflow = '';
+			}
+		};
+	});
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -60,7 +75,7 @@
 				id="break-contract-title"
 				class="font-pixel text-xl font-extrabold tracking-wide text-white sm:text-2xl"
 			>
-				Break contract with the duck?
+				Break the Duck's Heart?
 			</h3>
 
 			<!-- Action Buttons: Quack on left, No Way on right -->

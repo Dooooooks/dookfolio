@@ -23,8 +23,18 @@
 	let targetScrollY = 0;
 	let lastScrollY = 0;
 	let prefersReducedMotion = false;
+	let isMobile = $state(false);
+	let isLoopRunning = false;
+	let rafId = 0;
 
 	const currentLayout = $derived(ROUTE_LAYOUTS[getRouteLayoutKey(page.url.pathname)]);
+
+	function wakeLoop() {
+		if (!isLoopRunning && !reactionModal.open && !prefersReducedMotion) {
+			isLoopRunning = true;
+			rafId = requestAnimationFrame(lerp);
+		}
+	}
 
 	function handleMouseMove(e: MouseEvent) {
 		if (reactionModal.open) return;
@@ -32,11 +42,13 @@
 		const normY = (e.clientY / window.innerHeight - 0.5) * 2;
 		targetX = normX * 8;
 		targetY = normY * 8;
+		wakeLoop();
 	}
 
 	function handleScroll() {
 		if (reactionModal.open || prefersReducedMotion) return;
 		targetScrollY = window.scrollY;
+		wakeLoop();
 	}
 
 	function getShardScrollTransform(
@@ -59,50 +71,84 @@
 		return `translate3d(${transX.toFixed(2)}px, ${transY.toFixed(2)}px, 0) rotate(${rot.toFixed(2)}deg)`;
 	}
 
+	function lerp() {
+		if (reactionModal.open || prefersReducedMotion) {
+			isLoopRunning = false;
+			return;
+		}
+
+		// Mouse parallax lerp
+		const dMouseX = targetX - mouseX;
+		const dMouseY = targetY - mouseY;
+		mouseX += dMouseX * 0.05;
+		mouseY += dMouseY * 0.05;
+
+		// Scroll parallax & aerodynamic velocity physics
+		const dScroll = targetScrollY - scrollY;
+		scrollY += dScroll * 0.08;
+
+		const currentVel = targetScrollY - lastScrollY;
+		const dVel = currentVel - scrollVelocity;
+		scrollVelocity += dVel * 0.14;
+		lastScrollY = targetScrollY;
+
+		// Adaptive sleep when physics have settled
+		const isSettled =
+			Math.abs(dMouseX) < 0.01 &&
+			Math.abs(dMouseY) < 0.01 &&
+			Math.abs(dScroll) < 0.1 &&
+			Math.abs(scrollVelocity) < 0.05 &&
+			Math.abs(currentVel) < 0.05;
+
+		if (isSettled) {
+			mouseX = targetX;
+			mouseY = targetY;
+			scrollY = targetScrollY;
+			scrollVelocity = 0;
+			isLoopRunning = false;
+			return;
+		}
+
+		rafId = requestAnimationFrame(lerp);
+	}
+
 	onMount(() => {
 		prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		targetScrollY = window.scrollY;
 		scrollY = window.scrollY;
 		lastScrollY = window.scrollY;
 
-		let rafId: number;
-		function lerp() {
-			// Suspend work during reaction test modal to grant 100% CPU/GPU headroom
-			if (!reactionModal.open && !prefersReducedMotion) {
-				// Mouse parallax lerp
-				mouseX += (targetX - mouseX) * 0.05;
-				mouseY += (targetY - mouseY) * 0.05;
-
-				// Scroll parallax & aerodynamic velocity physics
-				const dScroll = targetScrollY - scrollY;
-				scrollY += dScroll * 0.08;
-
-				const currentVel = targetScrollY - lastScrollY;
-				scrollVelocity += (currentVel - scrollVelocity) * 0.14;
-				lastScrollY = targetScrollY;
-			}
-			rafId = requestAnimationFrame(lerp);
-		}
-		rafId = requestAnimationFrame(lerp);
+		const mobileQuery = window.matchMedia('(max-width: 767px)');
+		isMobile = mobileQuery.matches;
+		const handleMobileChange = (e: MediaQueryListEvent) => {
+			isMobile = e.matches;
+		};
+		mobileQuery.addEventListener('change', handleMobileChange);
 
 		window.addEventListener('mousemove', handleMouseMove, { passive: true });
 		window.addEventListener('scroll', handleScroll, { passive: true });
 
-		const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+		const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
 		const handleMotionChange = (e: MediaQueryListEvent) => {
 			prefersReducedMotion = e.matches;
 			if (prefersReducedMotion) {
 				scrollY = 0;
 				scrollVelocity = 0;
+				isLoopRunning = false;
+				cancelAnimationFrame(rafId);
 			}
 		};
-		mediaQuery.addEventListener('change', handleMotionChange);
+		motionQuery.addEventListener('change', handleMotionChange);
+
+		// Initial start to settle into layout position
+		wakeLoop();
 
 		return () => {
 			cancelAnimationFrame(rafId);
 			window.removeEventListener('mousemove', handleMouseMove);
 			window.removeEventListener('scroll', handleScroll);
-			mediaQuery.removeEventListener('change', handleMotionChange);
+			motionQuery.removeEventListener('change', handleMotionChange);
+			mobileQuery.removeEventListener('change', handleMobileChange);
 		};
 	});
 </script>
@@ -130,7 +176,7 @@
 <!-- Left Flank -->
 <aside
 	aria-hidden="true"
-	class="pointer-events-none fixed inset-y-0 z-0 w-32 overflow-hidden opacity-40 transition-all duration-300 ease-in-out sm:w-48 sm:opacity-75 md:w-60 lg:w-72 lg:opacity-100 {isOpen
+	class="pointer-events-none fixed inset-y-0 z-0 w-32 overflow-hidden opacity-10 transition-all duration-300 ease-in-out sm:w-48 sm:opacity-75 md:w-60 lg:w-72 lg:opacity-100 {isOpen
 		? 'left-0 md:left-52'
 		: 'left-0'}"
 >
@@ -170,7 +216,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter="url(#shard-glow)"
+								filter={isMobile ? undefined : 'url(#shard-glow)'}
 								class="transition-opacity duration-500 ease-in-out"
 								style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
 							/>
@@ -181,7 +227,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter="url(#shard-glow)"
+								filter={isMobile ? undefined : 'url(#shard-glow)'}
 								class="transition-opacity duration-500 ease-in-out pixelated"
 								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 							/>
@@ -196,7 +242,7 @@
 <!-- Right Flank -->
 <aside
 	aria-hidden="true"
-	class="pointer-events-none fixed inset-y-0 right-0 z-0 w-32 overflow-hidden opacity-40 transition-opacity duration-700 sm:w-48 sm:opacity-75 md:w-64 lg:w-80 lg:opacity-100"
+	class="pointer-events-none fixed inset-y-0 right-0 z-0 w-32 overflow-hidden opacity-10 transition-opacity duration-700 sm:w-48 sm:opacity-75 md:w-64 lg:w-80 lg:opacity-100"
 >
 	<div
 		class="relative size-full transition-transform duration-300 ease-out"
@@ -234,7 +280,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter="url(#shard-glow)"
+								filter={isMobile ? undefined : 'url(#shard-glow)'}
 								class="transition-opacity duration-500 ease-in-out"
 								style="opacity: {gameDevMode.active ? 0 : (shard.opacity ?? 1)};"
 							/>
@@ -245,7 +291,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter="url(#shard-glow)"
+								filter={isMobile ? undefined : 'url(#shard-glow)'}
 								class="transition-opacity duration-500 ease-in-out pixelated"
 								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 							/>
