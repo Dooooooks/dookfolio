@@ -76,7 +76,7 @@
 	});
 
 	function handleCrumbInteract(crumb: Crumb, e: MouseEvent | TouchEvent) {
-		if (crumb.status !== 'floating' || gameDevMode.fedCount >= 3) return;
+		if (crumb.status !== 'floating' || gameDevMode.fedCount >= 5) return;
 
 		let targetX = 0;
 		let targetY = 0;
@@ -103,9 +103,9 @@
 			onFeed();
 
 			// Respawn at a fresh random position if duck is not yet fully fed
-			if (gameDevMode.fedCount < 3) {
+			if (gameDevMode.fedCount < 5) {
 				setTimeout(() => {
-					if (gameDevMode.fedCount < 3) {
+					if (gameDevMode.fedCount < 5) {
 						const fresh = createRandomCrumb(crumb.id);
 						crumb.x = fresh.x;
 						crumb.y = fresh.y;
@@ -125,7 +125,7 @@
 <!-- Floating Breadcrumbs Container (Zero Yellow, 100% Brand Violet/Lavender) -->
 <div
 	class="pointer-events-none absolute inset-0 z-10 overflow-visible transition-opacity duration-700 {gameDevMode.fedCount >=
-	3
+	5
 		? 'opacity-0'
 		: 'opacity-100'}"
 	aria-hidden="true"

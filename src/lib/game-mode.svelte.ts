@@ -3,14 +3,14 @@ export const reactionModal = $state({ open: false });
 export const breakContractModal = $state({ open: false });
 
 export function feedDuck(): number {
-	if (gameDevMode.fedCount < 3) {
+	if (gameDevMode.fedCount < 5) {
 		gameDevMode.fedCount += 1;
-		if (gameDevMode.fedCount >= 3) {
+		if (gameDevMode.fedCount >= 5) {
 			gameDevMode.active = true;
 		}
 		return gameDevMode.fedCount;
 	}
-	return 3;
+	return 5;
 }
 
 export function handleDuckClick() {

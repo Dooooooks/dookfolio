@@ -15,25 +15,33 @@
 	let duckButtonEl = $state<HTMLElement | null>(null);
 	let isChomping = $state(false);
 
-	// Scale progression: fed 0 -> 1.0, fed 1 -> 1.15, fed 2 -> 1.30, fed 3 -> 1.45
+	// Scale progression: fed 0 -> 1.0, fed 1 -> 1.1, fed 2 -> 1.2, fed 3 -> 1.3, fed 4 -> 1.4, fed 5 -> 1.5
 	const duckScale = $derived(
 		gameDevMode.fedCount === 0
 			? 1
 			: gameDevMode.fedCount === 1
-				? 1.15
+				? 1.1
 				: gameDevMode.fedCount === 2
-					? 1.3
-					: 1.45
+					? 1.2
+					: gameDevMode.fedCount === 3
+						? 1.3
+						: gameDevMode.fedCount === 4
+							? 1.4
+							: 1.5
 	);
 
 	const warningText = $derived(
-		gameDevMode.active || gameDevMode.fedCount >= 3
-			? 'GREAT, ENJOY YOUR NEW SOULMATE.'
-			: gameDevMode.fedCount === 2
-				? 'THIS IS YOUR FINAL WARNING.'
-				: gameDevMode.fedCount === 1
-					? 'SERIOUSLY. STOP FEEDING HIM.'
-					: "DON'T FEED THE DUCK"
+		gameDevMode.active || gameDevMode.fedCount >= 5
+			? 'Congratulation, the duck officially married you'
+			: gameDevMode.fedCount === 4
+				? 'THIS IS YOUR FINAL WARNING'
+				: gameDevMode.fedCount === 3
+					? "I'M WARNING YOU."
+					: gameDevMode.fedCount === 2
+						? 'SERIOUSLY, STOP FEEDING HIM'
+						: gameDevMode.fedCount === 1
+							? 'Stop'
+							: "DON'T FEED THE DUCK"
 	);
 
 	function onDuckClick() {
@@ -58,7 +66,16 @@
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 26) - 13;
 		const rot = Math.floor(Math.random() * 16) - 8;
-		const text = newCount === 1 ? 'Nom!' : newCount === 2 ? 'Chomp!' : 'QUACK!! ✨';
+		const text =
+			newCount === 1
+				? 'Nom!'
+				: newCount === 2
+					? 'Chomp!'
+					: newCount === 3
+						? 'Gulp!'
+						: newCount === 4
+							? 'BURP!'
+							: 'QUACK!! ✨';
 		quacks = [...quacks, { id, x, rot, text }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
@@ -110,7 +127,7 @@
 
 			<!-- Duck Container with Dynamic Scale Progression -->
 			<div
-				class="absolute bottom-[2.5%] left-1/2 origin-bottom transition-transform duration-300 ease-out"
+				class="absolute bottom-[1.7%] left-1/2 origin-bottom transition-transform duration-300 ease-out"
 				style="transform: translateX(-50%) scale({duckScale});"
 			>
 				<button
@@ -152,25 +169,35 @@
 >
 	<div class="flex items-center gap-2.5 transition-all duration-300">
 		<p
-			class="font-pixel text-xs tracking-widest uppercase transition-colors duration-300 sm:text-sm {gameDevMode.active
+			class="font-pixel text-xs tracking-widest transition-colors duration-300 sm:text-sm {gameDevMode.active ||
+			gameDevMode.fedCount >= 5
 				? 'font-extrabold text-accent drop-shadow-[0_0_12px_rgba(182,148,255,0.7)]'
-				: gameDevMode.fedCount === 2
-					? 'font-bold text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.45)]'
-					: gameDevMode.fedCount === 1
-						? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
-						: 'font-medium text-accent/80'}"
+				: gameDevMode.fedCount === 4
+					? 'font-extrabold text-rose-400 drop-shadow-[0_0_10px_rgba(251,113,133,0.55)]'
+					: gameDevMode.fedCount === 3
+						? 'font-bold text-orange-400 drop-shadow-[0_0_8px_rgba(251,146,60,0.45)]'
+						: gameDevMode.fedCount === 2
+							? 'font-bold text-amber-300 drop-shadow-[0_0_8px_rgba(252,211,77,0.4)]'
+							: gameDevMode.fedCount === 1
+								? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
+								: 'font-medium text-accent/80'}"
 		>
 			{warningText}
 		</p>
 	</div>
 	<div
-		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active
-			? 'w-56 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
-			: gameDevMode.fedCount === 2
-				? 'w-48 bg-rose-400/40'
-				: gameDevMode.fedCount === 1
-					? 'w-40 bg-purple-400/35'
-					: 'w-24 bg-accent/25'}"
+		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active ||
+		gameDevMode.fedCount >= 5
+			? 'w-72 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
+			: gameDevMode.fedCount === 4
+				? 'w-60 bg-rose-400/50'
+				: gameDevMode.fedCount === 3
+					? 'w-48 bg-orange-400/45'
+					: gameDevMode.fedCount === 2
+						? 'w-40 bg-amber-400/40'
+						: gameDevMode.fedCount === 1
+							? 'w-32 bg-purple-400/35'
+							: 'w-24 bg-accent/25'}"
 	></div>
 </div>
 
