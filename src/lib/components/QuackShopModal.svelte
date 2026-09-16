@@ -21,7 +21,6 @@
 			upgrades.luckyQuack >= 5 &&
 			upgrades.heavyQuack >= 5 &&
 			upgrades.quackCombo >= 5 &&
-			upgrades.speedyBill >= 5 &&
 			upgrades.goldenCrumbs >= 5 &&
 			upgrades.scavengerDuck >= 5
 	);
@@ -70,7 +69,6 @@
 		'luckyQuack',
 		'heavyQuack',
 		'quackCombo',
-		'speedyBill',
 		'goldenCrumbs',
 		'scavengerDuck'
 	];

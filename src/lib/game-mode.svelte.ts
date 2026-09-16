@@ -8,7 +8,6 @@ export interface UpgradesState {
 	luckyQuack: number;
 	heavyQuack: number;
 	quackCombo: number;
-	speedyBill: number;
 	goldenCrumbs: number;
 	scavengerDuck: number;
 }
@@ -45,12 +44,6 @@ export const UPGRADE_CONFIGS: Record<keyof UpgradesState, UpgradeConfig> = {
 		description: 'Frenzy meter for up to +100% quacks & crits',
 		costs: [75, 250, 750, 2200, 6000]
 	},
-	speedyBill: {
-		id: 'speedyBill',
-		name: 'Speedy Bill',
-		description: 'Faster click recovery for ultra-rapid clicking',
-		costs: [60, 200, 600, 1800, 5000]
-	},
 	goldenCrumbs: {
 		id: 'goldenCrumbs',
 		name: 'Golden Crumb Drops',
@@ -70,7 +63,6 @@ export const upgrades = $state<UpgradesState>({
 	luckyQuack: 0,
 	heavyQuack: 0,
 	quackCombo: 0,
-	speedyBill: 0,
 	goldenCrumbs: 0,
 	scavengerDuck: 0
 });
@@ -92,7 +84,7 @@ export const goldenBoost = $state({
 
 export function registerDuckClickCombo() {
 	if (upgrades.quackCombo <= 0) return;
-	combo.meter = Math.min(100, combo.meter + 16);
+	combo.meter = Math.min(100, combo.meter + 14);
 	updateComboStatus();
 }
 
@@ -116,7 +108,7 @@ export function updateComboStatus() {
 	}
 }
 
-export function decayCombo(amount = 2.5) {
+export function decayCombo(amount = 3.5) {
 	if (combo.meter > 0) {
 		combo.meter = Math.max(0, combo.meter - amount);
 		updateComboStatus();

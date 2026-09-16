@@ -104,12 +104,9 @@
 		}, 1400);
 	}
 
-	// Speedy Bill: scales recovery transition from 200ms down to 40ms
-	const duckTransitionDuration = $derived(Math.max(40, 200 - upgrades.speedyBill * 32));
-
 	onMount(() => {
 		const comboInterval = setInterval(() => {
-			decayCombo(1.6);
+			decayCombo(3.5);
 		}, 100);
 		return () => {
 			clearInterval(comboInterval);
@@ -183,9 +180,8 @@
 					bind:this={duckButtonEl}
 					type="button"
 					onclick={onDuckClick}
-					style="transition-duration: {duckTransitionDuration}ms;"
 					aria-label="A pixel duck standing in the spotlight (Click to quack)"
-					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform hover:scale-110 active:scale-125 {isChomping
+					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
 						? 'anim-duck-chomp'
 						: ''}"
 				>
@@ -196,17 +192,17 @@
 					/>
 				</button>
 
-				<!-- Simple Frenzy & Golden Breadcrumb Buff UI (Below Duck) -->
+				<!-- Simple Frenzy & Lucky Breadcrumb Buff UI (Below Duck) -->
 				{#if (upgrades.quackCombo > 0 && combo.meter > 0) || goldenBoost.active}
 					<div
 						class="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-1.5 flex flex-col items-center gap-1 whitespace-nowrap z-20"
 					>
-						<!-- Golden Breadcrumb Buff UI -->
+						<!-- Breadcrumb Buff UI (In Line with #ffe794) -->
 						{#if goldenBoost.active}
 							<div
-								class="flex items-center gap-1 rounded-full border border-amber-400/50 bg-amber-400/15 px-2 py-0.5 font-pixel text-[8px] font-extrabold text-[#ffe794] tracking-wider uppercase shadow-xs shadow-amber-400/20 backdrop-blur-xs animate-pulse"
+								class="flex items-center gap-1 rounded-full border border-[#ffe794]/40 bg-[#ffe794]/15 px-2 py-0.5 font-pixel text-[8px] font-bold text-[#ffe794] tracking-wider uppercase backdrop-blur-xs shadow-xs shadow-[#ffe794]/20"
 							>
-								<span>⚡ {goldenBoost.multiplier.toFixed(1)}x Rush ({goldenBoost.remainingSeconds}s)</span>
+								<span>✨ {goldenBoost.multiplier.toFixed(1)}x Rush ({goldenBoost.remainingSeconds}s)</span>
 							</div>
 						{/if}
 
@@ -217,14 +213,14 @@
 								<div class="h-1 w-12 sm:w-14 overflow-hidden rounded-full bg-white/15">
 									<div
 										class="h-full rounded-full transition-all duration-100 {combo.meter >= 80
-											? 'bg-[#ffe794]'
-											: 'bg-accent'}"
+											? 'bg-accent shadow-xs shadow-accent/50'
+											: 'bg-accent/80'}"
 										style="width: {combo.meter}%;"
 									></div>
 								</div>
 								<span
 									class="font-pixel text-[8px] tracking-wider uppercase {combo.meter >= 80
-										? 'text-[#ffe794] font-bold'
+										? 'text-accent font-extrabold'
 										: 'text-muted'}"
 								>
 									{#if combo.meter >= 80}
