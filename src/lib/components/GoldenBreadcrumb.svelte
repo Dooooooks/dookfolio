@@ -4,7 +4,8 @@
 		gameDevMode,
 		upgrades,
 		triggerGoldenBoost,
-		tickGoldenBoost
+		tickGoldenBoost,
+		addQuacks
 	} from '$lib/game-mode.svelte';
 
 	let { onGoldenReward }: { onGoldenReward: (text: string, isBurst?: boolean) => void } = $props();
@@ -128,7 +129,7 @@
 			const baseFlat = 1 + upgrades.strongerQuack + gameDevMode.fedCount;
 			const burstMultiplier = (1 + upgrades.scavengerDuck * 0.5) * (1 + upgrades.goldenCrumbs * 0.4);
 			const burst = Math.round(30 * baseFlat * burstMultiplier);
-			gameDevMode.quacks += burst;
+			addQuacks(burst);
 			onGoldenReward(`✨ Crumb Burst! +${burst.toLocaleString()} Quacks! ✨`, true);
 		} else {
 			const duration = 10 + upgrades.scavengerDuck * 2;

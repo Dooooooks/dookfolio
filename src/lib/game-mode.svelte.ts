@@ -1,7 +1,19 @@
-export const gameDevMode = $state({ clicks: 0, fedCount: 0, quacks: 0, active: false });
+export const gameDevMode = $state({
+	clicks: 0,
+	fedCount: 0,
+	quacks: 0,
+	totalQuacksEarned: 0,
+	active: false
+});
 export const reactionModal = $state({ open: false });
 export const breakContractModal = $state({ open: false });
 export const shopModal = $state({ open: false });
+
+export function addQuacks(amount: number) {
+	if (amount <= 0) return;
+	gameDevMode.quacks += amount;
+	gameDevMode.totalQuacksEarned += amount;
+}
 
 export interface UpgradesState {
 	strongerQuack: number;
@@ -176,7 +188,7 @@ export function calculateDuckClick(): DuckClickResult {
 	const totalMultiplier = critMultiplier * comboMultiplier * boostMultiplier;
 	const earned = Math.max(1, Math.round(baseDamage * totalMultiplier));
 
-	gameDevMode.quacks += earned;
+	addQuacks(earned);
 	return {
 		earned,
 		isCrit,

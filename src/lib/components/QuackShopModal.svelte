@@ -143,9 +143,9 @@
 						"Wow, I can't believe you stuck around to the end of such a simple game! Thanks a ton for taking the time. I wish you all the best!"
 					</p>
 
-					<!-- Final Score Badge -->
+					<!-- Final Score Badge (Total Lifetime Quacks) -->
 					<div
-						class="mt-6 flex items-center gap-2 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-2 text-xs font-bold text-muted"
+						class="mt-6 flex items-center gap-2 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-2 text-xs font-bold text-muted shadow-xs"
 					>
 						<span>Final Score:</span>
 						<span
@@ -153,9 +153,9 @@
 								? 'font-pixel text-[#ffe794]'
 								: 'text-accent'}"
 						>
-							{gameDevMode.quacks.toLocaleString()}
+							{gameDevMode.totalQuacksEarned.toLocaleString()}
 						</span>
-						<span>quacks</span>
+						<span>total quacks</span>
 					</div>
 
 					<!-- Close Button -->
