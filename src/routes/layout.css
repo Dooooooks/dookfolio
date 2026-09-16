@@ -17,6 +17,7 @@
 	html {
 		scroll-behavior: smooth;
 		-webkit-tap-highlight-color: transparent;
+		scrollbar-gutter: stable;
 	}
 	body {
 		@apply bg-bg font-sans text-white antialiased;
