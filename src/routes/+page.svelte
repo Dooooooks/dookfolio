@@ -290,18 +290,18 @@
 	<div class="mx-auto w-full max-w-3xl">
 		<h2 class="anim-fade-in-up text-3xl font-extrabold md:text-4xl">About</h2>
 
-		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted md:text-lg">
-			<p class="anim-fade-in-up" style="animation-delay: 80ms;">
+		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted text-justify md:text-lg">
+			<p class="anim-fade-in-up text-justify" style="animation-delay: 80ms;">
 				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan, Philippines.
 				I enjoy building clean, modern web applications and turning ideas into products people can actually
 				use.
 			</p>
-			<p class="anim-fade-in-up" style="animation-delay: 140ms;">
+			<p class="anim-fade-in-up text-justify" style="animation-delay: 140ms;">
 				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
 				playtesting with friends, and chasing that perfect game feel. (Psst… whatever you do, don't
 				feed the duck on the home page.)
 			</p>
-			<p class="anim-fade-in-up" style="animation-delay: 200ms;">
+			<p class="anim-fade-in-up text-justify" style="animation-delay: 200ms;">
 				I care about thoughtful UI, pixel-perfect details, and code that stays simple. Currently
 				open to collaborations, freelance work, and game jams.
 			</p>

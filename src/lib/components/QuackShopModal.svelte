@@ -94,7 +94,7 @@
 	>
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex w-full max-w-lg flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-5 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-7 {isClosing
+			class="relative flex w-full max-w-xl flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -121,13 +121,13 @@
 						/>
 					</div>
 
-					<div class="mb-3 flex items-center justify-center gap-2 text-accent">
+					<div class="mb-2.5 flex items-center justify-center gap-2 text-accent">
 						<Sparkles class="size-5" />
 						<h3
 							id="quack-shop-title"
-							class="text-xl font-extrabold tracking-wide text-white sm:text-2xl {gameDevMode.active
-								? 'font-pixel'
-								: 'font-sans'}"
+							class="font-extrabold tracking-wide text-white {gameDevMode.active
+								? 'font-pixel text-xs sm:text-sm'
+								: 'font-sans text-lg sm:text-xl'}"
 						>
 							Game Complete!
 						</h3>
@@ -136,22 +136,24 @@
 
 					<!-- Thank You Message -->
 					<p
-						class="max-w-md text-sm sm:text-base leading-relaxed text-purple-200/95 font-medium {gameDevMode.active
-							? 'font-pixel text-xs sm:text-sm leading-relaxed'
-							: ''}"
+						class="max-w-md leading-relaxed text-purple-200/95 font-medium {gameDevMode.active
+							? 'font-pixel text-[9px] sm:text-[10px] leading-loose'
+							: 'text-sm'}"
 					>
 						"Wow, I can't believe you stuck around to the end of such a simple game! Thanks a ton for taking the time. I wish you all the best!"
 					</p>
 
 					<!-- Final Score Badge (Total Lifetime Quacks) -->
 					<div
-						class="mt-6 flex items-center gap-2 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-2 text-xs font-bold text-muted shadow-xs"
+						class="mt-5 flex items-center gap-2 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-2 font-bold text-muted shadow-xs {gameDevMode.active
+							? 'text-[9px]'
+							: 'text-xs sm:text-sm'}"
 					>
 						<span>Final Score:</span>
 						<span
-							class="font-black text-white sm:text-sm {gameDevMode.active
-								? 'font-pixel text-[#ffe794]'
-								: 'text-accent'}"
+							class="font-black text-white {gameDevMode.active
+								? 'font-pixel text-[11px] text-[#ffe794]'
+								: 'text-accent text-sm sm:text-base'}"
 						>
 							{gameDevMode.totalQuacksEarned.toLocaleString()}
 						</span>
@@ -162,9 +164,9 @@
 					<button
 						type="button"
 						onclick={handleClose}
-						class="mt-6 cursor-pointer rounded-2xl border border-accent/40 bg-accent/20 px-6 py-2.5 font-bold tracking-wide text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-105 hover:border-accent hover:bg-accent/30 active:scale-95 {gameDevMode.active
-							? 'font-pixel text-xs'
-							: 'text-sm'}"
+						class="mt-5 cursor-pointer rounded-2xl border border-accent/40 bg-accent/20 px-6 py-2.5 font-bold tracking-wide text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-105 hover:border-accent hover:bg-accent/30 active:scale-95 {gameDevMode.active
+							? 'font-pixel text-[9.5px]'
+							: 'text-xs sm:text-sm'}"
 					>
 						Awesome!
 					</button>
@@ -175,21 +177,21 @@
 					<ShoppingBag class="size-5" />
 					<h3
 						id="quack-shop-title"
-						class="text-xl font-extrabold tracking-wide text-white sm:text-2xl {gameDevMode.active
-							? 'font-pixel'
-							: 'font-sans'}"
+						class="font-extrabold tracking-wide text-white {gameDevMode.active
+							? 'font-pixel text-xs sm:text-sm'
+							: 'font-sans text-lg sm:text-xl'}"
 					>
 						Quack Upgrade Shop
 					</h3>
 				</div>
 
 				<!-- Current Quack Balance Banner -->
-				<div class="mt-1 mb-5 flex items-center gap-1.5 text-xs text-muted">
+				<div class="mt-1.5 mb-4 flex items-center gap-1.5 text-muted {gameDevMode.active ? 'text-[9px]' : 'text-xs sm:text-sm'}">
 					<span>Balance:</span>
 					<span
-						class="font-black text-white sm:text-sm {gameDevMode.active
-							? 'font-pixel text-[#ffe794]'
-							: 'text-accent'}"
+						class="font-black text-white {gameDevMode.active
+							? 'font-pixel text-[11px] text-[#ffe794]'
+							: 'text-accent text-sm sm:text-base'}"
 					>
 						{gameDevMode.quacks.toLocaleString()}
 					</span>
@@ -197,7 +199,7 @@
 				</div>
 
 				<!-- Upgrades List: [Upgrade Name] [Bar1..Bar5] [Upgrade Button] -->
-				<div class="flex w-full max-h-[50vh] sm:max-h-[56vh] flex-col gap-3 overflow-y-auto pr-1">
+				<div class="flex w-full max-h-[52vh] sm:max-h-[58vh] flex-col gap-2.5 overflow-y-auto pr-1">
 					{#each upgradeKeys as key (key)}
 						{@const config = UPGRADE_CONFIGS[key]}
 						{@const currentLevel = upgrades[key]}
@@ -206,18 +208,18 @@
 						{@const isMax = currentLevel >= 5}
 
 						<div
-							class="flex flex-col gap-2 rounded-2xl border border-white/8 bg-white/3 p-3 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-3"
+							class="flex flex-col gap-2 rounded-2xl border border-white/8 bg-white/3 p-3 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-4"
 						>
 							<!-- [Upgrade Name] & Info -->
-							<div class="flex flex-col sm:w-40 shrink-0">
+							<div class="flex flex-col sm:w-42 shrink-0">
 								<span
-									class="text-xs font-bold text-white sm:text-sm {gameDevMode.active
-										? 'font-pixel text-[13px]'
-										: ''}"
+									class="font-bold text-white {gameDevMode.active
+										? 'font-pixel text-[9.5px]'
+										: 'text-xs sm:text-sm'}"
 								>
 									{config.name}
 								</span>
-								<span class="text-[10px] text-muted leading-tight">
+								<span class="text-muted leading-tight {gameDevMode.active ? 'text-[7.5px]' : 'text-[11px]'}">
 									{#if key === 'strongerQuack' && gameDevMode.fedCount > 0}
 										{config.description} <span class="font-bold {gameDevMode.active ? 'text-[#ffe794]' : 'text-accent'}">(+{gameDevMode.fedCount} crumbs)</span>
 									{:else}
@@ -248,9 +250,9 @@
 								aria-label={isMax
 									? `${config.name} maxed out`
 									: `Upgrade ${config.name} for ${cost} quacks`}
-								class="flex cursor-pointer items-center justify-center rounded-xl px-3 py-1.5 text-center text-xs font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
-									? 'font-pixel text-[11px]'
-									: ''} {isMax
+								class="flex cursor-pointer items-center justify-center rounded-xl px-3 py-1.5 text-center font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
+									? 'font-pixel text-[8px]'
+									: 'text-xs'} {isMax
 									? 'cursor-default border border-white/10 bg-white/5 text-muted/50'
 									: canAfford
 										? gameDevMode.active
@@ -269,7 +271,7 @@
 				</div>
 
 				<!-- Footer Hint -->
-				<p class="mt-5 text-center text-[10px] text-muted/70">
+				<p class="mt-4 text-center text-muted/70 {gameDevMode.active ? 'text-[8px]' : 'text-xs'}">
 					Click the duck to harvest quacks and unlock all 5 tiers!
 				</p>
 			{/if}

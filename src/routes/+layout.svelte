@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import '@fontsource-variable/nunito';
-	import '@fontsource-variable/pixelify-sans';
+	import '@fontsource/press-start-2p';
 	import './layout.css';
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
@@ -190,8 +190,8 @@
 		<div class="flex items-center gap-3 px-1 pt-1">
 			<img src={profile} alt="Lloyd Nicolas" class="size-9 shrink-0 rounded-full object-cover" />
 			<div>
-				<p class="text-sm font-extrabold text-white">Lloyd Nicolas</p>
-				<p class="text-xs font-bold text-accent">
+				<p class="font-extrabold text-white {gameDevMode.active ? 'text-[8.5px]' : 'text-sm'}">Lloyd Nicolas</p>
+				<p class="font-bold text-accent {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
 					{gameDevMode.active ? 'Game' : 'Software'} Developer
 				</p>
 			</div>
@@ -207,7 +207,9 @@
 						if (window.innerWidth < 768) isOpen = false;
 					}}
 					aria-current={isHomeActive ? 'page' : undefined}
-					class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all duration-150 {isHomeActive
+					class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
+						? 'text-[8.5px]'
+						: 'text-sm'} {isHomeActive
 						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
 						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
 				>
@@ -230,7 +232,9 @@
 								if (window.innerWidth < 768) isOpen = false;
 							}}
 							aria-current={isSubActive ? 'page' : undefined}
-							class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-bold transition-all duration-150 {isSubActive
+							class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-bold transition-all duration-150 {gameDevMode.active
+								? 'text-[7.5px]'
+								: 'text-xs'} {isSubActive
 								? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
 								: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
 						>
@@ -254,7 +258,9 @@
 						if (window.innerWidth < 768) isOpen = false;
 					}}
 					aria-current={active ? 'page' : undefined}
-					class="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-bold transition-all duration-150 {active
+					class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
+						? 'text-[8.5px]'
+						: 'text-sm'} {active
 						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
 						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
 				>
@@ -275,15 +281,15 @@
 				<div
 					class="anim-fade-in-up mb-3 flex flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300"
 				>
-					<span class="text-[10px] font-extrabold tracking-wider text-accent uppercase">
+					<span class="font-extrabold tracking-wider text-accent uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
 						Quack Counter
 					</span>
 
 					<div class="flex items-baseline justify-center gap-1.5">
-						<span class="text-xl font-black text-white tracking-tight sm:text-2xl">
+						<span class="font-black text-white tracking-tight {gameDevMode.active ? 'text-lg' : 'text-xl sm:text-2xl'}">
 							{gameDevMode.quacks.toLocaleString()}
 						</span>
-						<span class="text-xs font-bold text-muted">
+						<span class="font-bold text-muted {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
 							{gameDevMode.quacks === 1 ? 'quack' : 'quacks'}
 						</span>
 					</div>
@@ -292,9 +298,9 @@
 					<button
 						type="button"
 						onclick={openShopModal}
-						class="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 text-xs font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
-							? 'font-pixel text-[11px]'
-							: ''}"
+						class="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
+							? 'font-pixel text-[8px]'
+							: 'text-xs'}"
 					>
 						<ShoppingBag class="size-3.5" />
 						<span>Upgrade Shop</span>
@@ -307,7 +313,7 @@
 				<!-- Playground Header -->
 				<div class="flex items-center gap-1.5 px-1">
 					<Gamepad2 class="size-3.5 text-accent" />
-					<span class="text-[10px] font-extrabold tracking-wider text-muted uppercase">
+					<span class="font-extrabold tracking-wider text-muted uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
 						Playground
 					</span>
 				</div>
@@ -316,9 +322,9 @@
 				<button
 					type="button"
 					onclick={openReactionModal}
-					class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-muted shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+					class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
 				>
-					<span class="text-center text-[10px] font-bold">Are you faster than a duck?</span>
+					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Are you faster than a duck?</span>
 				</button>
 
 			<!-- Email Address (Affected by Game Mode Switch) -->
@@ -342,9 +348,9 @@
 						/>
 					{/if}
 					<span
-						class="truncate font-medium transition-colors {gameDevMode.active
-							? 'font-pixel text-xs tracking-wider text-[#ffe794] group-hover:text-white'
-							: 'font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
+						class="font-medium transition-colors {gameDevMode.active
+							? 'font-pixel text-[7.5px] text-[#ffe794] group-hover:text-white'
+							: 'truncate font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
 					>
 						dook13s@proton.me
 					</span>

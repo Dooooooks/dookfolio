@@ -10,7 +10,7 @@
 	--color-faint: #6f6890;
 
 	--font-sans: 'Nunito Variable', ui-sans-serif, system-ui, sans-serif;
-	--font-pixel: 'Pixelify Sans Variable', ui-monospace, monospace;
+	--font-pixel: 'Press Start 2P', ui-monospace, monospace;
 }
 
 @layer base {
@@ -31,6 +31,41 @@
 
 @utility pixelated {
 	image-rendering: pixelated;
+}
+
+/* Scaled Typography Proportions for Press Start 2P (8-bit Bitmap Font) */
+.font-pixel {
+	--text-xs: 0.55rem;
+	--text-sm: 0.65rem;
+	--text-base: 0.75rem;
+	--text-lg: 0.85rem;
+	--text-xl: 1rem;
+	--text-2xl: 1.2rem;
+	--text-3xl: 1.45rem;
+	--text-4xl: 1.75rem;
+	--text-5xl: 2.15rem;
+
+	letter-spacing: -0.02em;
+	line-height: 1.8;
+}
+
+.font-pixel h1,
+.font-pixel h2,
+.font-pixel h3 {
+	line-height: 1.5;
+	letter-spacing: 0;
+}
+
+.font-pixel p {
+	line-height: 2;
+}
+
+.font-pixel .tracking-widest {
+	letter-spacing: 0.05em;
+}
+
+.font-pixel .tracking-\[0\.2em\] {
+	letter-spacing: 0.06em;
 }
 
 @keyframes spotlightPulse {

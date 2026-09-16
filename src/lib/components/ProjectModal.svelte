@@ -141,7 +141,7 @@
 			{/if}
 
 			<!-- Full Project Description -->
-			<p class="mt-4 text-sm leading-relaxed text-muted sm:text-base">
+			<p class="mt-4 text-left text-sm leading-relaxed text-muted sm:text-base">
 				{activeProject.description}
 			</p>
 

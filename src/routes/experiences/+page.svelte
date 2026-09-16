@@ -56,7 +56,7 @@
 						{exp.role}
 					</h2>
 
-					<p class="mt-2.5 text-sm leading-relaxed text-muted">
+					<p class="mt-2.5 text-sm leading-relaxed text-muted text-justify">
 						{exp.description}
 					</p>
 				</li>

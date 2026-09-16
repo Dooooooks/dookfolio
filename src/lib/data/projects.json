@@ -1,7 +1,7 @@
 [
 	{
 		"id": "2f553f10-5508-435b-b01f-9ca42629064b",
-		"title": "Go Budget (2024)",
+		"title": "Go Budget",
 		"description": "GoBudget is a personal monthly budget planner I made with my friend: log your income and up to four expenses and get a live allocation breakdown, totals, and an over-budget warning — saved per-user to Supabase.",
 		"tags": ["React", "Vite", "Webapp"],
 		"demo_url": null,
