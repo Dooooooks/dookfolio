@@ -15,33 +15,25 @@
 	let duckButtonEl = $state<HTMLElement | null>(null);
 	let isChomping = $state(false);
 
-	// Scale progression: fed 0 -> 1.0, fed 1 -> 1.1, fed 2 -> 1.2, fed 3 -> 1.3, fed 4 -> 1.4, fed 5 -> 1.5
+	// Scale progression: fed 0 -> 1.0, fed 1 -> 1.15, fed 2 -> 1.30, fed 3 -> 1.45
 	const duckScale = $derived(
 		gameDevMode.fedCount === 0
 			? 1
 			: gameDevMode.fedCount === 1
-				? 1.1
+				? 1.15
 				: gameDevMode.fedCount === 2
-					? 1.2
-					: gameDevMode.fedCount === 3
-						? 1.3
-						: gameDevMode.fedCount === 4
-							? 1.4
-							: 1.5
+					? 1.3
+					: 1.45
 	);
 
 	const warningText = $derived(
-		gameDevMode.active || gameDevMode.fedCount >= 5
-			? 'Congratulation, the duck officially married you'
-			: gameDevMode.fedCount === 4
-				? 'THIS IS YOUR FINAL WARNING'
-				: gameDevMode.fedCount === 3
-					? "I'M WARNING YOU."
-					: gameDevMode.fedCount === 2
-						? 'SERIOUSLY, STOP FEEDING HIM'
-						: gameDevMode.fedCount === 1
-							? 'Stop'
-							: "DON'T FEED THE DUCK"
+		gameDevMode.active || gameDevMode.fedCount >= 3
+			? 'GREAT, ENJOY YOUR NEW SOULMATE.'
+			: gameDevMode.fedCount === 2
+				? 'THIS IS YOUR FINAL WARNING.'
+				: gameDevMode.fedCount === 1
+					? 'SERIOUSLY. STOP FEEDING HIM.'
+					: "DON'T FEED THE DUCK"
 	);
 
 	function onDuckClick() {
@@ -66,16 +58,7 @@
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 26) - 13;
 		const rot = Math.floor(Math.random() * 16) - 8;
-		const text =
-			newCount === 1
-				? 'Nom!'
-				: newCount === 2
-					? 'Chomp!'
-					: newCount === 3
-						? 'Gulp!'
-						: newCount === 4
-							? 'BURP!'
-							: 'QUACK!! ✨';
+		const text = newCount === 1 ? 'Nom!' : newCount === 2 ? 'Chomp!' : 'QUACK!! ✨';
 		quacks = [...quacks, { id, x, rot, text }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
@@ -96,7 +79,7 @@
 
 	<div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 sm:gap-8 md:gap-12">
 		<div class="max-w-xl flex-1">
-			<h1 class="anim-fade-in-up text-3xl sm:text-4xl md:text-5xl leading-tight font-extrabold">
+			<h1 class="anim-fade-in-up text-4xl leading-tight font-extrabold md:text-5xl">
 				Hi, I am <span class="text-accent">Lloyd</span>,<br />
 				<span class="text-accent">{gameDevMode.active ? 'Game' : 'Software'}</span> Developer
 			</h1>
@@ -121,7 +104,7 @@
 		</div>
 
 		<div
-			class="anim-spotlight relative aspect-[141/762] w-24 shrink-0 -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60"
+			class="anim-spotlight relative aspect-[141/762] w-28 shrink-0 -translate-y-48 sm:w-32 sm:-translate-y-56 md:w-36 md:-translate-y-60"
 		>
 			<img src={spotlight} alt="" class="pointer-events-none size-full select-none" />
 
@@ -138,7 +121,7 @@
 					aria-label={gameDevMode.active
 						? 'Revert to Software Developer mode'
 						: 'A pixel duck standing in the spotlight'}
-					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
+					class="anim-duck-idle cursor-pointer transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
 						? 'anim-duck-chomp'
 						: ''}"
 				>
@@ -169,35 +152,25 @@
 >
 	<div class="flex items-center gap-2.5 transition-all duration-300">
 		<p
-			class="font-pixel text-xs tracking-widest transition-colors duration-300 sm:text-sm {gameDevMode.active ||
-			gameDevMode.fedCount >= 5
+			class="font-pixel text-xs tracking-widest uppercase transition-colors duration-300 sm:text-sm {gameDevMode.active
 				? 'font-extrabold text-accent drop-shadow-[0_0_12px_rgba(182,148,255,0.7)]'
-				: gameDevMode.fedCount === 4
-					? 'font-extrabold text-[#ff9494] drop-shadow-[0_0_10px_rgba(255,148,148,0.55)]'
-					: gameDevMode.fedCount === 3
-						? 'font-bold text-[#ffb194] drop-shadow-[0_0_8px_rgba(255,177,148,0.45)]'
-						: gameDevMode.fedCount === 2
-							? 'font-bold text-[#ffe794] drop-shadow-[0_0_8px_rgba(255,231,148,0.4)]'
-							: gameDevMode.fedCount === 1
-								? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
-								: 'font-medium text-accent/80'}"
+				: gameDevMode.fedCount === 2
+					? 'font-bold text-rose-400 drop-shadow-[0_0_8px_rgba(251,113,133,0.45)]'
+					: gameDevMode.fedCount === 1
+						? 'font-bold text-purple-300 drop-shadow-[0_0_8px_rgba(182,148,255,0.35)]'
+						: 'font-medium text-accent/80'}"
 		>
 			{warningText}
 		</p>
 	</div>
 	<div
-		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active ||
-		gameDevMode.fedCount >= 5
-			? 'w-72 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
-			: gameDevMode.fedCount === 4
-				? 'w-60 bg-[#ff9494]/50'
-				: gameDevMode.fedCount === 3
-					? 'w-48 bg-[#ffb194]/45'
-					: gameDevMode.fedCount === 2
-						? 'w-40 bg-[#ffe794]/40'
-						: gameDevMode.fedCount === 1
-							? 'w-32 bg-purple-400/35'
-							: 'w-24 bg-accent/25'}"
+		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active
+			? 'w-56 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
+			: gameDevMode.fedCount === 2
+				? 'w-48 bg-rose-400/40'
+				: gameDevMode.fedCount === 1
+					? 'w-40 bg-purple-400/35'
+					: 'w-24 bg-accent/25'}"
 	></div>
 </div>
 
