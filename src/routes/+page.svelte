@@ -217,14 +217,14 @@
 								<div class="h-1 w-12 sm:w-14 overflow-hidden rounded-full bg-white/15">
 									<div
 										class="h-full rounded-full transition-all duration-100 {combo.meter >= 80
-											? 'bg-accent shadow-xs shadow-accent/50'
+											? 'bg-[#ffe794] shadow-xs shadow-[#ffe794]/60'
 											: 'bg-accent/80'}"
 										style="width: {combo.meter}%;"
 									></div>
 								</div>
 								<span
 									class="font-pixel text-[8px] tracking-wider uppercase {combo.meter >= 80
-										? 'text-accent font-extrabold'
+										? 'font-extrabold text-[#ffe794] drop-shadow-[0_0_6px_rgba(255,231,148,0.5)]'
 										: 'text-muted'}"
 								>
 									{#if combo.meter >= 80}

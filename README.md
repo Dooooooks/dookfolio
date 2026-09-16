@@ -4,7 +4,7 @@ Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in
 
 ## Features
 
-- Landing page with an interactive easter egg (click the duck to switch into "game dev" mode)
+- Landing page with an interactive easter egg (feed the duck to switch into "game dev" mode)
 - **About** section with a skills list
 - **Projects** and **Experiences** showcases driven by clean, version-controlled JSON data
 - **Contacts** page (email, phone, GitHub, LinkedIn)
