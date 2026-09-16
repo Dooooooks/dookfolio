@@ -8,6 +8,12 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+
+	interface Window {
+		addQuacks?: (amount?: number) => number;
+		setQuacks?: (amount: number) => number;
+		maxUpgrades?: () => void;
+	}
 }
 
 export {};

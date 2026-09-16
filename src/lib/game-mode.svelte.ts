@@ -242,3 +242,36 @@ export function openReactionModal() {
 export function closeReactionModal() {
 	reactionModal.open = false;
 }
+
+// DevTools Debugging Console Commands
+if (typeof window !== 'undefined') {
+	window.addQuacks = (amount = 1000) => {
+		const num = Math.max(1, Number(amount) || 1000);
+		addQuacks(num);
+		console.log(
+			`🦆 Added ${num.toLocaleString()} quacks! Current balance: ${gameDevMode.quacks.toLocaleString()} | Lifetime: ${gameDevMode.totalQuacksEarned.toLocaleString()}`
+		);
+		return gameDevMode.quacks;
+	};
+
+	window.setQuacks = (amount: number) => {
+		const num = Math.max(0, Number(amount) || 0);
+		const diff = num - gameDevMode.quacks;
+		gameDevMode.quacks = num;
+		if (diff > 0) {
+			gameDevMode.totalQuacksEarned += diff;
+		}
+		console.log(
+			`🦆 Quacks set to ${num.toLocaleString()}! Current balance: ${gameDevMode.quacks.toLocaleString()} | Lifetime: ${gameDevMode.totalQuacksEarned.toLocaleString()}`
+		);
+		return gameDevMode.quacks;
+	};
+
+	window.maxUpgrades = () => {
+		for (const key of Object.keys(upgrades) as (keyof UpgradesState)[]) {
+			upgrades[key] = 5;
+		}
+		console.log('🦆 All shop upgrades maxed to Level 5!');
+	};
+}
+
