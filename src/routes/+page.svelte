@@ -113,6 +113,15 @@
 				class="absolute bottom-[1.7%] left-1/2 origin-bottom transition-transform duration-300 ease-out"
 				style="transform: translateX(-50%) scale({duckScale});"
 			>
+				{#each quacks as quack (quack.id)}
+					<span
+						class="quack-anim pointer-events-none absolute bottom-full left-1/2 mb-1 whitespace-nowrap font-pixel text-xs font-extrabold text-accent select-none"
+						style="margin-left: {quack.x}px; --rot: {quack.rot}deg;"
+					>
+						{quack.text}
+					</span>
+				{/each}
+
 				<button
 					id="hero-duck-button"
 					bind:this={duckButtonEl}
@@ -132,15 +141,6 @@
 					/>
 				</button>
 			</div>
-
-			{#each quacks as quack (quack.id)}
-				<span
-					class="quack-anim pointer-events-none absolute bottom-[2%] left-1/2 font-pixel text-xs font-extrabold text-accent select-none"
-					style="margin-left: {quack.x}px; --rot: {quack.rot}deg;"
-				>
-					{quack.text}
-				</span>
-			{/each}
 		</div>
 	</div>
 </section>
@@ -218,7 +218,7 @@
 </section>
 
 <style>
-	@keyframes quackDown {
+	@keyframes quackUp {
 		0% {
 			opacity: 1;
 			transform: translate(-50%, 0) rotate(var(--rot, 0deg)) scale(1.15);
@@ -228,11 +228,11 @@
 		}
 		100% {
 			opacity: 0;
-			transform: translate(-50%, 28px) rotate(var(--rot, 0deg)) scale(0.85);
+			transform: translate(-50%, -28px) rotate(var(--rot, 0deg)) scale(0.85);
 		}
 	}
 
 	.quack-anim {
-		animation: quackDown 0.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
+		animation: quackUp 0.8s cubic-bezier(0.2, 0.8, 0.4, 1) forwards;
 	}
 </style>
