@@ -2,24 +2,43 @@
 	import { X, ExternalLink, FolderGit2, Calendar } from '@lucide/svelte';
 	import { base } from '$app/paths';
 	import type { Project } from '$lib/types';
+	import { projectModal, closeProjectModal } from '$lib/project-modal.svelte';
+	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	let {
-		project,
-		onclose
+		project: propProject = null,
+		onclose: propOnclose
 	}: {
-		project: Project | null;
-		onclose: () => void;
+		project?: Project | null;
+		onclose?: () => void;
 	} = $props();
 
 	let isClosing = $state(false);
 	let activeProject = $state<Project | null>(null);
 
+	const targetProject = $derived(propProject ?? projectModal.project);
+	const shouldBeOpen = $derived(Boolean(targetProject && (propProject !== null || projectModal.open)));
+
 	$effect(() => {
-		if (project) {
-			activeProject = project;
+		if (shouldBeOpen && targetProject) {
+			activeProject = targetProject;
 			isClosing = false;
-		} else if (!isClosing) {
-			activeProject = null;
+		} else if (!shouldBeOpen && activeProject && !isClosing) {
+			isClosing = true;
+			setTimeout(() => {
+				isClosing = false;
+				activeProject = null;
+			}, 180);
+		}
+	});
+
+	const isLocked = $derived(Boolean(activeProject));
+	$effect(() => {
+		if (isLocked) {
+			lockScroll();
+			return () => {
+				unlockScroll();
+			};
 		}
 	});
 
@@ -29,31 +48,17 @@
 		setTimeout(() => {
 			isClosing = false;
 			activeProject = null;
-			onclose();
+			closeProjectModal();
+			propOnclose?.();
 		}, 180);
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (!activeProject) return;
+		if (!activeProject || isClosing) return;
 		if (e.key === 'Escape') {
 			handleClose();
 		}
 	}
-
-	$effect(() => {
-		if (typeof document !== 'undefined') {
-			if (activeProject) {
-				document.body.style.overflow = 'hidden';
-			} else {
-				document.body.style.overflow = '';
-			}
-		}
-		return () => {
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = '';
-			}
-		};
-	});
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -70,7 +75,7 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape') handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md {isClosing
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
 			? 'anim-modal-backdrop-out'
 			: 'anim-modal-backdrop-in'}"
 	>

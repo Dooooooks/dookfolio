@@ -4,24 +4,34 @@
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
 	import { gameDevMode, reactionModal, closeReactionModal } from '$lib/game-mode.svelte';
+	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	let { open = $bindable(false) }: { open?: boolean } = $props();
 
 	const isOpen = $derived(reactionModal.open || open);
+	let isClosing = $state(false);
+	let isVisible = $state(false);
 
 	$effect(() => {
-		if (typeof document !== 'undefined') {
-			if (isOpen) {
-				document.body.style.overflow = 'hidden';
-			} else {
-				document.body.style.overflow = '';
-			}
+		if (isOpen && !isVisible && !isClosing) {
+			isVisible = true;
+		} else if (!isOpen && isVisible && !isClosing) {
+			isClosing = true;
+			setTimeout(() => {
+				isClosing = false;
+				isVisible = false;
+			}, 180);
 		}
-		return () => {
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = '';
-			}
-		};
+	});
+
+	const isLocked = $derived(isVisible || isClosing);
+	$effect(() => {
+		if (isLocked) {
+			lockScroll();
+			return () => {
+				unlockScroll();
+			};
+		}
 	});
 
 	type TestState = 'idle' | 'waiting' | 'early' | 'active' | 'result';
@@ -35,9 +45,15 @@
 	const DUCK_REFLEX_MS = 80;
 
 	function close() {
+		if (isClosing || !isVisible) return;
 		cleanup();
-		closeReactionModal();
-		open = false;
+		isClosing = true;
+		setTimeout(() => {
+			isClosing = false;
+			isVisible = false;
+			closeReactionModal();
+			open = false;
+		}, 180);
 	}
 
 	function cleanup() {
@@ -95,11 +111,11 @@
 	}
 
 	function handleKeyDown(e: KeyboardEvent) {
-		if (e.key === 'Escape' && isOpen) {
+		if (e.key === 'Escape' && isVisible) {
 			close();
 			return;
 		}
-		if (isOpen && (e.code === 'Space' || e.code === 'Enter')) {
+		if (isVisible && !isClosing && (e.code === 'Space' || e.code === 'Enter')) {
 			e.preventDefault();
 			if (!e.repeat) {
 				const eventTime = e.timeStamp > 0 ? e.timeStamp : performance.now();
@@ -164,18 +180,9 @@
 		};
 	});
 
-	$effect(() => {
-		if (isOpen) {
-			const originalOverflow = document.body.style.overflow;
-			document.body.style.overflow = 'hidden';
-			return () => {
-				document.body.style.overflow = originalOverflow;
-			};
-		}
-	});
 </script>
 
-{#if isOpen}
+{#if isVisible}
 	<!-- Backdrop: Clicking outside dismisses the floating window -->
 	<div
 		role="dialog"
@@ -194,11 +201,15 @@
 		ontouchmove={(e) => {
 			if (e.target === e.currentTarget) e.preventDefault();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-xs transition-opacity duration-150"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
+			? 'anim-modal-backdrop-out'
+			: 'anim-modal-backdrop-in'}"
 	>
 		<!-- Floating Window Card (At least 70% of the screen) -->
 		<div
-			class="relative flex h-[78vh] min-h-[520px] w-[92vw] max-w-5xl flex-col overflow-hidden rounded-3xl border border-white/15 bg-surface shadow-2xl shadow-accent/15 transition-all md:w-[78vw] lg:w-[72vw]"
+			class="relative flex h-[78vh] min-h-[520px] w-[92vw] max-w-5xl flex-col overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform md:w-[78vw] lg:w-[72vw] {isClosing
+				? 'anim-modal-out'
+				: 'anim-modal-in'}"
 		>
 			<!-- Modal Header -->
 			<div

@@ -1,12 +1,10 @@
 <script lang="ts">
 	import { ArrowLeft, ExternalLink, FolderGit2 } from '@lucide/svelte';
 	import { base, resolve } from '$app/paths';
-	import ProjectModal from '$lib/components/ProjectModal.svelte';
-	import type { Project } from '$lib/types';
+	import { openProjectModal } from '$lib/project-modal.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	let selectedProject = $state<Project | null>(null);
 </script>
 
 <svelte:head>
@@ -40,11 +38,11 @@
 					<div
 						role="button"
 						tabindex="0"
-						onclick={() => (selectedProject = project)}
+						onclick={() => openProjectModal(project)}
 						onkeydown={(e) => {
 							if (e.key === 'Enter' || e.key === ' ') {
 								e.preventDefault();
-								selectedProject = project;
+								openProjectModal(project);
 							}
 						}}
 						class="anim-fade-in-up group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
@@ -109,5 +107,3 @@
 		{/if}
 	</div>
 </section>
-
-<ProjectModal project={selectedProject} onclose={() => (selectedProject = null)} />

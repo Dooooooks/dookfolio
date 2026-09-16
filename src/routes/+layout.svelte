@@ -19,10 +19,13 @@
 		Newspaper,
 		User
 	} from '@lucide/svelte';
-	import { gameDevMode, openReactionModal } from '$lib/game-mode.svelte';
+	import { gameDevMode, openReactionModal, breakContractModal, reactionModal } from '$lib/game-mode.svelte';
+	import { projectModal } from '$lib/project-modal.svelte';
+	import { lockScroll, unlockScroll, forceUnlockScroll } from '$lib/scroll-lock';
 	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
 	import DuckReactionModal from '$lib/components/DuckReactionModal.svelte';
 	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
+	import ProjectModal from '$lib/components/ProjectModal.svelte';
 
 	let { children } = $props();
 
@@ -97,16 +100,21 @@
 	$effect(() => {
 		if (typeof window !== 'undefined' && window.innerWidth < 768) {
 			if (isOpen) {
-				document.body.style.overflow = 'hidden';
-			} else {
-				document.body.style.overflow = '';
+				lockScroll();
+				return () => {
+					unlockScroll();
+				};
 			}
 		}
-		return () => {
-			if (typeof document !== 'undefined') {
-				document.body.style.overflow = '';
-			}
-		};
+	});
+
+	// Safeguard: Ensure scroll is unlocked when navigating if no modal is active
+	$effect(() => {
+		// Track pathname changes
+		page.url.pathname;
+		if (!breakContractModal.open && !reactionModal.open && !projectModal.open) {
+			forceUnlockScroll();
+		}
 	});
 </script>
 
@@ -293,6 +301,9 @@
 
 	<!-- Break Contract Confirmation Modal -->
 	<BreakContractModal />
+
+	<!-- Project Details Modal (Always Centered in Viewport) -->
+	<ProjectModal />
 
 	<!-- Main Content Area -->
 	<main
