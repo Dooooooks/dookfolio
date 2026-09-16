@@ -20,7 +20,9 @@
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	let quacks = $state<Array<{ id: number; x: number; rot: number; text: string; isCrit?: boolean }>>([]);
+	let quacks = $state<
+		Array<{ id: number; x: number; rot: number; text: string; isCrit?: boolean; isBurst?: boolean }>
+	>([]);
 	let nextQuackId = 0;
 	let duckButtonEl = $state<HTMLElement | null>(null);
 	let isChomping = $state(false);
@@ -94,11 +96,11 @@
 		}, 900);
 	}
 
-	function onGoldenReward(message: string) {
+	function onGoldenReward(message: string, isBurst = false) {
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 20) - 10;
 		const rot = Math.floor(Math.random() * 12) - 6;
-		quacks = [...quacks, { id, x, rot, text: message, isCrit: true }];
+		quacks = [...quacks, { id, x, rot, text: message, isCrit: !isBurst, isBurst }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
 		}, 1400);
@@ -166,9 +168,11 @@
 			>
 				{#each quacks as quack (quack.id)}
 					<span
-						class="quack-anim pointer-events-none absolute bottom-full left-1/2 mb-1 whitespace-nowrap font-pixel select-none {quack.isCrit
-							? 'text-sm font-black text-[#ffe794] drop-shadow-[0_0_12px_rgba(255,231,148,0.9)] scale-110'
-							: 'text-xs font-extrabold text-accent drop-shadow-[0_0_8px_rgba(182,148,255,0.6)]'}"
+						class="quack-anim pointer-events-none absolute bottom-full left-1/2 mb-1 whitespace-nowrap font-pixel select-none {quack.isBurst
+							? 'text-sm font-black text-[#ff9494] drop-shadow-[0_0_12px_rgba(255,148,148,0.9)] scale-110'
+							: quack.isCrit
+								? 'text-sm font-black text-[#ffe794] drop-shadow-[0_0_12px_rgba(255,231,148,0.9)] scale-110'
+								: 'text-xs font-extrabold text-accent drop-shadow-[0_0_8px_rgba(182,148,255,0.6)]'}"
 						style="margin-left: {quack.x}px; --rot: {quack.rot}deg;"
 					>
 						{quack.text}
