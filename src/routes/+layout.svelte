@@ -11,21 +11,32 @@
 	import {
 		Activity,
 		Briefcase,
+		BookOpen,
 		ChevronLeft,
 		ChevronRight,
 		Gamepad2,
 		House,
 		Mail,
 		Newspaper,
+		ShoppingBag,
 		User
 	} from '@lucide/svelte';
-	import { gameDevMode, openReactionModal, breakContractModal, reactionModal } from '$lib/game-mode.svelte';
+	import {
+		gameDevMode,
+		openReactionModal,
+		openBreakContractModal,
+		openShopModal,
+		breakContractModal,
+		reactionModal,
+		shopModal
+	} from '$lib/game-mode.svelte';
 	import { projectModal } from '$lib/project-modal.svelte';
 	import { lockScroll, unlockScroll, forceUnlockScroll } from '$lib/scroll-lock';
 	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
 	import DuckReactionModal from '$lib/components/DuckReactionModal.svelte';
 	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
 	import ProjectModal from '$lib/components/ProjectModal.svelte';
+	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
 
 	let { children } = $props();
 
@@ -132,6 +143,21 @@
 			class="fixed top-3.5 left-3 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white"
 		>
 			<ChevronRight class="size-4.5" strokeWidth={1.75} />
+		</button>
+	{/if}
+
+	<!-- Break Contract Book Button (Only visible after entering Game Dev Mode) -->
+	{#if gameDevMode.active}
+		<button
+			type="button"
+			onclick={openBreakContractModal}
+			aria-label="Break Contract with Duck"
+			title="Break Contract with Duck (Return to Software Dev Mode)"
+			class="fixed top-3.5 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95 {isOpen
+				? 'left-13 md:left-56'
+				: 'left-13'}"
+		>
+			<BookOpen class="size-4.5" strokeWidth={1.75} />
 		</button>
 	{/if}
 
@@ -242,24 +268,58 @@
 			{/each}
 		</nav>
 
-		<!-- Playground Section & Email Address (Bottom of Sidebar) -->
-		<div class="mt-auto flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
-			<!-- Playground Header -->
-			<div class="flex items-center gap-1.5 px-1">
-				<Gamepad2 class="size-3.5 text-accent" />
-				<span class="text-[10px] font-extrabold tracking-wider text-muted uppercase">
-					Playground
-				</span>
-			</div>
+		<!-- Bottom Section: Quack Counter & Playground -->
+		<div class="mt-auto flex flex-col">
+			{#if gameDevMode.quacks > 0}
+				<!-- Quack Counter Section (Above Playground Divider) -->
+				<div
+					class="anim-fade-in-up mb-3 flex flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300"
+				>
+					<span class="text-[10px] font-extrabold tracking-wider text-accent uppercase">
+						Quack Counter
+					</span>
 
-			<!-- Reaction Time Test Button with centered content -->
-			<button
-				type="button"
-				onclick={openReactionModal}
-				class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-muted shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
-			>
-				<span class="text-center text-[10px] font-bold">Are you faster than a duck?</span>
-			</button>
+					<div class="flex items-baseline justify-center gap-1.5">
+						<span class="text-xl font-black text-white tracking-tight sm:text-2xl">
+							{gameDevMode.quacks.toLocaleString()}
+						</span>
+						<span class="text-xs font-bold text-muted">
+							{gameDevMode.quacks === 1 ? 'quack' : 'quacks'}
+						</span>
+					</div>
+
+					<!-- Upgrade Shop Button -->
+					<button
+						type="button"
+						onclick={openShopModal}
+						class="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 text-xs font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
+							? 'font-pixel text-[11px]'
+							: ''}"
+					>
+						<ShoppingBag class="size-3.5" />
+						<span>Upgrade Shop</span>
+					</button>
+				</div>
+			{/if}
+
+			<!-- Playground Section & Email Address -->
+			<div class="flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
+				<!-- Playground Header -->
+				<div class="flex items-center gap-1.5 px-1">
+					<Gamepad2 class="size-3.5 text-accent" />
+					<span class="text-[10px] font-extrabold tracking-wider text-muted uppercase">
+						Playground
+					</span>
+				</div>
+
+				<!-- Reaction Time Test Button with centered content -->
+				<button
+					type="button"
+					onclick={openReactionModal}
+					class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-center text-xs font-bold text-muted shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+				>
+					<span class="text-center text-[10px] font-bold">Are you faster than a duck?</span>
+				</button>
 
 			<!-- Email Address (Affected by Game Mode Switch) -->
 			<div class="border-t border-white/6 pt-1">
@@ -291,7 +351,8 @@
 				</a>
 			</div>
 		</div>
-	</aside>
+	</div>
+</aside>
 
 	<!-- Animated Geometric Triangle Flanks (Dynamic Per Tab) -->
 	<AbstractTriangleFlanks {isOpen} />
@@ -304,6 +365,9 @@
 
 	<!-- Project Details Modal (Always Centered in Viewport) -->
 	<ProjectModal />
+
+	<!-- Quack Upgrade Shop Modal (Centered in Viewport) -->
+	<QuackShopModal />
 
 	<!-- Main Content Area -->
 	<main

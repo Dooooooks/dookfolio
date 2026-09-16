@@ -1,16 +1,26 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { MapPin } from '@lucide/svelte';
 	import { base } from '$app/paths';
-	import { gameDevMode, handleDuckClick, feedDuck } from '$lib/game-mode.svelte';
+	import {
+		gameDevMode,
+		calculateDuckClick,
+		feedDuck,
+		upgrades,
+		combo,
+		goldenBoost,
+		decayCombo
+	} from '$lib/game-mode.svelte';
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
 	import spotlight from '$lib/assets/Spotlight.svg';
 	import GithubActivity from '$lib/components/GithubActivity.svelte';
 	import FlyingBreadcrumbs from '$lib/components/FlyingBreadcrumbs.svelte';
+	import GoldenBreadcrumb from '$lib/components/GoldenBreadcrumb.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	let quacks = $state<Array<{ id: number; x: number; rot: number; text: string }>>([]);
+	let quacks = $state<Array<{ id: number; x: number; rot: number; text: string; isCrit?: boolean }>>([]);
 	let nextQuackId = 0;
 	let duckButtonEl = $state<HTMLElement | null>(null);
 	let isChomping = $state(false);
@@ -45,15 +55,17 @@
 	);
 
 	function onDuckClick() {
-		handleDuckClick();
+		const { earned, isCrit } = calculateDuckClick();
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 26) - 13;
 		const rot = Math.floor(Math.random() * 16) - 8;
-		const text = gameDevMode.active ? 'Quack! ✨' : 'Quack! 🍞';
-		quacks = [...quacks, { id, x, rot, text }];
+		const text = isCrit
+			? `CRIT! +${earned} Quacks! 🔥`
+			: `+${earned} ${earned === 1 ? 'Quack' : 'Quacks'}! ✨`;
+		quacks = [...quacks, { id, x, rot, text, isCrit }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
-		}, 800);
+		}, 850);
 	}
 
 	function onCrumbFed() {
@@ -68,19 +80,41 @@
 		const rot = Math.floor(Math.random() * 16) - 8;
 		const text =
 			newCount === 1
-				? 'Nom!'
+				? 'Nom! (+1 Stronger Quack)'
 				: newCount === 2
-					? 'Chomp!'
+					? 'Chomp! (+1 Stronger Quack)'
 					: newCount === 3
-						? 'Gulp!'
+						? 'Gulp! (+1 Stronger Quack)'
 						: newCount === 4
-							? 'BURP!'
-							: 'QUACK!! ✨';
+							? 'BURP! (+1 Stronger Quack)'
+							: 'QUACK!! ✨ (+1 Stronger Quack)';
 		quacks = [...quacks, { id, x, rot, text }];
 		setTimeout(() => {
 			quacks = quacks.filter((q) => q.id !== id);
 		}, 900);
 	}
+
+	function onGoldenReward(message: string) {
+		const id = nextQuackId++;
+		const x = Math.floor(Math.random() * 20) - 10;
+		const rot = Math.floor(Math.random() * 12) - 6;
+		quacks = [...quacks, { id, x, rot, text: message, isCrit: true }];
+		setTimeout(() => {
+			quacks = quacks.filter((q) => q.id !== id);
+		}, 1400);
+	}
+
+	// Speedy Bill: scales recovery transition from 200ms down to 40ms
+	const duckTransitionDuration = $derived(Math.max(40, 200 - upgrades.speedyBill * 32));
+
+	onMount(() => {
+		const comboInterval = setInterval(() => {
+			decayCombo(1.6);
+		}, 100);
+		return () => {
+			clearInterval(comboInterval);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -93,6 +127,9 @@
 <section class="relative overflow-hidden px-8 pb-6 md:px-12 md:pb-8">
 	<!-- Flying Breadcrumbs Overlay (Purple/Lavender Palette - Zero Yellow) -->
 	<FlyingBreadcrumbs onFeed={onCrumbFed} duckElement={duckButtonEl} />
+
+	<!-- Golden Breadcrumbs (Rare floating drops with bursts & 3x boosts, 0 effect on game dev mode) -->
+	<GoldenBreadcrumb {onGoldenReward} />
 
 	<div class="mx-auto flex w-full max-w-3xl items-center justify-between gap-4 sm:gap-8 md:gap-12">
 		<div class="max-w-xl flex-1">
@@ -132,7 +169,9 @@
 			>
 				{#each quacks as quack (quack.id)}
 					<span
-						class="quack-anim pointer-events-none absolute bottom-full left-1/2 mb-1 whitespace-nowrap font-pixel text-xs font-extrabold text-accent select-none"
+						class="quack-anim pointer-events-none absolute bottom-full left-1/2 mb-1 whitespace-nowrap font-pixel select-none {quack.isCrit
+							? 'text-sm font-black text-[#ffe794] drop-shadow-[0_0_12px_rgba(255,231,148,0.9)] scale-110'
+							: 'text-xs font-extrabold text-accent drop-shadow-[0_0_8px_rgba(182,148,255,0.6)]'}"
 						style="margin-left: {quack.x}px; --rot: {quack.rot}deg;"
 					>
 						{quack.text}
@@ -144,10 +183,9 @@
 					bind:this={duckButtonEl}
 					type="button"
 					onclick={onDuckClick}
-					aria-label={gameDevMode.active
-						? 'Revert to Software Developer mode'
-						: 'A pixel duck standing in the spotlight'}
-					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform duration-200 hover:scale-110 active:scale-125 {isChomping
+					style="transition-duration: {duckTransitionDuration}ms;"
+					aria-label="A pixel duck standing in the spotlight (Click to quack)"
+					class="anim-duck-idle cursor-pointer touch-manipulation transition-transform hover:scale-110 active:scale-125 {isChomping
 						? 'anim-duck-chomp'
 						: ''}"
 				>
@@ -157,6 +195,50 @@
 						class="w-14 pixelated sm:w-16 md:w-18"
 					/>
 				</button>
+
+				<!-- Simple Frenzy & Golden Breadcrumb Buff UI (Below Duck) -->
+				{#if (upgrades.quackCombo > 0 && combo.meter > 0) || goldenBoost.active}
+					<div
+						class="pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-1.5 flex flex-col items-center gap-1 whitespace-nowrap z-20"
+					>
+						<!-- Golden Breadcrumb Buff UI -->
+						{#if goldenBoost.active}
+							<div
+								class="flex items-center gap-1 rounded-full border border-amber-400/50 bg-amber-400/15 px-2 py-0.5 font-pixel text-[8px] font-extrabold text-[#ffe794] tracking-wider uppercase shadow-xs shadow-amber-400/20 backdrop-blur-xs animate-pulse"
+							>
+								<span>⚡ {goldenBoost.multiplier.toFixed(1)}x Rush ({goldenBoost.remainingSeconds}s)</span>
+							</div>
+						{/if}
+
+						<!-- Frenzy Meter -->
+						{#if upgrades.quackCombo > 0 && combo.meter > 0}
+							<div class="flex flex-col items-center gap-0.5">
+								<!-- Minimal thin progress bar -->
+								<div class="h-1 w-12 sm:w-14 overflow-hidden rounded-full bg-white/15">
+									<div
+										class="h-full rounded-full transition-all duration-100 {combo.meter >= 80
+											? 'bg-[#ffe794]'
+											: 'bg-accent'}"
+										style="width: {combo.meter}%;"
+									></div>
+								</div>
+								<span
+									class="font-pixel text-[8px] tracking-wider uppercase {combo.meter >= 80
+										? 'text-[#ffe794] font-bold'
+										: 'text-muted'}"
+								>
+									{#if combo.meter >= 80}
+										Frenzy x{combo.multiplier.toFixed(1)} {upgrades.quackCombo >= 5 ? '★' : ''}
+									{:else if combo.meter >= 30}
+										Combo x{combo.multiplier.toFixed(1)}
+									{:else}
+										Combo
+									{/if}
+								</span>
+							</div>
+						{/if}
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
