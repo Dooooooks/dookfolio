@@ -69,58 +69,62 @@
 		if (window.innerWidth < 768) {
 			isOpen = false;
 		}
+	});
 
+	$effect(() => {
 		if (page.url.pathname !== '/') return;
 
-		const sectionIds = ['activity', 'about', 'skills', 'latest'] as const;
-		const sections = sectionIds
-			.map((id) => document.getElementById(id))
-			.filter((el): el is HTMLElement => el !== null);
-
-		const visibleSections = new Set<string>();
-
-		const observer = new IntersectionObserver(
-			(entries) => {
-				for (const entry of entries) {
-					if (entry.isIntersecting) {
-						visibleSections.add(entry.target.id);
-					} else {
-						visibleSections.delete(entry.target.id);
-					}
-				}
-
-				if (visibleSections.size === 0) {
-					if (window.scrollY < 200) {
-						activeSection = 'home';
-					}
-				} else {
-					for (const id of sectionIds) {
-						if (visibleSections.has(id)) {
-							activeSection = id;
-						}
-					}
-				}
-			},
-			{ rootMargin: '-15% 0px -55% 0px' }
-		);
-
-		sections.forEach((s) => observer.observe(s));
-
 		let rafId = 0;
-		function onScroll() {
+
+		function updateActiveSection() {
+			const scrollY = window.scrollY;
+
+			// Top hero area
+			if (scrollY < 120) {
+				activeSection = 'home';
+				return;
+			}
+
+			// Near bottom of page (or inside Latest Projects / Latest Blogs)
+			if (window.innerHeight + scrollY >= document.documentElement.scrollHeight - 70) {
+				activeSection = 'latest';
+				return;
+			}
+
+			const readingLine = scrollY + 280;
+			const blogsEl = document.getElementById('blogs');
+			const latestEl = document.getElementById('latest');
+			const skillsEl = document.getElementById('skills');
+			const aboutEl = document.getElementById('about');
+			const activityEl = document.getElementById('activity');
+
+			if (blogsEl && readingLine >= blogsEl.offsetTop) {
+				activeSection = 'latest';
+			} else if (latestEl && readingLine >= latestEl.offsetTop) {
+				activeSection = 'latest';
+			} else if (skillsEl && readingLine >= skillsEl.offsetTop) {
+				activeSection = 'skills';
+			} else if (aboutEl && readingLine >= aboutEl.offsetTop) {
+				activeSection = 'about';
+			} else if (activityEl && readingLine >= activityEl.offsetTop) {
+				activeSection = 'activity';
+			} else {
+				activeSection = 'home';
+			}
+		}
+
+		const onScroll = () => {
 			if (rafId) return;
 			rafId = requestAnimationFrame(() => {
 				rafId = 0;
-				if (window.scrollY < 120 && activeSection !== 'home') {
-					activeSection = 'home';
-				}
+				updateActiveSection();
 			});
-		}
+		};
 
 		window.addEventListener('scroll', onScroll, { passive: true });
+		updateActiveSection();
 
 		return () => {
-			observer.disconnect();
 			window.removeEventListener('scroll', onScroll);
 			if (rafId) cancelAnimationFrame(rafId);
 		};
@@ -200,9 +204,7 @@
 	<!-- Break Contract & 8-Bit Synthesizer Controls (Only visible after entering Game Dev Mode) -->
 	{#if gameDevMode.active}
 		<div
-			class="fixed top-3.5 z-20 flex items-center gap-2 transition-all duration-300 {isOpen
-				? 'left-13 md:left-56'
-				: 'left-13'}"
+			class="fixed top-3.5 right-4 z-20 flex items-center gap-2 transition-all duration-300"
 		>
 			<!-- Break Contract Book Button -->
 			<button

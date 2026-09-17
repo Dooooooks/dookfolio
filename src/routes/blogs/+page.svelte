@@ -12,19 +12,16 @@
 	<title>Blogs — Lloyd Nicolas</title>
 </svelte:head>
 
-<!-- Blogs List Page -->
-<div class="relative min-h-[calc(100vh-4rem)] px-6 py-12 sm:px-10 md:px-16">
-	<!-- Back link -->
-	<a
-		href={resolve('/')}
-		use:reveal={{ y: -10 }}
-		class="group mb-8 inline-flex items-center gap-2 text-xs font-bold text-muted transition-colors hover:text-white"
-	>
-		<ArrowLeft class="size-4 transition-transform duration-200 group-hover:-translate-x-1" />
-		Back to Home
-	</a>
-
-	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
+<section class="relative flex min-h-screen flex-col px-8 py-12 pb-[40vh] md:px-12">
+	<div class="mx-auto w-full max-w-3xl pt-6 sm:pt-0">
+		<a
+			href={resolve('/')}
+			use:reveal={{ y: -10 }}
+			class="group mb-8 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white"
+		>
+			<ArrowLeft class="size-4 transition-transform duration-200 group-hover:-translate-x-1" />
+			Back to Home
+		</a>
 		<!-- Header -->
 		<div use:reveal={{ y: 20 }}>
 			<div class="flex items-center justify-between gap-3">
@@ -137,4 +134,4 @@
 			</div>
 		{/if}
 	</div>
-</div>
+</section>

@@ -6,8 +6,17 @@
 	import { base, resolve } from '$app/paths';
 	import { reveal } from '$lib/actions/reveal';
 
-	// 3 latest projects sorted by date
-	const latestProjects = getProjects().slice(0, 3);
+	// 3 latest projects: 2nd on left (slot 0), latest (1st) in middle (slot 1), 3rd on right (slot 2)
+	const rawProjects = getProjects();
+	const latestProjects = (() => {
+		if (rawProjects.length >= 3) {
+			return [rawProjects[1], rawProjects[0], rawProjects[2]];
+		}
+		if (rawProjects.length === 2) {
+			return [rawProjects[1], rawProjects[0]];
+		}
+		return rawProjects.slice(0, 3);
+	})();
 	let hoveredIndex = $state<number | null>(null);
 	let revealedCards = $state<boolean[]>([false, false, false]);
 </script>
@@ -51,14 +60,14 @@
 	<div
 		class="relative mt-8 mb-4 flex h-[410px] sm:h-[450px] w-full items-center justify-center overflow-visible select-none"
 	>
-		{#each latestProjects as project, i (project.id)}
+		{#each latestProjects as project, i (project.title)}
 			{@const isHovered = hoveredIndex === i}
 			{@const isDimmed = hoveredIndex !== null && !isHovered}
 
 			<div
 				use:reveal={{
 					custom: true,
-					delay: 100 + i * 120,
+					delay: 100,
 					onReveal: () => {
 						revealedCards[i] = true;
 					}
@@ -80,7 +89,7 @@
 					? 'is-revealed'
 					: ''} {isHovered ? 'is-hovered' : ''} {isDimmed ? 'is-dimmed' : ''}"
 				data-revealed={revealedCards[i] ? 'true' : undefined}
-				style="--fan-delay: {100 + i * 120}ms;"
+				style="--fan-delay: 100ms;"
 			>
 				<!-- Project Thumbnail -->
 				<div class="relative h-40 sm:h-44 w-full shrink-0 overflow-hidden bg-bg">

@@ -293,27 +293,31 @@
 <!-- GitHub Contribution Activity Heatmap -->
 <GithubActivity contributions={data.contributions} />
 
-<section id="about" class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
+<div class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
 	<div class="mx-auto w-full max-w-3xl">
-		<h2 use:reveal={{ y: 22 }} class="text-3xl font-extrabold md:text-4xl">About</h2>
+		<!-- About Section -->
+		<section id="about" class="scroll-mt-24">
+			<h2 use:reveal={{ y: 22 }} class="text-3xl font-extrabold md:text-4xl">About</h2>
 
-		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted text-justify md:text-lg">
-			<p use:reveal={{ delay: 70, y: 20 }} class="text-justify">
-				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan, Philippines.
-				I enjoy building clean, modern web applications and turning ideas into products people can actually
-				use.
-			</p>
-			<p use:reveal={{ delay: 140, y: 20 }} class="text-justify">
-				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
-				playtesting with friends, and chasing that perfect game feel. (Psst… whatever you do, don't
-				feed the duck on the home page.)
-			</p>
-			<p use:reveal={{ delay: 210, y: 20 }} class="text-justify">
-				I care about thoughtful UI, pixel-perfect details, and code that stays simple. Currently
-				open to collaborations, freelance work, and game jams.
-			</p>
-		</div>
+			<div class="mt-8 space-y-5 text-base leading-relaxed text-muted text-justify md:text-lg">
+				<p use:reveal={{ delay: 70, y: 20 }} class="text-justify">
+					Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan, Philippines.
+					I enjoy building clean, modern web applications and turning ideas into products people can actually
+					use.
+				</p>
+				<p use:reveal={{ delay: 140, y: 20 }} class="text-justify">
+					When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
+					playtesting with friends, and chasing that perfect game feel. (Psst… whatever you do, don't
+					feed the duck on the home page.)
+				</p>
+				<p use:reveal={{ delay: 210, y: 20 }} class="text-justify">
+					I care about thoughtful UI, pixel-perfect details, and code that stays simple. Currently
+					open to collaborations, freelance work, and game jams.
+				</p>
+			</div>
+		</section>
 
+		<!-- Skills Section -->
 		<SkillsSection />
 
 		<!-- Featured Projects Section (Fan-Shaped Cards) -->
@@ -322,7 +326,7 @@
 		<!-- Blogs Section (Latest 5 Blogs) -->
 		<HomeBlogsSection />
 	</div>
-</section>
+</div>
 
 <style>
 	@keyframes quackUp {

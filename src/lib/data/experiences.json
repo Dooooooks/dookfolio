@@ -1,12 +1,16 @@
 [
 	{
-		"id": "0f204d8b-6790-455e-b61a-6d44e6cfa0c4",
 		"period": "March 2025 - April 2025",
 		"role": "App Developer ( Intern )",
 		"company": "Binladin Contracting Group",
 		"description": "Assisted in requirements gathering, system design discussions, and workflow planning while contributing to technical specifications and feature prioritization. Collaborated closely with senior developers to enhance application usability and functionality, and designed mockups and prototypes in Figma to effectively guide UI discussions and team presentations.",
-		"date": "2025-03",
-		"order_num": 1,
-		"created_at": "2026-09-01T18:22:01.106Z"
+		"date": "2025-03"
+	},
+  {
+		"period": "August 03 2025 - August 17 2025",
+		"role": "Main Developer",
+		"company": "scream game jam - itch.io",
+		"description": "Developed for a game jam centered around the theme SCREAM and conducted under strict \"no ai tools\" regulations, been here before is a 2d psychological horror game inspired by the exit 8. built by a three-person team (hoyyyyyy \"was at the time\", jeepney, and apakc), i served as the main developer, leading core architecture, gameplay systems, and overall technical execution. trapped inside an unsettling, looping apartment complex, players must meticulously inspect their surroundings to spot subtle environmental anomalies, decide whether to advance or retreat, and break the cycle before reality distorts completely.",
+		"date": "2025-03"
 	}
 ]

@@ -11,16 +11,17 @@
 	<title>Experiences — Lloyd Nicolas</title>
 </svelte:head>
 
-<section class="relative flex min-h-screen flex-col px-8 py-16 pb-[40vh] md:px-12">
-	<a
-		href={resolve('/')}
-		class="group absolute top-8 left-8 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white md:top-10 md:left-12"
-	>
-		<ArrowLeft class="size-4 transition-transform duration-200 group-hover:-translate-x-1" />
-		Back to Home
-	</a>
+<section class="relative flex min-h-screen flex-col px-8 py-12 pb-[40vh] md:px-12">
+	<div class="mx-auto w-full max-w-3xl pt-6 sm:pt-0">
+		<a
+			href={resolve('/')}
+			use:reveal={{ y: -10 }}
+			class="group mb-8 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white"
+		>
+			<ArrowLeft class="size-4 transition-transform duration-200 group-hover:-translate-x-1" />
+			Back to Home
+		</a>
 
-	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
 		<div use:reveal={{ y: 22 }}>
 			<h1 class="text-3xl font-extrabold md:text-4xl">Experiences</h1>
 			<p class="mt-2 text-sm text-muted md:text-base">
@@ -29,7 +30,7 @@
 		</div>
 
 		<ol class="mt-10 space-y-8 border-l-2 border-accent/20 pl-6 md:pl-8">
-			{#each data.experiences as exp, i (exp.id)}
+			{#each data.experiences as exp, i (exp.company)}
 				<li
 					use:reveal={{ delay: 100 + i * 110, y: 24, scale: 0.96 }}
 					class="group relative rounded-xl border border-transparent p-4 transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-surface/50"

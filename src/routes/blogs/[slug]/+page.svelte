@@ -19,20 +19,19 @@
 	{/if}
 </svelte:head>
 
-<article class="relative flex min-h-screen flex-col px-6 py-14 pb-32 md:px-12">
-	<!-- Top Navigation -->
-	<div class="mx-auto w-full max-w-3xl">
+<article class="relative flex min-h-screen flex-col px-8 py-12 pb-[40vh] md:px-12">
+	<div class="mx-auto w-full max-w-3xl pt-6 sm:pt-0">
+		<!-- Top Navigation -->
 		<a
 			href={resolve('/blogs')}
-			class="group inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white"
+			class="group mb-8 inline-flex items-center gap-2 text-sm font-bold text-muted transition-colors hover:text-white"
 		>
 			<ArrowLeft class="size-4 transition-transform duration-200 group-hover:-translate-x-1" />
 			Back to Blogs
 		</a>
-	</div>
 
-	<!-- Article Header -->
-	<header class="mx-auto mt-8 w-full max-w-3xl">
+		<!-- Article Header -->
+		<header class="w-full">
 		<!-- Tags -->
 		{#if blog.tags.length > 0}
 			<div class="flex flex-wrap gap-2 mb-4">
@@ -94,7 +93,7 @@
 	</header>
 
 	<!-- Markdown Article Body -->
-	<section class="mx-auto mt-10 w-full max-w-3xl">
+	<section class="mt-10 w-full">
 		<div class="blog-prose leading-relaxed">
 			{@html blog.html}
 		</div>
@@ -114,6 +113,7 @@
 			</span>
 		</footer>
 	</section>
+	</div>
 </article>
 
 <style>

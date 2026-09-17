@@ -6,7 +6,7 @@ export interface SkillItem {
 }
 
 export interface SkillCategory {
-	id: 'frontend' | 'backend' | 'game' | 'systems' | 'design';
+	id: 'frontend' | 'backend' | 'game' | 'systems' | 'design' | 'ai' | 'tools';
 	title: string;
 	skills: SkillItem[];
 }
@@ -37,6 +37,27 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
 		]
 	},
 	{
+		id: 'ai',
+		title: 'AI & Agents',
+		skills: [
+			{ name: 'OpenCode' },
+			{ name: 'Hermes' },
+			{ name: 'Claude Code' },
+			{ name: 'Antigravity' },
+			{ name: 'Ollama' }
+		]
+	},
+	{
+		id: 'systems',
+		title: 'Systems & Research',
+		skills: [
+			{ name: 'Linux (Arch / Ubuntu)', project: 'Omaclippr / VPS' },
+			{ name: 'Bash / Shell Scripting', project: 'Omaclippr / Palworld Server' },
+			{ name: 'YOLOv12 / Computer Vision', project: 'Driver Distraction Thesis' },
+			{ name: 'Git / GitHub Workflow' }
+		]
+	},
+	{
 		id: 'game',
 		title: 'Game Dev & Audio',
 		skills: [
@@ -47,22 +68,25 @@ export const SKILL_CATEGORIES: SkillCategory[] = [
 		]
 	},
 	{
-		id: 'systems',
-		title: 'Systems & Research',
-		skills: [
-			{ name: 'Linux (Omarchy / Ubuntu)', project: 'Omaclippr / VPS' },
-			{ name: 'Bash / Shell Scripting', project: 'Omaclippr / Palworld Server' },
-			{ name: 'YOLOv12 / Computer Vision', project: 'Driver Distraction Thesis' },
-			{ name: 'Git / GitHub Workflow' }
-		]
-	},
-	{
 		id: 'design',
 		title: 'UI/UX & Prototyping',
 		skills: [
 			{ name: 'Figma Prototyping', project: 'Binladin Contracting Group' },
 			{ name: 'User Flows & Wireframing' },
 			{ name: 'Responsive Web Design' }
+		]
+	},
+	{
+		id: 'tools',
+		title: 'Tools & Collaboration',
+		skills: [
+			{ name: 'Docker' },
+			{ name: 'GitHub Actions' },
+			{ name: 'Stripe' },
+			{ name: 'PowerBI' },
+			{ name: 'ClickUp' },
+			{ name: 'Discord' },
+			{ name: 'Teams' }
 		]
 	}
 ];

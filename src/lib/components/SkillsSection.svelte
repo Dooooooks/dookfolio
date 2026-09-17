@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Code, Database, Gamepad2, Terminal, Palette, Sparkles } from '@lucide/svelte';
+	import { Code, Database, Gamepad2, Terminal, Palette, Bot, Wrench } from '@lucide/svelte';
 	import { SKILL_CATEGORIES } from '$lib/data/skills';
 	import { gameDevMode } from '$lib/game-mode.svelte';
 	import { reveal } from '$lib/actions/reveal';
@@ -7,9 +7,11 @@
 	const categoryIcons = {
 		frontend: Code,
 		backend: Database,
-		game: Gamepad2,
+		ai: Bot,
 		systems: Terminal,
-		design: Palette
+		game: Gamepad2,
+		design: Palette,
+		tools: Wrench
 	};
 </script>
 
@@ -34,7 +36,7 @@
 	<div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
 		{#each SKILL_CATEGORIES as category, catIndex (category.id)}
 			{@const Icon = categoryIcons[category.id]}
-			{@const isWide = category.id === 'design'}
+			{@const isWide = category.id === 'tools'}
 			<div
 				use:reveal={{ delay: 100 + catIndex * 70, y: 24, scale: 0.94 }}
 				class="flex flex-col justify-between rounded-2xl border border-white/8 bg-surface/60 backdrop-blur-xs p-5 transition-all duration-300 hover:border-accent/30 hover:bg-surface/80 hover:shadow-lg hover:shadow-accent/5 {isWide

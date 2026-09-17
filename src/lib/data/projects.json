@@ -1,68 +1,56 @@
 [
 	{
-		"id": "2f553f10-5508-435b-b01f-9ca42629064b",
 		"title": "Go Budget",
 		"description": "GoBudget is a personal monthly budget planner I made with my friend: log your income and up to four expenses and get a live allocation breakdown, totals, and an over-budget warning — saved per-user to Supabase.",
 		"tags": ["React", "Vite", "Webapp"],
 		"demo_url": null,
 		"github_url": "https://github.com/Dooooooks/GoBudget",
 		"cover_url": "/ProjectPictures/GoBudget.png",
-		"date": "2024-11",
-		"created_at": "2026-09-08T18:59:26.553Z"
+		"date": "2024-11"
 	},
 	{
-		"id": "d4a7a296-79df-4b06-ac34-11e65d7434f6",
 		"title": "Barangay Together",
 		"description": "This is a PHP + Supabase web app that lets barangay officials post volunteer activities and residents sign up, with role-based accounts, slot limits, and participation tracking.",
 		"tags": ["PHP", "Webapp", "UI/UX"],
 		"demo_url": null,
 		"github_url": "https://github.com/Dooooooks/BarangayTogether",
 		"cover_url": "/ProjectPictures/BarangayTogether.png",
-		"date": "2025-03",
-		"created_at": "2026-09-08T18:27:06.593Z"
+		"date": "2025-03"
 	},
 	{
-		"id": "7eedc1cc-f12a-4573-babf-f9947ed373f4",
 		"title": "Omaclippr - Plugin for Omarchy",
 		"description": "Background instant replay buffer to capture your best gaming moments and desktop highlights on demand.",
 		"tags": ["Linux", "Omarchy", "Shell"],
 		"demo_url": null,
 		"github_url": "https://github.com/Dooooooks/omaclippr",
 		"cover_url": "/ProjectPictures/Omaclippr.png",
-		"date": "2026-09",
-		"created_at": "2026-09-08T18:22:09.513Z"
+		"date": "2026-09"
 	},
 	{
-		"id": "81e248d4-8e62-4769-a3d3-e0b3106b2557",
 		"title": "Palworld Dedicated Server using Google VPS",
 		"description": "Administered the server via an Ubuntu/Debian headless environment using systemd services and automated shell scripts for scheduled restarts, backups, and memory management.",
 		"tags": ["Server Creation", "Server Maintenance"],
 		"demo_url": null,
 		"github_url": null,
 		"cover_url": "/ProjectPictures/PalworldServer.png",
-		"date": "2026-07",
-		"created_at": "2026-09-02T07:52:55.086Z"
+		"date": "2026-07"
 	},
 	{
-		"id": "d806df65-70f0-4763-a82e-64e2b270c04a",
 		"title": "Flappy Bird Clone (Godot Engine)",
 		"description": "Developed a Flappy Bird clone featuring custom physics, precise collision detection, and an intuitive UI to recreate smooth, responsive gameplay.",
 		"tags": ["Game Development", "Godot"],
 		"demo_url": "https://hoyyyyyy.itch.io/donttouchmybirdie",
 		"github_url": null,
 		"cover_url": "/ProjectPictures/FlappyBirdClone.png",
-		"date": "2024-06",
-		"created_at": "2026-09-01T19:30:38.920Z"
+		"date": "2024-06"
 	},
 	{
-		"id": "bbec50f9-ce71-4545-bf1c-f616dd418176",
 		"title": "Been Here Before (Godot Engine)",
 		"description": "Built an immersive 2D psychological horror title inspired by The Exit 8 as part of a game jam team, providing hands-on experience in cooperative design and execution under tight deadlines.",
 		"tags": ["Game Development", "Godot"],
 		"demo_url": "https://hoyyyyyy.itch.io/been-here-before",
 		"github_url": null,
 		"cover_url": "/ProjectPictures/BeenHereBefore.png",
-		"date": "2025-10",
-		"created_at": "2026-09-01T19:27:56.918Z"
+		"date": "2025-10"
 	}
 ]
