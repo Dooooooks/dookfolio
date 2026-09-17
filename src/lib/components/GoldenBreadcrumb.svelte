@@ -7,6 +7,7 @@
 		tickGoldenBoost,
 		addQuacks
 	} from '$lib/game-mode.svelte';
+	import { synth } from '$lib/synth.svelte';
 
 	let { onGoldenReward }: { onGoldenReward: (text: string, isBurst?: boolean) => void } = $props();
 
@@ -122,6 +123,8 @@
 			cancelAnimationFrame(rafId);
 			rafId = null;
 		}
+
+		synth.playUpgrade();
 
 		const isBurst = activeCrumb.isBurst;
 

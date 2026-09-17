@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowLeft, Calendar, Building2 } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import { reveal } from '$lib/actions/reveal';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -20,7 +21,7 @@
 	</a>
 
 	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
-		<div class="anim-fade-in-up">
+		<div use:reveal={{ y: 22 }}>
 			<h1 class="text-3xl font-extrabold md:text-4xl">Experiences</h1>
 			<p class="mt-2 text-sm text-muted md:text-base">
 				My career path, milestones, and development journey.
@@ -30,8 +31,8 @@
 		<ol class="mt-10 space-y-8 border-l-2 border-accent/20 pl-6 md:pl-8">
 			{#each data.experiences as exp, i (exp.id)}
 				<li
-					class="anim-fade-in-up group relative rounded-xl border border-transparent p-4 transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-surface/50"
-					style="animation-delay: {100 + i * 120}ms;"
+					use:reveal={{ delay: 100 + i * 110, y: 24, scale: 0.96 }}
+					class="group relative rounded-xl border border-transparent p-4 transition-all duration-300 hover:-translate-y-1 hover:border-white/10 hover:bg-surface/50"
 				>
 					<!-- Glowing timeline node -->
 					<span

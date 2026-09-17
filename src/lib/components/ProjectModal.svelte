@@ -3,6 +3,7 @@
 	import { base } from '$app/paths';
 	import type { Project } from '$lib/types';
 	import { projectModal, closeProjectModal } from '$lib/project-modal.svelte';
+	import { gameDevMode } from '$lib/game-mode.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	let {
@@ -103,6 +104,8 @@
 					<img
 						src="{base}{activeProject.cover_url}"
 						alt={activeProject.title}
+						loading="lazy"
+						decoding="async"
 						class="size-full object-cover"
 					/>
 				</div>
@@ -112,14 +115,18 @@
 			<div class="mt-5 flex flex-wrap items-start justify-between gap-3">
 				<h3
 					id="project-modal-title"
-					class="font-sans text-xl font-extrabold tracking-tight text-white sm:text-2xl"
+					class="font-extrabold tracking-tight text-white {gameDevMode.active
+						? 'font-pixel text-base sm:text-lg'
+						: 'font-sans text-xl sm:text-2xl'}"
 				>
 					{activeProject.title}
 				</h3>
 
 				{#if activeProject.date}
 					<span
-						class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 text-xs font-bold text-accent"
+						class="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 font-bold text-accent {gameDevMode.active
+							? 'font-pixel text-[9px]'
+							: 'text-xs'}"
 					>
 						<Calendar class="size-3.5" />
 						{activeProject.date}
@@ -132,7 +139,9 @@
 				<div class="mt-3 flex flex-wrap gap-1.5">
 					{#each activeProject.tags as tag (tag)}
 						<span
-							class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-bold text-muted"
+							class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-bold text-muted {gameDevMode.active
+								? 'font-pixel text-[8px]'
+								: 'text-xs'}"
 						>
 							{tag}
 						</span>
@@ -141,7 +150,7 @@
 			{/if}
 
 			<!-- Full Project Description -->
-			<p class="mt-4 text-left text-sm leading-relaxed text-muted sm:text-base">
+			<p class="mt-4 text-left text-sm leading-relaxed text-muted sm:text-base {gameDevMode.active ? 'leading-normal' : ''}">
 				{activeProject.description}
 			</p>
 
@@ -153,7 +162,9 @@
 							href={activeProject.demo_url}
 							target="_blank"
 							rel="external noreferrer"
-							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-extrabold text-black shadow-lg shadow-accent/20 transition-all duration-200 hover:scale-[1.02] hover:bg-accent-soft active:scale-95 sm:flex-none"
+							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-extrabold text-black shadow-lg shadow-accent/20 transition-all duration-200 hover:scale-[1.02] hover:bg-accent-soft active:scale-95 sm:flex-none {gameDevMode.active
+								? 'font-pixel text-xs'
+								: 'text-sm'}"
 						>
 							<ExternalLink class="size-4" />
 							Live Demo
@@ -165,7 +176,9 @@
 							href={activeProject.github_url}
 							target="_blank"
 							rel="external noreferrer"
-							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-extrabold text-white transition-all duration-200 hover:scale-[1.02] hover:border-white/30 hover:bg-white/10 active:scale-95 sm:flex-none"
+							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 font-extrabold text-white transition-all duration-200 hover:scale-[1.02] hover:border-white/30 hover:bg-white/10 active:scale-95 sm:flex-none {gameDevMode.active
+								? 'font-pixel text-xs'
+								: 'text-sm'}"
 						>
 							<FolderGit2 class="size-4 text-accent" />
 							View on GitHub

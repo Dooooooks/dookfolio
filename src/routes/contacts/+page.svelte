@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ArrowLeft, Mail, Phone, ExternalLink } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
+	import { reveal } from '$lib/actions/reveal';
 
 	const contacts = [
 		{
@@ -44,7 +45,7 @@
 	</a>
 
 	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
-		<div class="anim-fade-in-up">
+		<div use:reveal={{ y: 22 }}>
 			<h1 class="text-3xl font-extrabold md:text-4xl">Contacts</h1>
 			<p class="mt-2 text-base leading-relaxed text-muted md:text-lg">
 				Let's build something together. Reach out through any of the channels below.
@@ -53,7 +54,7 @@
 
 		<ul class="mt-8 space-y-3.5">
 			{#each contacts as contact, i (contact.label)}
-				<li class="anim-fade-in-up" style="animation-delay: {100 + i * 90}ms;">
+				<li use:reveal={{ delay: 80 + i * 70, y: 20, scale: 0.96 }}>
 					<a
 						href={contact.href}
 						rel="external noreferrer"

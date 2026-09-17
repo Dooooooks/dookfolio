@@ -2,6 +2,7 @@
 	import { ArrowLeft, ExternalLink, FolderGit2 } from '@lucide/svelte';
 	import { base, resolve } from '$app/paths';
 	import { openProjectModal } from '$lib/project-modal.svelte';
+	import { reveal } from '$lib/actions/reveal';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -21,7 +22,7 @@
 	</a>
 
 	<div class="mx-auto my-auto w-full max-w-3xl pt-8 sm:pt-0">
-		<div class="anim-fade-in-up">
+		<div use:reveal={{ y: 22 }}>
 			<h1 class="text-3xl font-extrabold md:text-4xl">Projects</h1>
 			<p class="mt-2 text-sm text-muted md:text-base">
 				Selected web applications, tools, and game projects.
@@ -29,13 +30,14 @@
 		</div>
 
 		{#if data.projects.length === 0}
-			<p class="anim-fade-in-up mt-8 text-sm text-muted" style="animation-delay: 100ms;">
+			<p use:reveal={{ delay: 100, y: 16 }} class="mt-8 text-sm text-muted">
 				No projects yet.
 			</p>
 		{:else}
 			<div class="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
 				{#each data.projects as project, i (project.id)}
 					<div
+						use:reveal={{ delay: 80 + i * 60, y: 24, scale: 0.95 }}
 						role="button"
 						tabindex="0"
 						onclick={() => openProjectModal(project)}
@@ -45,14 +47,15 @@
 								openProjectModal(project);
 							}
 						}}
-						class="anim-fade-in-up group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
-						style="animation-delay: {100 + i * 80}ms;"
+						class="group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
 					>
 						<div class="relative aspect-[16/10] w-full overflow-hidden bg-bg">
 							{#if project.cover_url}
 								<img
 									src="{base}{project.cover_url}"
 									alt={project.title}
+									loading="lazy"
+									decoding="async"
 									class="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-108"
 								/>
 							{:else}

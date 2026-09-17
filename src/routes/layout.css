@@ -291,6 +291,36 @@
 	animation: fadeInUp 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Scroll-triggered lazy reveal & pop-up animation */
+.reveal-pop,
+[data-reveal='pop'] {
+	opacity: 0;
+	transform: translateY(var(--reveal-y, 28px)) scale(var(--reveal-scale, 0.95));
+	transition:
+		opacity var(--reveal-duration, 650ms) cubic-bezier(0.16, 1, 0.3, 1),
+		transform var(--reveal-duration, 650ms) cubic-bezier(0.22, 1.18, 0.36, 1);
+	transition-delay: var(--reveal-delay, 0ms);
+	will-change: opacity, transform;
+}
+
+.reveal-pop.is-revealed,
+.reveal-pop[data-revealed='true'],
+[data-reveal='pop'].is-revealed,
+[data-reveal='pop'][data-revealed='true'] {
+	opacity: 1 !important;
+	transform: translateY(0) scale(1);
+}
+
+.reveal-pop.reveal-completed,
+.reveal-pop[data-completed='true'],
+[data-reveal='pop'].reveal-completed,
+[data-reveal='pop'][data-completed='true'] {
+	opacity: 1 !important;
+	transform: none;
+	transition: none;
+	will-change: auto;
+}
+
 .anim-page-transition {
 	animation: pageTransition 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

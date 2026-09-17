@@ -17,6 +17,11 @@
 	import GithubActivity from '$lib/components/GithubActivity.svelte';
 	import FlyingBreadcrumbs from '$lib/components/FlyingBreadcrumbs.svelte';
 	import GoldenBreadcrumb from '$lib/components/GoldenBreadcrumb.svelte';
+	import SkillsSection from '$lib/components/SkillsSection.svelte';
+	import HomeProjectsFan from '$lib/components/HomeProjectsFan.svelte';
+	import HomeBlogsSection from '$lib/components/HomeBlogsSection.svelte';
+	import { synth } from '$lib/synth.svelte';
+	import { reveal } from '$lib/actions/reveal';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -58,6 +63,7 @@
 
 	function onDuckClick() {
 		const { earned, isCrit } = calculateDuckClick();
+		synth.playQuack(isCrit);
 		const id = nextQuackId++;
 		const x = Math.floor(Math.random() * 26) - 13;
 		const rot = Math.floor(Math.random() * 16) - 8;
@@ -72,6 +78,7 @@
 
 	function onCrumbFed() {
 		const newCount = feedDuck();
+		synth.playFeed();
 		isChomping = true;
 		setTimeout(() => {
 			isChomping = false;
@@ -246,8 +253,8 @@
 
 <!-- Easter Egg Warning Notice: Don't feed the duck -->
 <div
-	class="anim-fade-in-up -mt-2 mb-10 flex flex-col items-center justify-center px-8 select-none"
-	style="animation-delay: 280ms;"
+	use:reveal={{ delay: 50, y: 16 }}
+	class="-mt-2 mb-10 flex flex-col items-center justify-center px-8 select-none"
 >
 	<div class="flex items-center gap-2.5 transition-all duration-300">
 		<p
@@ -288,41 +295,32 @@
 
 <section id="about" class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
 	<div class="mx-auto w-full max-w-3xl">
-		<h2 class="anim-fade-in-up text-3xl font-extrabold md:text-4xl">About</h2>
+		<h2 use:reveal={{ y: 22 }} class="text-3xl font-extrabold md:text-4xl">About</h2>
 
 		<div class="mt-8 space-y-5 text-base leading-relaxed text-muted text-justify md:text-lg">
-			<p class="anim-fade-in-up text-justify" style="animation-delay: 80ms;">
+			<p use:reveal={{ delay: 70, y: 20 }} class="text-justify">
 				Hi, I'm Lloyd — a {gameDevMode.active ? 'game' : 'software'} developer from Bulacan, Philippines.
 				I enjoy building clean, modern web applications and turning ideas into products people can actually
 				use.
 			</p>
-			<p class="anim-fade-in-up text-justify" style="animation-delay: 140ms;">
+			<p use:reveal={{ delay: 140, y: 20 }} class="text-justify">
 				When I'm not shipping web apps, I'm exploring game development — prototyping mechanics,
 				playtesting with friends, and chasing that perfect game feel. (Psst… whatever you do, don't
 				feed the duck on the home page.)
 			</p>
-			<p class="anim-fade-in-up text-justify" style="animation-delay: 200ms;">
+			<p use:reveal={{ delay: 210, y: 20 }} class="text-justify">
 				I care about thoughtful UI, pixel-perfect details, and code that stays simple. Currently
 				open to collaborations, freelance work, and game jams.
 			</p>
 		</div>
 
-		<h3
-			class="anim-fade-in-up mt-12 text-xl font-extrabold md:text-2xl"
-			style="animation-delay: 240ms;"
-		>
-			Skills
-		</h3>
-		<ul class="mt-4 flex flex-wrap gap-2.5">
-			{#each ['TypeScript', 'Svelte / SvelteKit', 'Node.js', 'Tailwind CSS', 'PostgreSQL', 'Git', 'Game Development'] as skill, i (skill)}
-				<li
-					class="anim-fade-in-up cursor-default rounded-full border border-transparent bg-accent/10 px-3.5 py-1.5 text-sm font-bold text-accent transition-all duration-200 hover:-translate-y-0.5 hover:scale-110 hover:border-accent/40 hover:bg-accent/20 hover:shadow-md hover:shadow-accent/25"
-					style="animation-delay: {280 + i * 50}ms;"
-				>
-					{skill}
-				</li>
-			{/each}
-		</ul>
+		<SkillsSection />
+
+		<!-- Featured Projects Section (Fan-Shaped Cards) -->
+		<HomeProjectsFan />
+
+		<!-- Blogs Section (Latest 5 Blogs) -->
+		<HomeBlogsSection />
 	</div>
 </section>
 

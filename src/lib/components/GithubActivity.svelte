@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ExternalLink } from '@lucide/svelte';
+	import { reveal } from '$lib/actions/reveal';
 	import type { ContributionCalendar, ContributionDay } from '$lib/server/github';
 
 	let {
@@ -73,7 +74,7 @@
 <section id="activity" class="mt-24 px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
 	<div class="mx-auto w-full max-w-3xl">
 		<!-- Section Header -->
-		<div class="flex items-center justify-between">
+		<div use:reveal={{ y: 20 }} class="flex items-center justify-between">
 			<div class="flex items-center gap-3">
 				<h2 class="text-2xl font-extrabold md:text-3xl">Activity</h2>
 				<span
@@ -98,7 +99,7 @@
 		</div>
 
 		<!-- GitHub Contribution Heatmap -->
-		<div class="heatmap-container anim-fade-in-up relative mt-6">
+		<div use:reveal={{ delay: 100, y: 24 }} class="heatmap-container relative mt-6">
 			<!-- Responsive Scroll Container -->
 			<div class="scrollbar-thin overflow-x-auto pb-2 overscroll-x-contain touch-pan-x">
 				<div class="min-w-[720px]">

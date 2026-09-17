@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import '@fontsource-variable/nunito';
 	import '@fontsource/press-start-2p';
 	import './layout.css';
@@ -14,12 +15,16 @@
 		BookOpen,
 		ChevronLeft,
 		ChevronRight,
+		FolderGit2,
 		Gamepad2,
 		House,
 		Mail,
 		Newspaper,
 		ShoppingBag,
-		User
+		Sparkles,
+		User,
+		Volume2,
+		VolumeX
 	} from '@lucide/svelte';
 	import {
 		gameDevMode,
@@ -37,11 +42,28 @@
 	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
 	import ProjectModal from '$lib/components/ProjectModal.svelte';
 	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
+	import { synthState, synth, toggleAudioMute } from '$lib/synth.svelte';
 
 	let { children } = $props();
 
 	let isOpen = $state(true);
-	let activeSection = $state<'home' | 'about' | 'activity'>('home');
+	let activeSection = $state<'home' | 'about' | 'activity' | 'skills' | 'latest'>('home');
+
+	function handleGlobalClick(e: MouseEvent) {
+		if (synthState.muted || !gameDevMode.active) return;
+		const target = e.target as HTMLElement | null;
+		if (!target) return;
+
+		const clickable = target.closest<HTMLElement>('button, a, [role="button"]');
+		if (!clickable) return;
+
+		// Skip elements that handle their own specialized sound (e.g. hero duck)
+		if (clickable.id === 'hero-duck-button' || clickable.hasAttribute('data-custom-sound')) {
+			return;
+		}
+
+		synth.playUiClick();
+	}
 
 	onMount(() => {
 		if (window.innerWidth < 768) {
@@ -53,26 +75,24 @@
 			const scrollY = window.scrollY;
 			const activityEl = document.getElementById('activity');
 			const aboutEl = document.getElementById('about');
+			const skillsEl = document.getElementById('skills');
+			const latestEl = document.getElementById('latest');
 
-			const activityTop = activityEl ? activityEl.offsetTop - 280 : Infinity;
+			const latestTop = latestEl ? latestEl.offsetTop - 280 : Infinity;
+			const skillsTop = skillsEl ? skillsEl.offsetTop - 280 : Infinity;
 			const aboutTop = aboutEl ? aboutEl.offsetTop - 280 : Infinity;
+			const activityTop = activityEl ? activityEl.offsetTop - 280 : Infinity;
 
-			if (aboutTop > activityTop) {
-				if (scrollY >= aboutTop) {
-					activeSection = 'about';
-				} else if (scrollY >= activityTop) {
-					activeSection = 'activity';
-				} else {
-					activeSection = 'home';
-				}
+			if (scrollY >= latestTop) {
+				activeSection = 'latest';
+			} else if (scrollY >= skillsTop) {
+				activeSection = 'skills';
+			} else if (scrollY >= aboutTop) {
+				activeSection = 'about';
+			} else if (scrollY >= activityTop) {
+				activeSection = 'activity';
 			} else {
-				if (scrollY >= activityTop) {
-					activeSection = 'activity';
-				} else if (scrollY >= aboutTop) {
-					activeSection = 'about';
-				} else {
-					activeSection = 'home';
-				}
+				activeSection = 'home';
 			}
 		}
 
@@ -86,7 +106,11 @@
 
 	$effect(() => {
 		if (page.url.pathname === '/') {
-			if (page.url.hash === '#about') {
+			if (page.url.hash === '#latest' || page.url.hash === '#blogs') {
+				activeSection = 'latest';
+			} else if (page.url.hash === '#skills') {
+				activeSection = 'skills';
+			} else if (page.url.hash === '#about') {
 				activeSection = 'about';
 			} else if (page.url.hash === '#activity') {
 				activeSection = 'activity';
@@ -96,11 +120,14 @@
 
 	const homeSubsections = [
 		{ href: '/#activity', label: 'Activity', icon: Activity, id: 'activity' as const },
-		{ href: '/#about', label: 'About', icon: User, id: 'about' as const }
+		{ href: '/#about', label: 'About', icon: User, id: 'about' as const },
+		{ href: '/#skills', label: 'Skills', icon: Sparkles, id: 'skills' as const },
+		{ href: '/#latest', label: 'Latest', icon: FolderGit2, id: 'latest' as const }
 	] as const;
 
 	const otherLinks = [
 		{ href: '/projects', label: 'Projects', icon: Newspaper },
+		{ href: '/blogs', label: 'Blogs', icon: BookOpen },
 		{ href: '/experiences', label: 'Experiences', icon: Briefcase },
 		{ href: '/contacts', label: 'Contacts', icon: Mail }
 	] as const;
@@ -129,6 +156,8 @@
 	});
 </script>
 
+<svelte:window onclick={handleGlobalClick} />
+
 <svelte:head>
 	<link rel="icon" type="image/png" href={gameDevMode.active ? duckYellow : duckWhite} />
 </svelte:head>
@@ -146,19 +175,44 @@
 		</button>
 	{/if}
 
-	<!-- Break Contract Book Button (Only visible after entering Game Dev Mode) -->
+	<!-- Break Contract & 8-Bit Synthesizer Controls (Only visible after entering Game Dev Mode) -->
 	{#if gameDevMode.active}
-		<button
-			type="button"
-			onclick={openBreakContractModal}
-			aria-label="Break Contract with Duck"
-			title="Break Contract with Duck (Return to Software Dev Mode)"
-			class="fixed top-3.5 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95 {isOpen
+		<div
+			class="fixed top-3.5 z-20 flex items-center gap-2 transition-all duration-300 {isOpen
 				? 'left-13 md:left-56'
 				: 'left-13'}"
 		>
-			<BookOpen class="size-4.5" strokeWidth={1.75} />
-		</button>
+			<!-- Break Contract Book Button -->
+			<button
+				type="button"
+				onclick={openBreakContractModal}
+				aria-label="Break Contract with Duck"
+				title="Break Contract with Duck (Return to Software Dev Mode)"
+				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95"
+			>
+				<BookOpen class="size-4.5" strokeWidth={1.75}>
+					<line x1="2" y1="2" x2="22" y2="22" />
+				</BookOpen>
+			</button>
+
+			<!-- 8-Bit Synthesizer Unmute / Mute Button (Muted by default for UX design) -->
+			<button
+				type="button"
+				onclick={toggleAudioMute}
+				data-custom-sound
+				aria-label={synthState.muted ? 'Unmute 8-bit UI sounds' : 'Mute 8-bit UI sounds'}
+				title={synthState.muted ? 'Unmute UI sounds' : 'Mute UI sounds'}
+				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95 {!synthState.muted
+					? 'border-accent bg-accent/20 ring-1 ring-accent/60 shadow-accent/40'
+					: ''}"
+			>
+				{#if synthState.muted}
+					<VolumeX class="size-4.5" strokeWidth={1.75} />
+				{:else}
+					<Volume2 class="size-4.5" strokeWidth={1.75} />
+				{/if}
+			</button>
+		</div>
 	{/if}
 
 	<!-- Backdrop on Mobile -->
@@ -221,32 +275,37 @@
 					<span>Home</span>
 				</a>
 
-				<!-- Subsections under Home -->
-				<div class="ml-4.5 flex flex-col gap-0.5 border-l border-white/10 pl-3">
-					{#each homeSubsections as sub (sub.href)}
-						{@const isSubActive = page.url.pathname === '/' && activeSection === sub.id}
-						<a
-							href={resolve(sub.href)}
-							onclick={() => {
-								activeSection = sub.id;
-								if (window.innerWidth < 768) isOpen = false;
-							}}
-							aria-current={isSubActive ? 'page' : undefined}
-							class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-bold transition-all duration-150 {gameDevMode.active
-								? 'text-[7.5px]'
-								: 'text-xs'} {isSubActive
-								? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
-								: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
-						>
-							<sub.icon
-								class="size-3.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isSubActive
-									? 'text-accent'
-									: 'text-muted group-hover:text-white'}"
-							/>
-							<span>{sub.label}</span>
-						</a>
-					{/each}
-				</div>
+				<!-- Subsections under Home (Only displayed when active on Home tab) -->
+				{#if page.url.pathname === '/'}
+					<div
+						transition:slide={{ duration: 200 }}
+						class="ml-4.5 flex flex-col gap-0.5 border-l border-white/10 pl-3"
+					>
+						{#each homeSubsections as sub (sub.href)}
+							{@const isSubActive = page.url.pathname === '/' && activeSection === sub.id}
+							<a
+								href={resolve(sub.href)}
+								onclick={() => {
+									activeSection = sub.id;
+									if (window.innerWidth < 768) isOpen = false;
+								}}
+								aria-current={isSubActive ? 'page' : undefined}
+								class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-bold transition-all duration-150 {gameDevMode.active
+									? 'text-[7.5px]'
+									: 'text-xs'} {isSubActive
+									? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
+									: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
+							>
+								<sub.icon
+									class="size-3.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isSubActive
+										? 'text-accent'
+										: 'text-muted group-hover:text-white'}"
+								/>
+								<span>{sub.label}</span>
+							</a>
+						{/each}
+					</div>
+				{/if}
 			</div>
 
 			<!-- Other Main Links -->
@@ -349,7 +408,7 @@
 					{/if}
 					<span
 						class="font-medium transition-colors {gameDevMode.active
-							? 'font-pixel text-[7.5px] text-[#ffe794] group-hover:text-white'
+							? 'font-pixel text-[7.5px] tracking-wider text-[#ffe794] group-hover:text-white'
 							: 'truncate font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
 					>
 						dook13s@proton.me

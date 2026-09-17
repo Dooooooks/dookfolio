@@ -6,6 +6,7 @@
 		confirmBreakContract,
 		closeBreakContractModal
 	} from '$lib/game-mode.svelte';
+	import { synth } from '$lib/synth.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	let isClosing = $state(false);
@@ -52,6 +53,7 @@
 
 	function handleConfirm() {
 		if (isClosing || !isVisible) return;
+		synth.playPowerDown();
 		isClosing = true;
 		setTimeout(() => {
 			isClosing = false;

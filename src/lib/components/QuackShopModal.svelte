@@ -11,6 +11,7 @@
 		buyUpgrade,
 		type UpgradesState
 	} from '$lib/game-mode.svelte';
+	import { synth } from '$lib/synth.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	let isClosing = $state(false);
@@ -151,9 +152,9 @@
 					>
 						<span>Final Score:</span>
 						<span
-							class="font-black text-white {gameDevMode.active
-								? 'font-pixel text-[11px] text-[#ffe794]'
-								: 'text-accent text-sm sm:text-base'}"
+							class="font-black text-accent {gameDevMode.active
+								? 'font-pixel text-[11px]'
+								: 'text-sm sm:text-base'}"
 						>
 							{gameDevMode.totalQuacksEarned.toLocaleString()}
 						</span>
@@ -189,9 +190,9 @@
 				<div class="mt-1.5 mb-4 flex items-center gap-1.5 text-muted {gameDevMode.active ? 'text-[9px]' : 'text-xs sm:text-sm'}">
 					<span>Balance:</span>
 					<span
-						class="font-black text-white {gameDevMode.active
-							? 'font-pixel text-[11px] text-[#ffe794]'
-							: 'text-accent text-sm sm:text-base'}"
+						class="font-black text-accent {gameDevMode.active
+							? 'font-pixel text-[11px]'
+							: 'text-sm sm:text-base'}"
 					>
 						{gameDevMode.quacks.toLocaleString()}
 					</span>
@@ -221,7 +222,7 @@
 								</span>
 								<span class="text-muted leading-tight {gameDevMode.active ? 'text-[7.5px]' : 'text-[11px]'}">
 									{#if key === 'strongerQuack' && gameDevMode.fedCount > 0}
-										{config.description} <span class="font-bold {gameDevMode.active ? 'text-[#ffe794]' : 'text-accent'}">(+{gameDevMode.fedCount} crumbs)</span>
+										{config.description} <span class="font-bold text-accent">(+{gameDevMode.fedCount} crumbs)</span>
 									{:else}
 										{config.description}
 									{/if}
@@ -234,9 +235,7 @@
 									{@const isFilled = currentLevel > barIndex}
 									<div
 										class="h-4.5 w-5.5 rounded-sm transition-all duration-200 sm:h-5 sm:w-6 {isFilled
-											? gameDevMode.active
-												? 'border border-[#ffe794]/80 bg-[#ffe794] shadow-xs shadow-[#ffe794]/50'
-												: 'border border-accent/80 bg-accent shadow-xs shadow-accent/50'
+											? 'border border-accent/80 bg-accent shadow-xs shadow-accent/50'
 											: 'border border-white/10 bg-white/8'}"
 									></div>
 								{/each}
@@ -246,7 +245,11 @@
 							<button
 								type="button"
 								disabled={isMax || !canAfford}
-								onclick={() => buyUpgrade(key)}
+								onclick={() => {
+									if (buyUpgrade(key)) {
+										synth.playUpgrade();
+									}
+								}}
 								aria-label={isMax
 									? `${config.name} maxed out`
 									: `Upgrade ${config.name} for ${cost} quacks`}
@@ -255,9 +258,7 @@
 									: 'text-xs'} {isMax
 									? 'cursor-default border border-white/10 bg-white/5 text-muted/50'
 									: canAfford
-										? gameDevMode.active
-											? 'border border-[#ffe794]/40 bg-[#ffe794]/20 text-[#ffe794] shadow-xs shadow-[#ffe794]/20 hover:scale-105 hover:bg-[#ffe794]/30 active:scale-95'
-											: 'border border-accent/40 bg-accent/20 text-accent shadow-xs shadow-accent/20 hover:scale-105 hover:bg-accent/30 hover:border-accent active:scale-95'
+										? 'border border-accent/40 bg-accent/20 text-accent shadow-xs shadow-accent/20 hover:scale-105 hover:bg-accent/30 hover:border-accent active:scale-95'
 										: 'cursor-not-allowed border border-white/8 bg-white/4 text-muted/50 opacity-60'}"
 							>
 								{#if isMax}

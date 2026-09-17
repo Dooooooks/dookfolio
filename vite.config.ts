@@ -23,6 +23,10 @@ export default defineConfig({
 
 			paths: {
 				base: (process.argv.includes('dev') ? '' : process.env.BASE_PATH || '') as '' | `/${string}`
+			},
+
+			prerender: {
+				handleUnseenRoutes: 'ignore'
 			}
 		})
 	]
