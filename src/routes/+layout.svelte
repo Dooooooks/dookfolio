@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import { slide } from 'svelte/transition';
 	import '@fontsource-variable/nunito';
-	import '@fontsource/press-start-2p';
+	import '@fontsource/press-start-2p/latin.css';
 	import './layout.css';
 	import duckWhite from '$lib/assets/duck_white.png';
 	import duckYellow from '$lib/assets/duck_yellow.png';
@@ -70,37 +70,59 @@
 			isOpen = false;
 		}
 
-		function updateSectionOnScroll() {
-			if (page.url.pathname !== '/') return;
-			const scrollY = window.scrollY;
-			const activityEl = document.getElementById('activity');
-			const aboutEl = document.getElementById('about');
-			const skillsEl = document.getElementById('skills');
-			const latestEl = document.getElementById('latest');
+		if (page.url.pathname !== '/') return;
 
-			const latestTop = latestEl ? latestEl.offsetTop - 280 : Infinity;
-			const skillsTop = skillsEl ? skillsEl.offsetTop - 280 : Infinity;
-			const aboutTop = aboutEl ? aboutEl.offsetTop - 280 : Infinity;
-			const activityTop = activityEl ? activityEl.offsetTop - 280 : Infinity;
+		const sectionIds = ['activity', 'about', 'skills', 'latest'] as const;
+		const sections = sectionIds
+			.map((id) => document.getElementById(id))
+			.filter((el): el is HTMLElement => el !== null);
 
-			if (scrollY >= latestTop) {
-				activeSection = 'latest';
-			} else if (scrollY >= skillsTop) {
-				activeSection = 'skills';
-			} else if (scrollY >= aboutTop) {
-				activeSection = 'about';
-			} else if (scrollY >= activityTop) {
-				activeSection = 'activity';
-			} else {
-				activeSection = 'home';
-			}
+		const visibleSections = new Set<string>();
+
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						visibleSections.add(entry.target.id);
+					} else {
+						visibleSections.delete(entry.target.id);
+					}
+				}
+
+				if (visibleSections.size === 0) {
+					if (window.scrollY < 200) {
+						activeSection = 'home';
+					}
+				} else {
+					for (const id of sectionIds) {
+						if (visibleSections.has(id)) {
+							activeSection = id;
+						}
+					}
+				}
+			},
+			{ rootMargin: '-15% 0px -55% 0px' }
+		);
+
+		sections.forEach((s) => observer.observe(s));
+
+		let rafId = 0;
+		function onScroll() {
+			if (rafId) return;
+			rafId = requestAnimationFrame(() => {
+				rafId = 0;
+				if (window.scrollY < 120 && activeSection !== 'home') {
+					activeSection = 'home';
+				}
+			});
 		}
 
-		window.addEventListener('scroll', updateSectionOnScroll, { passive: true });
-		updateSectionOnScroll();
+		window.addEventListener('scroll', onScroll, { passive: true });
 
 		return () => {
-			window.removeEventListener('scroll', updateSectionOnScroll);
+			observer.disconnect();
+			window.removeEventListener('scroll', onScroll);
+			if (rafId) cancelAnimationFrame(rafId);
 		};
 	});
 
@@ -242,7 +264,7 @@
 		</button>
 
 		<div class="flex items-center gap-3 px-1 pt-1">
-			<img src={profile} alt="Lloyd Nicolas" class="size-9 shrink-0 rounded-full object-cover" />
+			<img src={profile} alt="Lloyd Nicolas" width="36" height="36" decoding="async" class="size-9 shrink-0 rounded-full object-cover" />
 			<div>
 				<p class="font-extrabold text-white {gameDevMode.active ? 'text-[8.5px]' : 'text-sm'}">Lloyd Nicolas</p>
 				<p class="font-bold text-accent {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
