@@ -1,11 +1,20 @@
 <script lang="ts">
-	import { ArrowLeft, ExternalLink, FolderGit2 } from '@lucide/svelte';
+	import { ArrowLeft, ArrowRight, Calendar, ExternalLink, FolderGit2 } from '@lucide/svelte';
 	import { base, resolve } from '$app/paths';
 	import { openProjectModal } from '$lib/project-modal.svelte';
 	import { reveal } from '$lib/actions/reveal';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
+
+	function formatDate(dateStr?: string) {
+		if (!dateStr) return '';
+		const [year, month] = dateStr.split('-');
+		if (!year || !month) return dateStr;
+		const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+		const mIdx = parseInt(month, 10) - 1;
+		return mIdx >= 0 && mIdx < 12 ? `${months[mIdx]} ${year}` : dateStr;
+	}
 </script>
 
 <svelte:head>
@@ -35,10 +44,10 @@
 				No projects yet.
 			</p>
 		{:else}
-			<div class="mt-8 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+			<div class="mt-8 grid gap-5 sm:grid-cols-2">
 				{#each data.projects as project, i (project.title)}
 					<div
-						use:reveal={{ delay: 80 + i * 60, y: 24, scale: 0.95 }}
+						use:reveal={{ delay: 80 + i * 60, y: 24, scale: 0.96 }}
 						role="button"
 						tabindex="0"
 						onclick={() => openProjectModal(project)}
@@ -48,8 +57,9 @@
 								openProjectModal(project);
 							}
 						}}
-						class="group flex cursor-pointer flex-col overflow-hidden rounded-xl border border-white/8 bg-surface transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:shadow-xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
+						class="group relative flex cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/8 bg-surface/70 backdrop-blur-xs transition-all duration-300 hover:-translate-y-2 hover:border-accent/40 hover:bg-surface/90 hover:shadow-2xl hover:shadow-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-hidden"
 					>
+						<!-- Media Banner with Top Glass Badges & Base Gradient -->
 						<div class="relative aspect-[16/10] w-full overflow-hidden bg-bg">
 							{#if project.cover_url}
 								<img
@@ -64,46 +74,105 @@
 									<span class="text-xs font-bold">No Image</span>
 								</div>
 							{/if}
+
+							<!-- Bottom Gradient Overlay -->
+							<div
+								class="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface via-surface/25 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-60"
+							></div>
+
+							<!-- Floating Glass Date Badge -->
+							{#if project.date}
+								<span
+									class="absolute top-3 left-3 flex items-center gap-1.5 rounded-full border border-white/10 bg-bg/85 px-2.5 py-1 text-[11px] font-bold text-muted/90 backdrop-blur-md"
+								>
+									<Calendar class="size-3 text-accent/80" />
+									<span>{formatDate(project.date)}</span>
+								</span>
+							{/if}
+
+							<!-- Floating Primary Tag Badge -->
+							{#if project.tags && project.tags.length > 0}
+								<span
+									class="absolute top-3 right-3 rounded-full border border-accent/30 bg-accent/20 px-2.5 py-1 text-[11px] font-extrabold text-white backdrop-blur-md shadow-xs shadow-accent/20"
+								>
+									{project.tags[0]}
+								</span>
+							{/if}
 						</div>
 
-						<div class="flex flex-1 flex-col p-4">
-							<div class="flex items-start justify-between gap-2">
-								<h2
-									class="text-sm font-extrabold text-white transition-colors group-hover:text-accent"
-								>
-									{project.title}
-								</h2>
-								<div class="flex shrink-0 items-center gap-2">
-									{#if project.demo_url}
-										<a
-											href={project.demo_url}
-											rel="external"
-											target="_blank"
-											title="Demo"
-											onclick={(e) => e.stopPropagation()}
-											class="text-muted transition-all duration-200 hover:scale-115 hover:text-accent"
-										>
-											<ExternalLink class="size-3.5" />
-										</a>
-									{/if}
-									{#if project.github_url}
-										<a
-											href={project.github_url}
-											rel="external"
-											target="_blank"
-											title="GitHub"
-											onclick={(e) => e.stopPropagation()}
-											class="text-muted transition-all duration-200 hover:scale-115 hover:text-accent"
-										>
-											<FolderGit2 class="size-3.5" />
-										</a>
-									{/if}
+						<!-- Card Content -->
+						<div class="flex flex-1 flex-col justify-between p-5">
+							<div>
+								<div class="flex items-start justify-between gap-3">
+									<h2
+										class="text-base font-extrabold text-white transition-colors group-hover:text-accent sm:text-lg"
+									>
+										{project.title}
+									</h2>
+
+									<!-- Quick Actions -->
+									<div class="flex shrink-0 items-center gap-1.5">
+										{#if project.demo_url}
+											<a
+												href={project.demo_url}
+												rel="external"
+												target="_blank"
+												title="Live Demo"
+												onclick={(e) => e.stopPropagation()}
+												class="flex size-7 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-muted transition-all duration-200 hover:scale-110 hover:border-accent/40 hover:bg-accent/15 hover:text-accent"
+											>
+												<ExternalLink class="size-3.5" />
+											</a>
+										{/if}
+										{#if project.github_url}
+											<a
+												href={project.github_url}
+												rel="external"
+												target="_blank"
+												title="GitHub Repository"
+												onclick={(e) => e.stopPropagation()}
+												class="flex size-7 items-center justify-center rounded-lg border border-white/8 bg-white/4 text-muted transition-all duration-200 hover:scale-110 hover:border-accent/40 hover:bg-accent/15 hover:text-accent"
+											>
+												<FolderGit2 class="size-3.5" />
+											</a>
+										{/if}
+									</div>
 								</div>
+
+								<p class="mt-2 line-clamp-3 text-xs leading-relaxed text-muted sm:text-sm">
+									{project.description}
+								</p>
 							</div>
 
-							<p class="mt-1.5 line-clamp-3 text-xs leading-relaxed text-muted">
-								{project.description}
-							</p>
+							<!-- Tag Rail & Details Indicator -->
+							<div class="mt-4 flex items-center justify-between border-t border-white/6 pt-3.5">
+								{#if project.tags && project.tags.length > 0}
+									<div class="flex flex-wrap items-center gap-1.5">
+										{#each project.tags.slice(0, 3) as tag}
+											<span
+												class="inline-flex items-center gap-1 rounded-md border border-white/6 bg-white/4 px-2 py-0.5 text-[11px] font-bold text-muted transition-colors group-hover:border-accent/20 group-hover:text-accent/90"
+											>
+												<span class="size-1 rounded-full bg-accent/60"></span>
+												{tag}
+											</span>
+										{/each}
+										{#if project.tags.length > 3}
+											<span class="text-[10px] font-bold text-muted/60">
+												+{project.tags.length - 3}
+											</span>
+										{/if}
+									</div>
+								{/if}
+
+								<span
+									class="ml-auto inline-flex items-center gap-1 text-xs font-bold text-muted/80 transition-colors group-hover:text-accent"
+								>
+									<span>Details</span>
+									<ArrowRight
+										class="size-3 transition-transform duration-200 group-hover:translate-x-1"
+									/>
+								</span>
+							</div>
 						</div>
 					</div>
 				{/each}
