@@ -1,8 +1,6 @@
 // 8-Bit Synthesizer Sound Engine using Web Audio API
 // Synthesizes retro 8-bit sound effects for UI interactions in Game Dev Mode
 
-import { gameDevMode } from './game-mode.svelte';
-
 export interface SynthState {
 	muted: boolean;
 }
@@ -65,7 +63,7 @@ class ChiptuneSoundEngine {
 	}
 
 	private canPlay(): boolean {
-		return !synthState.muted && gameDevMode.active;
+		return !synthState.muted;
 	}
 
 	// Crisp 8-bit retro UI button click

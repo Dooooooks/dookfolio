@@ -14,11 +14,11 @@
 		Briefcase,
 		BookOpen,
 		ChevronLeft,
-		ChevronRight,
 		FolderGit2,
 		Gamepad2,
 		House,
 		Mail,
+		Menu,
 		Newspaper,
 		ShoppingBag,
 		Sparkles,
@@ -50,7 +50,7 @@
 	let activeSection = $state<'home' | 'about' | 'activity' | 'skills' | 'latest'>('home');
 
 	function handleGlobalClick(e: MouseEvent) {
-		if (synthState.muted || !gameDevMode.active) return;
+		if (synthState.muted) return;
 		const target = e.target as HTMLElement | null;
 		if (!target) return;
 
@@ -189,24 +189,47 @@
 </svelte:head>
 
 <div class="min-h-screen bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
-	<!-- Floating Open Button with background when Sidebar is closed -->
-	{#if !isOpen}
+	<!-- Floating Top-Left Controls: Sidebar Toggle (Open/Hide) + Game Dev Mode Controls -->
+	<div
+		class="fixed top-3.5 z-30 flex items-center gap-2 transition-all duration-300 ease-in-out {isOpen
+			? 'left-[216px]'
+			: 'left-3'}"
+	>
+		<!-- Sidebar Toggle Button (Hide when open, 3-line menu icon when closed) -->
 		<button
 			type="button"
-			onclick={() => (isOpen = true)}
-			aria-label="Open sidebar"
-			class="fixed top-3.5 left-3 z-20 flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white"
+			onclick={() => (isOpen = !isOpen)}
+			aria-label={isOpen ? 'Hide sidebar' : 'Open sidebar'}
+			title={isOpen ? 'Hide sidebar' : 'Open sidebar'}
+			class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white active:scale-95"
 		>
-			<ChevronRight class="size-4.5" strokeWidth={1.75} />
+			{#if isOpen}
+				<ChevronLeft class="size-4.5" strokeWidth={1.75} />
+			{:else}
+				<Menu class="size-4.5" strokeWidth={1.75} />
+			{/if}
 		</button>
-	{/if}
 
-	<!-- Break Contract & 8-Bit Synthesizer Controls (Only visible after entering Game Dev Mode) -->
-	{#if gameDevMode.active}
-		<div
-			class="fixed top-3.5 right-4 z-20 flex items-center gap-2 transition-all duration-300"
+		<!-- 8-Bit Synthesizer Unmute / Mute Button (Always visible; muted by default for UX) -->
+		<button
+			type="button"
+			onclick={toggleAudioMute}
+			data-custom-sound
+			aria-label={synthState.muted ? 'Unmute 8-bit UI sounds' : 'Mute 8-bit UI sounds'}
+			title={synthState.muted ? 'Unmute UI sounds' : 'Mute UI sounds'}
+			class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all duration-300 hover:scale-110 hover:border-white/20 hover:bg-surface hover:text-white active:scale-95 {!synthState.muted
+				? 'border-accent/40 bg-accent/20 text-accent ring-1 ring-accent/60 shadow-accent/20'
+				: ''}"
 		>
-			<!-- Break Contract Book Button -->
+			{#if synthState.muted}
+				<VolumeX class="size-4.5" strokeWidth={1.75} />
+			{:else}
+				<Volume2 class="size-4.5" strokeWidth={1.75} />
+			{/if}
+		</button>
+
+		<!-- Break Contract Book Button (Only visible after entering Game Dev Mode) -->
+		{#if gameDevMode.active}
 			<button
 				type="button"
 				onclick={openBreakContractModal}
@@ -218,26 +241,8 @@
 					<line x1="2" y1="2" x2="22" y2="22" />
 				</BookOpen>
 			</button>
-
-			<!-- 8-Bit Synthesizer Unmute / Mute Button (Muted by default for UX design) -->
-			<button
-				type="button"
-				onclick={toggleAudioMute}
-				data-custom-sound
-				aria-label={synthState.muted ? 'Unmute 8-bit UI sounds' : 'Mute 8-bit UI sounds'}
-				title={synthState.muted ? 'Unmute UI sounds' : 'Mute UI sounds'}
-				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95 {!synthState.muted
-					? 'border-accent bg-accent/20 ring-1 ring-accent/60 shadow-accent/40'
-					: ''}"
-			>
-				{#if synthState.muted}
-					<VolumeX class="size-4.5" strokeWidth={1.75} />
-				{:else}
-					<Volume2 class="size-4.5" strokeWidth={1.75} />
-				{/if}
-			</button>
-		</div>
-	{/if}
+		{/if}
+	</div>
 
 	<!-- Backdrop on Mobile -->
 	{#if isOpen}
@@ -255,15 +260,6 @@
 			? 'translate-x-0'
 			: '-translate-x-full'}"
 	>
-		<!-- Close Button at top-rightmost corner -->
-		<button
-			type="button"
-			onclick={() => (isOpen = false)}
-			aria-label="Close sidebar"
-			class="absolute top-3.5 right-3 cursor-pointer rounded-lg p-1.5 text-muted transition-colors hover:bg-white/5 hover:text-white"
-		>
-			<ChevronLeft class="size-4" strokeWidth={1.75} />
-		</button>
 
 		<div class="flex items-center gap-3 px-1 pt-1">
 			<img src={profile} alt="Lloyd Nicolas" width="36" height="36" decoding="async" class="size-9 shrink-0 rounded-full object-cover" />
