@@ -1,106 +1,35 @@
-# dookfolio
+# Dookfolio
 
-Personal portfolio for Lloyd Nicolas (Thats me!) — software developer based in Bulacan, Philippines. Built with **SvelteKit 2**, **Svelte 5 (runes)**, **TypeScript**, and **Tailwind CSS v4**.
+Personal portfolio website for Lloyd Nicolas, a software and game developer based in Bulacan, Philippines.
 
-## Features
+## Welcome
 
-- Landing page with an interactive easter egg (feed the duck to switch into "game dev" mode)
-- **About** section with a skills list
-- **Projects** and **Experiences** showcases driven by clean, version-controlled JSON data
-- **Contacts** page (email, phone, GitHub, LinkedIn)
-- Responsive sidebar layout with smooth hash scrolling
-- Zero external database or backend services required
+Welcome to the source repository for my personal portfolio. This website showcases my projects, professional journey, technical skill sets, and creative experiments.
 
-## Tech stack
+## Highlights and Features
 
-| Layer     | Tool                                               |
-| --------- | -------------------------------------------------- |
-| Framework | [SvelteKit](https://svelte.dev/docs/kit)           |
-| UI        | [Svelte 5](https://svelte.dev/docs/svelte) (runes) |
-| Language  | TypeScript                                         |
-| Styling   | [Tailwind CSS v4](https://tailwindcss.com)         |
-| Icons     | [lucide-svelte](https://lucide.dev)                |
-| Data      | Local JSON (`src/lib/data/`)                       |
-| Fonts     | Nunito + Pixelify Sans (via Fontsource)            |
+* Interactive Mascot: A pixel duck mascot on the hero section with secret click rewards, floating breadcrumbs, and a hidden game dev mode
+* Project Showcase: Curated collection of software applications, game prototypes, and web tools
+* Experience Timeline: Career history, milestones, and organizational roles
+* Tech Stack and Skills: Comprehensive breakdown of tools and frameworks used across engineering domains
+* Contribution Graph: Live GitHub activity visualization
+* Direct Contact: Quick channels to get in touch for collaborations, freelance opportunities, and game jams
 
-## Getting started
+## Built With
 
-```sh
-npm install
-npm run dev
-```
+* SvelteKit
+* Svelte 5 runes
+* TypeScript
+* Tailwind CSS
+* Lucide Svelte Icons
+* Fontsource Nunito and Press Start 2P
 
-The dev server runs at `http://localhost:5173` (open it automatically with `npm run dev -- --open`).
+## About Me
 
-## Managing Portfolio Content
+I enjoy creating clean, modern web applications and turning ideas into products people love to use. When not shipping web projects, I dive into game development, prototyping mechanics, playtesting, and crafting delightful user experiences.
 
-Portfolio content is stored directly in type-safe JSON files under `src/lib/data/`:
+## Connect
 
-### Adding or Editing Projects
-
-Edit [`src/lib/data/projects.json`](src/lib/data/projects.json). Each project has the following structure:
-
-```json
-{
-	"id": "my-project",
-	"title": "Project Title",
-	"description": "Short project description...",
-	"tags": ["TypeScript", "SvelteKit"],
-	"demo_url": "https://...",
-	"github_url": "https://github.com/...",
-	"cover_url": "/ProjectPictures/my-image.png",
-	"date": "2026-09",
-	"created_at": "2026-09-14T00:00:00.000Z"
-}
-```
-
-Projects are automatically sorted by `date` descending (most recent first). Place project cover images in `static/ProjectPictures/` and reference them with `/ProjectPictures/<filename>`.
-
-### Adding or Editing Experiences
-
-Edit [`src/lib/data/experiences.json`](src/lib/data/experiences.json). Each experience has the following structure:
-
-```json
-{
-	"id": "role-identifier",
-	"period": "2025 — PRESENT",
-	"role": "Role Title",
-	"company": "Company Name",
-	"description": "Description of responsibilities and achievements...",
-	"date": "2025-03",
-	"order_num": 1
-}
-```
-
-Experiences are sorted by `date` descending (most recent first).
-
-## Project structure
-
-```
-src/
-├── app.html
-├── lib/
-│   ├── assets/              # images (profile, duck, spotlight)
-│   ├── data/                # portfolio JSON data (projects.json, experiences.json)
-│   ├── game-mode.svelte.ts  # duck easter-egg state
-│   ├── index.ts             # library exports
-│   └── types.ts             # Project / Experience interfaces
-└── routes/
-    ├── +layout.svelte       # sidebar + nav
-    ├── +page.svelte         # landing / about
-    ├── about/               # redirects to /#about
-    ├── contacts/            # contact info
-    ├── projects/            # projects showcase
-    └── experiences/         # experiences timeline
-```
-
-## Scripts
-
-| Command           | Description                        |
-| ----------------- | ---------------------------------- |
-| `npm run dev`     | Start the dev server               |
-| `npm run build`   | Build for production               |
-| `npm run preview` | Preview the production build       |
-| `npm run check`   | Run `svelte-check` (type checking) |
-| `npm run lint`    | Prettier + ESLint                  |
-| `npm run format`  | Format with Prettier               |
+* Email: dook13s@proton.me
+* GitHub: https://github.com/Dooooooks
+* Phone: +63 977 670 6650
