@@ -24,3 +24,6 @@ vite.config.ts.timestamp-*
 
 # Graphify
 graphify-out/
+
+# Agent configs and rules
+.agents/
