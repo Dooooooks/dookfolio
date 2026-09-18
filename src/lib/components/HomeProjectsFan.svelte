@@ -58,7 +58,7 @@
 
 	<!-- Fan-Shaped Cards Arena -->
 	<div
-		class="relative mt-8 mb-4 flex h-[410px] sm:h-[450px] w-full items-center justify-center overflow-visible select-none"
+		class="relative mt-8 mb-4 flex h-[400px] sm:h-[450px] w-full max-w-full items-center justify-center overflow-x-clip overflow-y-visible select-none"
 	>
 		{#each latestProjects as project, i (project.title)}
 			{@const isHovered = hoveredIndex === i}
@@ -85,7 +85,7 @@
 				onmouseleave={() => (hoveredIndex = null)}
 				onfocus={() => (hoveredIndex = i)}
 				onblur={() => (hoveredIndex = null)}
-				class="fan-card fan-card-{i} group absolute flex h-[350px] sm:h-[390px] w-56 sm:w-68 md:w-74 cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface/90 shadow-2xl backdrop-blur-md hover:border-accent/60 transition-all duration-300 ease-out will-change-transform {revealedCards[i]
+				class="fan-card fan-card-{i} group absolute flex h-[340px] sm:h-[390px] w-[215px] sm:w-68 md:w-74 cursor-pointer flex-col overflow-hidden rounded-2xl border border-white/10 bg-surface/90 shadow-2xl backdrop-blur-md hover:border-accent/60 transition-all duration-300 ease-out will-change-transform {revealedCards[i]
 					? 'is-revealed'
 					: ''} {isHovered ? 'is-hovered' : ''} {isDimmed ? 'is-dimmed' : ''}"
 				data-revealed={revealedCards[i] ? 'true' : undefined}
@@ -221,9 +221,9 @@
 	/* Mobile adjustments for tighter screen widths */
 	@media (max-width: 640px) {
 		.fan-card-0 {
-			--rot: -6deg;
-			--tx: -64px;
-			--ty: 8px;
+			--rot: -5deg;
+			--tx: -54px;
+			--ty: 6px;
 		}
 
 		.fan-card-1 {
@@ -233,9 +233,29 @@
 		}
 
 		.fan-card-2 {
-			--rot: 6deg;
-			--tx: 64px;
-			--ty: 8px;
+			--rot: 5deg;
+			--tx: 54px;
+			--ty: 6px;
+		}
+	}
+
+	@media (max-width: 420px) {
+		.fan-card-0 {
+			--rot: -4deg;
+			--tx: -38px;
+			--ty: 4px;
+		}
+
+		.fan-card-1 {
+			--rot: 0deg;
+			--tx: 0px;
+			--ty: -2px;
+		}
+
+		.fan-card-2 {
+			--rot: 4deg;
+			--tx: 38px;
+			--ty: 4px;
 		}
 	}
 

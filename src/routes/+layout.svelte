@@ -460,12 +460,12 @@
 
 	<!-- Main Content Area -->
 	<main
-		class="relative z-10 min-h-screen transition-all duration-300 ease-in-out {isOpen
+		class="relative z-10 min-h-screen w-full max-w-full min-w-0 overflow-x-clip transition-all duration-300 ease-in-out {isOpen
 			? 'md:ml-52'
 			: 'ml-0'}"
 	>
 		{#key page.url.pathname}
-			<div class="anim-page-transition">
+			<div class="anim-page-transition w-full max-w-full min-w-0">
 				{@render children()}
 			</div>
 		{/key}

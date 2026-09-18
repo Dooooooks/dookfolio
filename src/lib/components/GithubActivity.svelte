@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ExternalLink } from '@lucide/svelte';
 	import { reveal } from '$lib/actions/reveal';
 	import type { ContributionCalendar, ContributionDay } from '$lib/server/github';
@@ -8,6 +9,32 @@
 	}: {
 		contributions: ContributionCalendar;
 	} = $props();
+
+	let scrollContainerEl = $state<HTMLElement | null>(null);
+	let canScrollLeft = $state(false);
+	let canScrollRight = $state(false);
+
+	function checkScroll() {
+		if (!scrollContainerEl) return;
+		const { scrollLeft, scrollWidth, clientWidth } = scrollContainerEl;
+		canScrollLeft = scrollLeft > 8;
+		canScrollRight = scrollLeft + clientWidth < scrollWidth - 8;
+	}
+
+	function handleScroll() {
+		tooltip.visible = false;
+		checkScroll();
+	}
+
+	onMount(() => {
+		if (scrollContainerEl) {
+			// On mobile, start scrolled to the most recent contributions
+			if (window.innerWidth < 768) {
+				scrollContainerEl.scrollLeft = scrollContainerEl.scrollWidth;
+			}
+			checkScroll();
+		}
+	});
 
 	// Hover tooltip state
 	let tooltip = $state<{
@@ -57,10 +84,13 @@
 				day.count === 0
 					? 'No contributions'
 					: `${day.count} contribution${day.count === 1 ? '' : 's'}`;
+			const rawX = rect.left - containerRect.left + rect.width / 2;
+			// Clamp tooltip x inside container so it never bleeds beyond screen edges
+			const clampedX = Math.max(70, Math.min(rawX, containerRect.width - 70));
 			tooltip = {
 				visible: true,
 				text: `${countText} on ${formatFullDate(day.date)}`,
-				x: rect.left - containerRect.left + rect.width / 2,
+				x: clampedX,
 				y: rect.top - containerRect.top - 8
 			};
 		}
@@ -71,14 +101,14 @@
 	}
 </script>
 
-<section id="activity" class="mt-24 px-8 pt-4 pb-12 md:px-12 md:pt-6 md:pb-16">
-	<div class="mx-auto w-full max-w-3xl">
+<section id="activity" class="mt-20 px-4 pt-4 pb-12 sm:px-6 md:mt-24 md:px-12 md:pt-6 md:pb-16">
+	<div class="mx-auto w-full max-w-3xl min-w-0">
 		<!-- Section Header -->
-		<div use:reveal={{ y: 20 }} class="flex items-center justify-between">
-			<div class="flex items-center gap-3">
+		<div use:reveal={{ y: 20 }} class="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3">
+			<div class="flex flex-wrap items-center gap-2 sm:gap-3">
 				<h2 class="text-2xl font-extrabold md:text-3xl">Activity</h2>
 				<span
-					class="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-bold text-accent shadow-xs shadow-accent/20"
+					class="inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 text-xs font-bold text-accent shadow-xs shadow-accent/20"
 				>
 					<span class="size-1.5 animate-pulse rounded-full bg-accent"></span>
 					{contributions.total} contributions in {contributions.year}
@@ -99,9 +129,21 @@
 		</div>
 
 		<!-- GitHub Contribution Heatmap -->
-		<div use:reveal={{ delay: 100, y: 24 }} class="heatmap-container relative mt-6">
+		<div use:reveal={{ delay: 100, y: 24 }} class="heatmap-container relative mt-6 w-full max-w-full min-w-0 overflow-hidden">
+			<!-- Smooth Edge Fade Gradient Cues for Horizontal Scroll on Mobile -->
+			{#if canScrollLeft}
+				<div class="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-bg to-transparent transition-opacity duration-200"></div>
+			{/if}
+			{#if canScrollRight}
+				<div class="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-bg to-transparent transition-opacity duration-200"></div>
+			{/if}
+
 			<!-- Responsive Scroll Container -->
-			<div class="scrollbar-thin overflow-x-auto pb-2 overscroll-x-contain touch-pan-x">
+			<div
+				bind:this={scrollContainerEl}
+				onscroll={handleScroll}
+				class="scrollbar-thin w-full max-w-full min-w-0 overflow-x-auto pb-2 overscroll-x-contain touch-pan-x"
+			>
 				<div class="min-w-[720px]">
 					<svg
 						viewBox="0 0 735 125"
@@ -202,6 +244,11 @@
 						title="Level 4"
 					></span>
 					<span>More</span>
+				</div>
+
+				<!-- Mobile swipe cue -->
+				<div class="flex items-center gap-1 text-[10px] font-bold text-muted/70 md:hidden">
+					<span>← Swipe to explore full year →</span>
 				</div>
 			</div>
 		</div>

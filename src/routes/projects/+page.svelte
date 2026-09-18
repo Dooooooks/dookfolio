@@ -12,7 +12,7 @@
 	<title>Projects — Lloyd Nicolas</title>
 </svelte:head>
 
-<section class="relative flex min-h-screen flex-col px-8 py-12 pb-[40vh] md:px-12">
+<section class="relative flex min-h-screen flex-col px-4 py-12 pb-[40vh] sm:px-6 md:px-12">
 	<div class="mx-auto w-full max-w-3xl pt-6 sm:pt-0">
 		<a
 			href={resolve('/')}

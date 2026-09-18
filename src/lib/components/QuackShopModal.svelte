@@ -230,11 +230,11 @@
 							</div>
 
 							<!-- [Bar1] [Bar2] [Bar3] [Bar4] [Bar5] -->
-							<div class="flex items-center gap-1 sm:gap-1.5" aria-label="Progress level {currentLevel} of 5">
+							<div class="flex items-center justify-between gap-1 sm:gap-1.5 sm:justify-start" aria-label="Progress level {currentLevel} of 5">
 								{#each [0, 1, 2, 3, 4] as barIndex}
 									{@const isFilled = currentLevel > barIndex}
 									<div
-										class="h-4.5 w-5.5 rounded-sm transition-all duration-200 sm:h-5 sm:w-6 {isFilled
+										class="h-4.5 flex-1 rounded-sm transition-all duration-200 sm:flex-none sm:h-5 sm:w-6 {isFilled
 											? 'border border-accent/80 bg-accent shadow-xs shadow-accent/50'
 											: 'border border-white/10 bg-white/8'}"
 									></div>
@@ -253,7 +253,7 @@
 								aria-label={isMax
 									? `${config.name} maxed out`
 									: `Upgrade ${config.name} for ${cost} quacks`}
-								class="flex cursor-pointer items-center justify-center rounded-xl px-3 py-1.5 text-center font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
+								class="flex w-full cursor-pointer items-center justify-center rounded-xl px-3 py-1.5 text-center font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
 									? 'font-pixel text-[8px]'
 									: 'text-xs'} {isMax
 									? 'cursor-default border border-white/10 bg-white/5 text-muted/50'

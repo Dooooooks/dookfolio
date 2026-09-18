@@ -207,25 +207,25 @@
 	>
 		<!-- Floating Window Card (At least 70% of the screen) -->
 		<div
-			class="relative flex h-[78vh] min-h-[520px] w-[92vw] max-w-5xl flex-col overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform md:w-[78vw] lg:w-[72vw] {isClosing
+			class="relative flex h-[85dvh] max-h-[640px] min-h-0 w-[94vw] max-w-5xl flex-col overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform md:w-[78vw] lg:w-[72vw] {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
 			<!-- Modal Header -->
 			<div
-				class="flex items-center justify-between border-b border-white/8 px-6 py-4 sm:px-8 sm:py-5"
+				class="flex items-center justify-between border-b border-white/8 px-4 py-3 sm:px-8 sm:py-5"
 			>
-				<div class="flex items-center gap-3">
+				<div class="flex items-center gap-2.5 sm:gap-3">
 					<img
 						src={gameDevMode.active ? duckYellow : duckWhite}
 						alt="Duck"
-						class="size-7 pixelated"
+						class="size-6 sm:size-7 pixelated"
 					/>
 					<div>
-						<h3 id="modal-title" class="text-lg font-extrabold text-white">
+						<h3 id="modal-title" class="text-base sm:text-lg font-extrabold text-white">
 							Are you faster than a duck?
 						</h3>
-						<p class="text-xs text-muted">Raw reaction time test</p>
+						<p class="text-[11px] sm:text-xs text-muted">Raw reaction time test</p>
 					</div>
 				</div>
 
@@ -233,15 +233,15 @@
 					type="button"
 					onclick={close}
 					aria-label="Close reaction test"
-					class="cursor-pointer rounded-xl p-2 text-muted transition-colors hover:bg-white/10 hover:text-white"
+					class="cursor-pointer rounded-xl p-1.5 sm:p-2 text-muted transition-colors hover:bg-white/10 hover:text-white"
 				>
-					<X class="size-6" />
+					<X class="size-5 sm:size-6" />
 				</button>
 			</div>
 
 			<!-- Test Area / Pond -->
-			<div class="flex min-h-0 flex-1 flex-col p-6 sm:p-8">
-				<!-- Pond Container: Fills the entire available space inside the 70% modal -->
+			<div class="flex min-h-0 flex-1 flex-col p-3 sm:p-8">
+				<!-- Pond Container: Fills the entire available space inside the modal -->
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					onpointerdown={handlePondPointerDown}
@@ -256,13 +256,13 @@
 				>
 					<!-- Pre-warmed Active Stimulus: Zero DOM Mount Churn, Instant GPU Reveal -->
 					<div
-						class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-6 transition-none {testPhase ===
+						class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 transition-none {testPhase ===
 						'active'
 							? 'scale-100 opacity-100'
 							: 'pointer-events-none scale-95 opacity-0'}"
 					>
 						<span
-							class="mb-4 animate-bounce rounded-full bg-emerald-400 px-7 py-2.5 font-pixel text-base font-black text-black shadow-2xl shadow-emerald-400/60 sm:text-lg"
+							class="mb-3 sm:mb-4 animate-bounce rounded-full bg-emerald-400 px-4 py-2 text-center font-pixel text-xs font-black text-black shadow-2xl shadow-emerald-400/60 sm:px-7 sm:py-2.5 sm:text-base md:text-lg"
 						>
 							QUACK! CLICK / SPACEBAR NOW!
 						</span>
@@ -270,9 +270,9 @@
 							src={gameDevMode.active ? duckYellow : duckWhite}
 							alt="Duck"
 							decoding="async"
-							class="size-32 scale-110 drop-shadow-[0_0_40px_rgba(52,211,153,1)] pixelated sm:size-40 md:size-48"
+							class="size-24 scale-110 drop-shadow-[0_0_40px_rgba(52,211,153,1)] pixelated sm:size-40 md:size-48"
 						/>
-						<p class="mt-4 text-sm font-black tracking-wider text-emerald-300 sm:text-base">
+						<p class="mt-3 sm:mt-4 text-xs sm:text-sm font-black tracking-wider text-emerald-300">
 							Click Anywhere or Press [Space]!
 						</p>
 					</div>

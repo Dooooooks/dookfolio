@@ -130,7 +130,7 @@
 </svelte:head>
 
 <!-- Main Hero Section with Flying Breadcrumbs -->
-<section class="relative overflow-hidden px-8 pb-6 md:px-12 md:pb-8">
+<section class="relative overflow-hidden px-4 pt-14 pb-6 sm:px-6 sm:pt-8 sm:pb-8 md:px-12">
 	<!-- Flying Breadcrumbs Overlay (Purple/Lavender Palette - Zero Yellow) -->
 	<FlyingBreadcrumbs onFeed={onCrumbFed} duckElement={duckButtonEl} />
 
@@ -254,11 +254,11 @@
 <!-- Easter Egg Warning Notice: Don't feed the duck -->
 <div
 	use:reveal={{ delay: 50, y: 16 }}
-	class="-mt-2 mb-10 flex flex-col items-center justify-center px-8 select-none"
+	class="-mt-2 mb-10 flex w-full max-w-full flex-col items-center justify-center px-4 select-none sm:px-6"
 >
-	<div class="flex items-center gap-2.5 transition-all duration-300">
+	<div class="flex max-w-full items-center justify-center gap-2.5 transition-all duration-300">
 		<p
-			class="font-pixel text-xs tracking-widest transition-colors duration-300 sm:text-sm {gameDevMode.active ||
+			class="max-w-full break-words text-center font-pixel text-xs tracking-widest transition-colors duration-300 sm:text-sm {gameDevMode.active ||
 			gameDevMode.fedCount >= 5
 				? 'font-extrabold text-accent drop-shadow-[0_0_12px_rgba(182,148,255,0.7)]'
 				: gameDevMode.fedCount === 4
@@ -275,7 +275,7 @@
 		</p>
 	</div>
 	<div
-		class="mt-1.5 h-0.5 rounded-full transition-all duration-500 {gameDevMode.active ||
+		class="mt-1.5 h-0.5 max-w-[80vw] rounded-full transition-all duration-500 {gameDevMode.active ||
 		gameDevMode.fedCount >= 5
 			? 'w-72 bg-accent/50 shadow-[0_0_10px_rgba(182,148,255,0.5)]'
 			: gameDevMode.fedCount === 4
@@ -293,8 +293,8 @@
 <!-- GitHub Contribution Activity Heatmap -->
 <GithubActivity contributions={data.contributions} />
 
-<div class="px-8 pt-4 pb-20 md:px-12 md:pt-6 md:pb-28">
-	<div class="mx-auto w-full max-w-3xl">
+<div class="w-full max-w-full min-w-0 px-4 pt-4 pb-20 sm:px-6 md:px-12 md:pt-6 md:pb-28">
+	<div class="mx-auto w-full max-w-3xl min-w-0">
 		<!-- About Section -->
 		<section id="about" class="scroll-mt-24">
 			<h2 use:reveal={{ y: 22 }} class="text-3xl font-extrabold md:text-4xl">About</h2>
