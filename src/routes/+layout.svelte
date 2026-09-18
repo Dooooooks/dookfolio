@@ -33,7 +33,10 @@
 		openShopModal,
 		breakContractModal,
 		reactionModal,
-		shopModal
+		shopModal,
+		upgrades,
+		UPGRADE_CONFIGS,
+		type UpgradesState
 	} from '$lib/game-mode.svelte';
 	import { projectModal } from '$lib/project-modal.svelte';
 	import { lockScroll, unlockScroll, forceUnlockScroll } from '$lib/scroll-lock';
@@ -48,6 +51,16 @@
 
 	let isOpen = $state(true);
 	let activeSection = $state<'home' | 'about' | 'activity' | 'skills' | 'latest'>('home');
+
+	const hasAffordableUpgrade = $derived.by(() => {
+		for (const key of Object.keys(UPGRADE_CONFIGS) as Array<keyof UpgradesState>) {
+			const lvl = upgrades[key];
+			if (lvl < 5 && gameDevMode.quacks >= UPGRADE_CONFIGS[key].costs[lvl]) {
+				return true;
+			}
+		}
+		return false;
+	});
 
 	function handleGlobalClick(e: MouseEvent) {
 		if (synthState.muted) return;
@@ -244,6 +257,59 @@
 		{/if}
 	</div>
 
+	<!-- Mobile-only Floating Top-Right Controls: Total Quacks & Shop Upgrade -->
+	{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
+		<div
+			class="fixed top-3.5 right-3 z-30 flex items-center gap-1.5 transition-all duration-300 ease-in-out md:hidden {isOpen
+				? 'pointer-events-none opacity-0'
+				: 'opacity-100'}"
+		>
+			<!-- Total Quacks Pill (Tapping also opens Upgrade Shop) -->
+			<button
+				type="button"
+				onclick={openShopModal}
+				aria-label="Total Quacks: {gameDevMode.quacks.toLocaleString()}. Tap to open Upgrade Shop"
+				title="Total Quacks: {gameDevMode.quacks.toLocaleString()}"
+				class="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/30 bg-surface/90 px-2.5 text-accent shadow-lg backdrop-blur transition-all duration-200 hover:border-accent hover:bg-accent/10 active:scale-95"
+			>
+				<img
+					src={gameDevMode.active ? duckYellow : duckWhite}
+					alt="Duck"
+					class="size-4 shrink-0 pixelated"
+				/>
+				<span
+					class="font-black tracking-tight text-white {gameDevMode.active
+						? 'font-pixel text-[8px]'
+						: 'text-xs'}"
+				>
+					{gameDevMode.quacks.toLocaleString()}
+				</span>
+			</button>
+
+			<!-- Upgrade Shop Button -->
+			<button
+				type="button"
+				onclick={openShopModal}
+				aria-label="Open Upgrade Shop"
+				title="Open Upgrade Shop"
+				class="relative flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/20 px-2.5 font-bold text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-200 hover:scale-105 hover:bg-accent/30 active:scale-95 {gameDevMode.active
+					? 'font-pixel text-[8px]'
+					: 'text-xs'}"
+			>
+				{#if hasAffordableUpgrade}
+					<span class="absolute -top-1 -right-1 flex size-2.5">
+						<span
+							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
+						></span>
+						<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
+					</span>
+				{/if}
+				<ShoppingBag class="size-3.5 shrink-0" />
+				<span>Shop</span>
+			</button>
+		</div>
+	{/if}
+
 	<!-- Backdrop on Mobile -->
 	{#if isOpen}
 		<button
@@ -355,10 +421,10 @@
 
 		<!-- Bottom Section: Quack Counter & Playground -->
 		<div class="mt-auto flex flex-col">
-			{#if gameDevMode.quacks > 0}
-				<!-- Quack Counter Section (Above Playground Divider) -->
+			{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
+				<!-- Quack Counter Section (Desktop only inside sidebar; mobile uses top navbar) -->
 				<div
-					class="anim-fade-in-up mb-3 flex flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300"
+					class="anim-fade-in-up mb-3 hidden md:flex flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300"
 				>
 					<span class="font-extrabold tracking-wider text-accent uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
 						Quack Counter
@@ -377,10 +443,18 @@
 					<button
 						type="button"
 						onclick={openShopModal}
-						class="mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
+						class="relative mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
 							? 'font-pixel text-[8px]'
 							: 'text-xs'}"
 					>
+						{#if hasAffordableUpgrade}
+							<span class="absolute -top-1 -right-1 flex size-2.5">
+								<span
+									class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
+								></span>
+								<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
+							</span>
+						{/if}
 						<ShoppingBag class="size-3.5" />
 						<span>Upgrade Shop</span>
 					</button>

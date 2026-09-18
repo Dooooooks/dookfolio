@@ -10,6 +10,16 @@
 		contributions: ContributionCalendar;
 	} = $props();
 
+	// Guard against month collision: if the 1st month is too close to the 2nd month (< 3 columns, ~39px),
+	// dynamically omit the 1st month so labels never touch.
+	const visibleMonths = $derived.by(() => {
+		const months = contributions.months || [];
+		if (months.length > 1 && months[1].colIndex - months[0].colIndex < 3) {
+			return months.slice(1);
+		}
+		return months;
+	});
+
 	let scrollContainerEl = $state<HTMLElement | null>(null);
 	let canScrollLeft = $state(false);
 	let canScrollRight = $state(false);
@@ -151,7 +161,7 @@
 						aria-label="GitHub Contributions Heatmap"
 					>
 						<!-- Month Labels -->
-						{#each contributions.months as month (month.name + month.colIndex)}
+						{#each visibleMonths as month (month.name + month.colIndex)}
 							<text x={32 + month.colIndex * 13} y="13" class="fill-muted text-[10px] font-bold">
 								{month.name}
 							</text>

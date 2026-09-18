@@ -39,9 +39,9 @@ function getDefaultTrailingDateRange(): { startDate: string; endDate: string } {
 	const todayUTC = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 	const endDate = todayUTC.toISOString().slice(0, 10);
 
-	// 52 weeks ago, aligned to Sunday (just like GitHub's trailing year)
-	const dayOfWeek = todayUTC.getUTCDay();
-	const startUTC = new Date(todayUTC.getTime() - (52 * 7 + dayOfWeek) * 24 * 60 * 60 * 1000);
+	// Trailing 365-day rolling window ending today:
+	// As each new day is added in the present, a day is removed from the beginning.
+	const startUTC = new Date(todayUTC.getTime() - 364 * 24 * 60 * 60 * 1000);
 	const startDate = startUTC.toISOString().slice(0, 10);
 
 	return { startDate, endDate };
@@ -63,14 +63,16 @@ export function buildContributionCalendar(
 	}
 
 	const fallbackRange = getDefaultTrailingDateRange();
-	const startDateStr =
-		options?.startDate ?? (contributions.length > 0 ? contributions[0].date : fallbackRange.startDate);
 	const endDateStr =
 		options?.endDate ??
 		(contributions.length > 0 ? contributions[contributions.length - 1].date : fallbackRange.endDate);
 
-	const start = new Date(startDateStr + 'T00:00:00Z');
+	// Dynamically calculate 365-day rolling window ending at endDateStr:
+	// When a day is added in the present month, a day is removed in the 1st month.
 	const end = new Date(endDateStr + 'T00:00:00Z');
+	const rollingStart = new Date(end.getTime() - 364 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+	const startDateStr = options?.startDate ?? rollingStart;
+	const start = new Date(startDateStr + 'T00:00:00Z');
 
 	const weeks: Array<Array<ContributionDay | null>> = [];
 	let currentWeek: Array<ContributionDay | null> = [];
@@ -90,13 +92,10 @@ export function buildContributionCalendar(
 		const m = d.getUTCMonth();
 		if (m !== lastMonth) {
 			const colIndex = weeks.length;
-			const prevMonth = months[months.length - 1];
-			if (!prevMonth || colIndex - prevMonth.colIndex >= 2) {
-				months.push({
-					name: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
-					colIndex
-				});
-			}
+			months.push({
+				name: d.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' }),
+				colIndex
+			});
 			lastMonth = m;
 		}
 
@@ -119,6 +118,13 @@ export function buildContributionCalendar(
 			currentWeek.push(null);
 		}
 		weeks.push(currentWeek);
+	}
+
+	// Dynamic 1st month collision removal:
+	// If the 1st month label is touching/too close to the 2nd month label (< 3 columns apart, ~39px),
+	// remove the 1st month label so they never touch as the window rolls day by day.
+	if (months.length > 1 && months[1].colIndex - months[0].colIndex < 3) {
+		months.shift();
 	}
 
 	return {
