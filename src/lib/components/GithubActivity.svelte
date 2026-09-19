@@ -47,16 +47,23 @@
 	});
 
 	// Hover tooltip state
+	let tooltipEl = $state<HTMLElement | null>(null);
+	let tooltipWidth = $state(220);
+
 	let tooltip = $state<{
 		visible: boolean;
 		text: string;
 		x: number;
 		y: number;
+		arrowX: number;
+		placement: 'top' | 'bottom';
 	}>({
 		visible: false,
 		text: '',
 		x: 0,
-		y: 0
+		y: 0,
+		arrowX: 0,
+		placement: 'top'
 	});
 
 	function formatFullDate(dateStr: string): string {
@@ -94,14 +101,36 @@
 				day.count === 0
 					? 'No contributions'
 					: `${day.count} contribution${day.count === 1 ? '' : 's'}`;
-			const rawX = rect.left - containerRect.left + rect.width / 2;
-			// Clamp tooltip x inside container so it never bleeds beyond screen edges
-			const clampedX = Math.max(70, Math.min(rawX, containerRect.width - 70));
+			const fullText = `${countText} on ${formatFullDate(day.date)}`;
+
+			// Determine width dynamically based on element or text length estimate
+			const width = tooltipEl?.offsetWidth || Math.max(tooltipWidth, fullText.length * 7 + 24);
+			const halfWidth = width / 2;
+			const cellCenterX = rect.left - containerRect.left + rect.width / 2;
+
+			// Clamp tooltip x inside container so it never bleeds beyond left or right edges
+			const minX = halfWidth + 8;
+			const maxX = Math.max(minX, containerRect.width - halfWidth - 8);
+			const clampedX = Math.max(minX, Math.min(cellCenterX, maxX));
+
+			// Calculate caret arrow offset relative to the tooltip box so it accurately points at the cell
+			const rawArrowX = cellCenterX - (clampedX - halfWidth);
+			const arrowX = Math.max(12, Math.min(rawArrowX, width - 12));
+
+			// Dynamic vertical positioning: flip downward if close to top edge to prevent clipping
+			const isNearTop = rect.top - containerRect.top < 38;
+			const placement = isNearTop ? 'bottom' : 'top';
+			const y = isNearTop
+				? rect.bottom - containerRect.top + 8
+				: rect.top - containerRect.top - 8;
+
 			tooltip = {
 				visible: true,
-				text: `${countText} on ${formatFullDate(day.date)}`,
+				text: fullText,
 				x: clampedX,
-				y: rect.top - containerRect.top - 8
+				y,
+				arrowX,
+				placement
 			};
 		}
 	}
@@ -212,12 +241,17 @@
 			<!-- Floating Tooltip -->
 			{#if tooltip.visible}
 				<div
-					class="pointer-events-none absolute z-30 -translate-x-1/2 -translate-y-full rounded-md border border-accent/40 bg-[#171526] px-2.5 py-1 text-[11px] font-bold text-white shadow-xl shadow-black/80 transition-all duration-100"
+					bind:this={tooltipEl}
+					bind:clientWidth={tooltipWidth}
+					class="pointer-events-none absolute z-30 -translate-x-1/2 whitespace-nowrap rounded-md border border-accent/40 bg-[#171526] px-2.5 py-1 text-[11px] font-bold text-white shadow-xl shadow-black/80 transition-all duration-100 {tooltip.placement === 'top' ? '-translate-y-full' : 'translate-y-0'}"
 					style="left: {tooltip.x}px; top: {tooltip.y}px;"
 				>
 					{tooltip.text}
 					<div
-						class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#171526]"
+						class="absolute -translate-x-1/2 border-4 border-transparent {tooltip.placement === 'top'
+							? 'top-full border-t-[#171526]'
+							: 'bottom-full border-b-[#171526]'}"
+						style="left: {tooltip.arrowX}px;"
 					></div>
 				</div>
 			{/if}
