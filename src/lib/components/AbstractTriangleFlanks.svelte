@@ -66,7 +66,9 @@
 
 		const transY = -(sY * layerSpeed) - clampedVel * 0.25 * (layerSpeed / 0.048);
 		const transX = (isLeft ? -1 : 1) * clampedVel * partingFactor;
-		const rot = (index % 2 === 0 ? 1 : -1) * (isLeft ? 1 : -1) * clampedVel * torqueFactor;
+		const rot = gameDevMode.active
+			? 0
+			: (index % 2 === 0 ? 1 : -1) * (isLeft ? 1 : -1) * clampedVel * torqueFactor;
 
 		return `translate3d(${transX.toFixed(2)}px, ${transY.toFixed(2)}px, 0) rotate(${rot.toFixed(2)}deg)`;
 	}
@@ -194,7 +196,9 @@
 					? 3
 					: shard.layer === 'bg'
 						? 1
-						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
+						: 2}; transform: translate(-50%, -50%) rotate({gameDevMode.active
+					? 0
+					: t.rot}deg) scale({t.scale});"
 			>
 				<!-- Scroll Parallax & Aerodynamic Inertia Layer -->
 				<div
@@ -227,7 +231,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter={isMobile ? undefined : 'url(#shard-glow)'}
+								shape-rendering="crispEdges"
 								class="transition-opacity duration-500 ease-in-out pixelated"
 								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 							/>
@@ -258,7 +262,9 @@
 					? 3
 					: shard.layer === 'bg'
 						? 1
-						: 2}; transform: translate(-50%, -50%) rotate({t.rot}deg) scale({t.scale});"
+						: 2}; transform: translate(-50%, -50%) rotate({gameDevMode.active
+					? 0
+					: t.rot}deg) scale({t.scale});"
 			>
 				<!-- Scroll Parallax & Aerodynamic Inertia Layer -->
 				<div
@@ -291,7 +297,7 @@
 								fill={shard.fill}
 								stroke={shard.stroke}
 								stroke-width={shard.strokeWidth ?? PALETTE.strokeWidth}
-								filter={isMobile ? undefined : 'url(#shard-glow)'}
+								shape-rendering="crispEdges"
 								class="transition-opacity duration-500 ease-in-out pixelated"
 								style="opacity: {gameDevMode.active ? (shard.opacity ?? 1) : 0};"
 							/>

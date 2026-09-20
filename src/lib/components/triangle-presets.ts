@@ -35,6 +35,10 @@ export const PALETTE = {
 	strokeWidth: 1.5
 };
 
+// Mathematically symmetrical, pixel-perfect 8-bit stepped triangle
+export const PERFECT_PIXEL_TRIANGLE =
+	'M -2,-32 H 2 V -28 H 6 V -24 H 10 V -20 H 14 V -16 H 18 V -12 H 22 V -8 H 26 V -4 H 30 V 0 H 34 V 4 H 38 V 8 H 42 V 12 H 46 V 16 H 50 V 20 H 54 V 24 H 58 V 28 H 62 V 32 H 66 V 36 H -66 V 32 H -62 V 28 H -58 V 24 H -54 V 20 H -50 V 16 H -46 V 12 H -42 V 8 H -38 V 4 H -34 V 0 H -30 V -4 H -26 V -8 H -22 V -12 H -18 V -16 H -14 V -20 H -10 V -24 H -6 V -28 H -2 Z';
+
 // Mathematically symmetrical & razor-angled broken glass shapes with pixel-perfect 8-bit stepped equivalents
 export const SHARD_BASE_SHAPES: Record<
 	ShardVariant,
@@ -46,38 +50,32 @@ export const SHARD_BASE_SHAPES: Record<
 	// Balanced faceted plate
 	equilateral: {
 		smooth: '0,-32 66,36 -66,36',
-		pixel:
-			'M -2,-32 H 2 V -28 H 6 V -24 H 10 V -20 H 14 V -16 H 18 V -12 H 22 V -8 H 26 V -4 H 30 V 0 H 34 V 4 H 38 V 8 H 42 V 12 H 46 V 16 H 50 V 20 H 54 V 24 H 58 V 28 H 62 V 32 H 66 V 36 H -66 V 32 H -62 V 28 H -58 V 24 H -54 V 20 H -50 V 16 H -46 V 12 H -42 V 8 H -38 V 4 H -34 V 0 H -30 V -4 H -26 V -8 H -22 V -12 H -18 V -16 H -14 V -20 H -10 V -24 H -6 V -28 H -2 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	},
 	// Tall needle shard
 	acute: {
 		smooth: '0,-36 38,40 -38,40',
-		pixel:
-			'M -2,-36 H 2 V -28 H 6 V -20 H 10 V -12 H 14 V -4 H 18 V 4 H 22 V 12 H 26 V 20 H 30 V 28 H 34 V 36 H 38 V 40 H -38 V 36 H -34 V 28 H -30 V 20 H -26 V 12 H -22 V 4 H -18 V -4 H -14 V -12 H -10 V -20 H -6 V -28 H -2 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	},
 	// Wide wedge shard
 	wide: {
 		smooth: '0,-24 68,28 -68,28',
-		pixel:
-			'M -4,-24 H 4 V -18 H 12 V -12 H 20 V -6 H 28 V 0 H 36 V 6 H 44 V 12 H 52 V 18 H 60 V 24 H 68 V 28 H -68 V 24 H -60 V 18 H -52 V 12 H -44 V 6 H -36 V 0 H -28 V -6 H -20 V -12 H -12 V -18 H -4 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	},
 	// Razor-thin glass sliver / splinter
 	splinter: {
 		smooth: '0,-44 14,44 -14,44',
-		pixel:
-			'M -2,-44 H 2 V -36 H 4 V -28 H 6 V -20 H 8 V -12 H 10 V -4 H 12 V 8 H 13 V 20 H 14 V 44 H -14 V 20 H -13 V 8 H -12 V -4 H -10 V -12 H -8 V -20 H -6 V -28 H -4 V -36 H -2 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	},
 	// Sheared asymmetric fracture shard
 	scalene: {
 		smooth: '-18,-38 52,32 -44,38',
-		pixel:
-			'M -20,-38 H -16 V -30 H -8 V -22 H 0 V -14 H 8 V -6 H 16 V 2 H 24 V 10 H 32 V 18 H 40 V 26 H 46 V 32 H 52 V 36 H 4 V 38 H -44 V 28 H -40 V 16 H -36 V 4 H -32 V -8 H -28 V -20 H -24 V -32 H -20 V -38 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	},
 	// Micro crystal chip / dust spark
 	chip: {
 		smooth: '0,-20 24,18 -24,18',
-		pixel:
-			'M -2,-20 H 2 V -14 H 6 V -8 H 10 V -2 H 14 V 4 H 18 V 10 H 21 V 14 H 24 V 18 H -24 V 14 H -21 V 10 H -18 V 4 H -14 V -2 H -10 V -8 H -6 V -14 H -2 Z'
+		pixel: PERFECT_PIXEL_TRIANGLE
 	}
 };
 

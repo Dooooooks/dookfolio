@@ -360,6 +360,25 @@
 	transform-origin: center;
 }
 
+/* In pixel mode, keep pixel triangles orthogonal without rotational wobble */
+.font-pixel .anim-shard-float-1,
+.font-pixel .anim-shard-float-2,
+.font-pixel .anim-shard-float-3,
+.font-pixel .anim-shard-float-4,
+.font-pixel .anim-shard-float-5 {
+	animation-name: shardFloatPixel !important;
+}
+
+@keyframes shardFloatPixel {
+	0%,
+	100% {
+		transform: translateY(0px);
+	}
+	50% {
+		transform: translateY(-14px);
+	}
+}
+
 .anim-shard-pulse {
 	animation: shardPulse 4s ease-in-out infinite;
 	transform-origin: center;
