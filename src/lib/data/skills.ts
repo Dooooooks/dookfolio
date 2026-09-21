@@ -14,9 +14,10 @@ export interface SkillCategory {
 export const SKILL_CATEGORIES: SkillCategory[] = [
 	{
 		id: 'frontend',
-		title: 'Web & Frontend',
+		title: 'Frontend & Mobile',
 		skills: [
 			{ name: 'TypeScript' },
+			{ name: 'Kotlin', project: 'Seall' },
 			{ name: 'SvelteKit 5', project: 'Dookfolio' },
 			{ name: 'React.js', project: 'Go Budget' },
 			{ name: 'Tailwind CSS' },

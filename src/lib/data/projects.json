@@ -52,5 +52,14 @@
 		"github_url": null,
 		"cover_url": "/ProjectPictures/BeenHereBefore.png",
 		"date": "2025-10"
-	}
+	},
+  {
+    "title": "Seall (Android App)",
+		"description": "Seall makes order taking, stock tracking, and profit calculations effortless for small baking businesses. Track customer orders, monitor live inventory, and keep tabs on pending balances all in one clean and fast app.",
+		"tags": ["App Development", "Android", "Kotlin"],
+		"demo_url": "https://drive.google.com/file/d/10aou8WdZtsDtOP4U3ZLc-HkPXv5YYpZQ/view?usp=sharing",
+		"github_url": null,
+		"cover_url": "/ProjectPictures/Seall.png",
+		"date": "2026-09"
+  }
 ]
