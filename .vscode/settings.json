@@ -1,5 +1,11 @@
 {
 	"files.associations": {
 		"*.css": "tailwindcss"
-	}
+	},
+	"json.schemas": [
+		{
+			"fileMatch": ["/src/lib/data/projects.json"],
+			"url": "./src/lib/data/projects.schema.json"
+		}
+	]
 }
