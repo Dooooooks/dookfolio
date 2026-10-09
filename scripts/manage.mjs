@@ -435,29 +435,45 @@ function slugify(text) {
 		.replace(/-+$/, ''); // Trim - from end
 }
 
-function openFileInEditor(filePath) {
+function openFileInEditor(filePath, rl = null) {
+	if (rl) {
+		rl.pause();
+	}
+
 	const editorEnv = process.env.EDITOR || process.env.VISUAL;
+	let opened = false;
+
 	if (editorEnv) {
 		const parts = editorEnv.split(' ');
 		const cmd = parts[0];
 		const args = [...parts.slice(1), filePath];
 		try {
 			const res = spawnSync(cmd, args, { stdio: 'inherit' });
-			if (res.status === 0) return true;
+			if (res.status === 0 || res.status === null) opened = true;
 		} catch {
 			// fall through
 		}
 	}
 
-	for (const cmd of ['code', 'nano', 'nvim', 'vim', 'xdg-open']) {
-		try {
-			const res = spawnSync(cmd, [filePath], { stdio: 'inherit' });
-			if (res.status === 0) return true;
-		} catch {
-			continue;
+	if (!opened) {
+		for (const cmd of ['nvim', 'nano', 'vim', 'micro', 'code', 'xdg-open']) {
+			try {
+				const res = spawnSync(cmd, [filePath], { stdio: 'inherit' });
+				if (res.status === 0 || res.status === null) {
+					opened = true;
+					break;
+				}
+			} catch {
+				continue;
+			}
 		}
 	}
-	return false;
+
+	if (rl) {
+		rl.resume();
+	}
+
+	return opened;
 }
 
 async function addBlog(rl) {
@@ -488,41 +504,45 @@ async function addBlog(rl) {
 	}
 
 	const date = await prompt(rl, 'Date (YYYY-MM-DD)', getCurrentDate());
-	const description = await prompt(
-		rl,
-		'Description / Summary',
-		'A quick post on my latest thoughts and work.'
-	);
 	const tagsInput = await prompt(rl, 'Tags (comma separated)', 'Thoughts, Tech');
 	const tags = tagsInput
 		.split(',')
 		.map((t) => t.trim())
 		.filter(Boolean);
-	const author = await prompt(rl, 'Author', 'Lloyd Nicolas');
 	const cover = await handleCoverImage(rl, 'blog');
 
 	const starterContent = `# ${title}\n\nWrite your blog post content here...`;
 	const fileContent = serializeBlogMarkdown({
 		title,
 		date,
-		description,
+		description: 'A quick summary of this post for preview cards and search.',
 		cover: cover || '',
 		tags,
-		author,
+		author: 'Lloyd Nicolas',
 		content: starterContent
 	});
 
 	await fs.writeFile(filePath, fileContent, 'utf-8');
-	console.log(`\n${c.green}✓ Blog post created at src/content/blogs/${slug}.md${c.reset}\n`);
+	console.log(
+		`\n${c.green}✓ Blog post template created at:${c.reset} src/content/blogs/${slug}.md`
+	);
+	console.log(`${c.cyan}Launching editor now... (save and close when done)${c.reset}\n`);
 
-	const openNow = await ask(rl, `${c.bold}Open in editor now? (Y/n):${c.reset} `);
-	if (openNow.trim().toLowerCase() !== 'n') {
-		console.log(`${c.dim}Launching editor...${c.reset}`);
-		const opened = openFileInEditor(filePath);
-		if (!opened) {
+	const opened = openFileInEditor(filePath, rl);
+	if (!opened) {
+		console.log(
+			`${c.yellow}Notice: Could not launch editor automatically. You can edit directly at:${c.reset} src/content/blogs/${slug}.md\n`
+		);
+	} else {
+		try {
+			const savedRaw = await fs.readFile(filePath, 'utf-8');
+			const { data, content } = parseFrontmatter(savedRaw);
+			const words = content.trim().split(/\s+/).filter(Boolean).length;
 			console.log(
-				`${c.dim}Could not launch editor automatically. You can edit:${c.reset} src/content/blogs/${slug}.md`
+				`\n${c.green}✓ Blog post "${data.title || title}" updated (${words} words) at src/content/blogs/${slug}.md!${c.reset}\n`
 			);
+		} catch {
+			console.log(`\n${c.green}✓ Blog post created at src/content/blogs/${slug}.md!${c.reset}\n`);
 		}
 	}
 }
@@ -558,7 +578,7 @@ async function editBlog(rl) {
 
 	if (choice === '1') {
 		console.log(`${c.dim}Launching editor for ${blog.filepath}...${c.reset}`);
-		openFileInEditor(blog.filepath);
+		openFileInEditor(blog.filepath, rl);
 		return;
 	}
 
