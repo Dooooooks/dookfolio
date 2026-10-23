@@ -20,6 +20,7 @@
 		Mail,
 		Menu,
 		Newspaper,
+		Piano,
 		ShoppingBag,
 		Sparkles,
 		User,
@@ -31,9 +32,11 @@
 		openReactionModal,
 		openBreakContractModal,
 		openShopModal,
+		openPianoModal,
 		breakContractModal,
 		reactionModal,
 		shopModal,
+		pianoModal,
 		upgrades,
 		UPGRADE_CONFIGS,
 		type UpgradesState
@@ -45,6 +48,7 @@
 	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
 	import ProjectModal from '$lib/components/ProjectModal.svelte';
 	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
+	import PianoModal from '$lib/components/PianoModal.svelte';
 	import { synthState, synth, toggleAudioMute } from '$lib/synth.svelte';
 
 	let { children } = $props();
@@ -189,7 +193,13 @@
 	$effect(() => {
 		// Track pathname changes
 		page.url.pathname;
-		if (!breakContractModal.open && !reactionModal.open && !projectModal.open) {
+		if (
+			!breakContractModal.open &&
+			!reactionModal.open &&
+			!projectModal.open &&
+			!shopModal.open &&
+			!pianoModal.open
+		) {
 			forceUnlockScroll();
 		}
 	});
@@ -480,6 +490,16 @@
 					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Are you faster than a duck?</span>
 				</button>
 
+				<!-- Keyboard Piano Button (Desktop + mouse/trackpad only; needs a physical keyboard) -->
+				<button
+					type="button"
+					onclick={openPianoModal}
+					class="group hidden w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95 md:pointer-fine:flex"
+				>
+					<Piano class="size-3.5 shrink-0 text-muted transition-colors group-hover:text-accent" />
+					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Play the duck piano</span>
+				</button>
+
 			<!-- Email Address (Affected by Game Mode Switch) -->
 			<div class="border-t border-white/6 pt-1">
 				<a
@@ -527,6 +547,9 @@
 
 	<!-- Quack Upgrade Shop Modal (Centered in Viewport) -->
 	<QuackShopModal />
+
+	<!-- Keyboard Piano Modal (Desktop only) -->
+	<PianoModal />
 
 	<!-- Main Content Area -->
 	<main

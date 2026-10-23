@@ -8,6 +8,7 @@ export const gameDevMode = $state({
 export const reactionModal = $state({ open: false });
 export const breakContractModal = $state({ open: false });
 export const shopModal = $state({ open: false });
+export const pianoModal = $state({ open: false });
 
 export function addQuacks(amount: number) {
 	if (amount <= 0) return;
@@ -148,6 +149,14 @@ export function openShopModal() {
 
 export function closeShopModal() {
 	shopModal.open = false;
+}
+
+export function openPianoModal() {
+	pianoModal.open = true;
+}
+
+export function closePianoModal() {
+	pianoModal.open = false;
 }
 
 export function getUpgradeCost(id: keyof UpgradesState): number | null {

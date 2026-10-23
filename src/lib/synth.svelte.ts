@@ -236,6 +236,51 @@ class ChiptuneSoundEngine {
 		});
 	}
 
+	// Sustained 8-bit piano note; returns a release function. Ignores mute (piano is opt-in)
+	startNote(freq: number): () => void {
+		if (!this.initContext() || !this.ctx || !this.filter) return () => {};
+
+		const ctx = this.ctx;
+		const now = ctx.currentTime;
+		const gain = ctx.createGain();
+
+		// Soft triangle body with a quiet square an octave up for chiptune bite
+		const body = ctx.createOscillator();
+		body.type = 'triangle';
+		body.frequency.setValueAtTime(freq, now);
+
+		const bite = ctx.createOscillator();
+		const biteGain = ctx.createGain();
+		bite.type = 'square';
+		bite.frequency.setValueAtTime(freq * 2, now);
+		biteGain.gain.setValueAtTime(0.15, now);
+
+		// Attack -> decay -> sustain envelope
+		gain.gain.setValueAtTime(0.0001, now);
+		gain.gain.exponentialRampToValueAtTime(0.4, now + 0.005);
+		gain.gain.exponentialRampToValueAtTime(0.2, now + 0.25);
+
+		body.connect(gain);
+		bite.connect(biteGain);
+		biteGain.connect(gain);
+		gain.connect(this.filter);
+
+		body.start(now);
+		bite.start(now);
+
+		let released = false;
+		return () => {
+			if (released) return;
+			released = true;
+			const t = ctx.currentTime;
+			gain.gain.cancelScheduledValues(t);
+			gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), t);
+			gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+			body.stop(t + 0.16);
+			bite.stop(t + 0.16);
+		};
+	}
+
 	// 8-bit Power down / break contract sound
 	playPowerDown() {
 		if (!this.canPlay()) return;
@@ -267,6 +312,10 @@ class ChiptuneSoundEngine {
 }
 
 export const synth = new ChiptuneSoundEngine();
+
+export function midiToFreq(note: number): number {
+	return 440 * 2 ** ((note - 69) / 12);
+}
 
 export function toggleAudioMute() {
 	if (synthState.muted) {
