@@ -237,7 +237,8 @@ class ChiptuneSoundEngine {
 	}
 
 	// Sustained 8-bit piano note; returns a release function. Ignores mute (piano is opt-in)
-	startNote(freq: number): () => void {
+	// The release function takes how long (seconds) the note fades out, e.g. longer with sustain on
+	startNote(freq: number): (fadeSeconds?: number) => void {
 		if (!this.initContext() || !this.ctx || !this.filter) return () => {};
 
 		const ctx = this.ctx;
@@ -269,15 +270,15 @@ class ChiptuneSoundEngine {
 		bite.start(now);
 
 		let released = false;
-		return () => {
+		return (fadeSeconds = 0.15) => {
 			if (released) return;
 			released = true;
 			const t = ctx.currentTime;
 			gain.gain.cancelScheduledValues(t);
 			gain.gain.setValueAtTime(Math.max(gain.gain.value, 0.0001), t);
-			gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
-			body.stop(t + 0.16);
-			bite.stop(t + 0.16);
+			gain.gain.exponentialRampToValueAtTime(0.0001, t + fadeSeconds);
+			body.stop(t + fadeSeconds + 0.01);
+			bite.stop(t + fadeSeconds + 0.01);
 		};
 	}
 

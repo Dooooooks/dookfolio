@@ -1,4 +1,4 @@
-export type ShardVariant = 'equilateral' | 'acute' | 'wide' | 'splinter' | 'scalene' | 'chip';
+export type PondVariant = 'feather' | 'lily' | 'reed' | 'ripple' | 'crumb';
 export type DepthLayer = 'bg' | 'mg' | 'fg';
 
 export interface ShardTransform {
@@ -10,7 +10,7 @@ export interface ShardTransform {
 
 export interface ShardDefinition {
 	id: string;
-	variant: ShardVariant;
+	variant: PondVariant;
 	animClass: string;
 	delay: string;
 	fill: string;
@@ -35,55 +35,289 @@ export const PALETTE = {
 	strokeWidth: 1.5
 };
 
-// Mathematically symmetrical, pixel-perfect 8-bit stepped triangle
-export const PERFECT_PIXEL_TRIANGLE =
-	'M -2,-32 H 2 V -28 H 6 V -24 H 10 V -20 H 14 V -16 H 18 V -12 H 22 V -8 H 26 V -4 H 30 V 0 H 34 V 4 H 38 V 8 H 42 V 12 H 46 V 16 H 50 V 20 H 54 V 24 H 58 V 28 H 62 V 32 H 66 V 36 H -66 V 32 H -62 V 28 H -58 V 24 H -54 V 20 H -50 V 16 H -46 V 12 H -42 V 8 H -38 V 4 H -34 V 0 H -30 V -4 H -26 V -8 H -22 V -12 H -18 V -16 H -14 V -20 H -10 V -24 H -6 V -28 H -2 Z';
+// A smooth-mode part: 'body' takes fill + stroke, 'line' is stroke only, 'dot' is filled with the stroke color
+export interface ShapePart {
+	kind: 'body' | 'line' | 'dot';
+	d: string;
+}
 
-// Mathematically symmetrical & razor-angled broken glass shapes with pixel-perfect 8-bit stepped equivalents
-export const SHARD_BASE_SHAPES: Record<
-	ShardVariant,
-	{
-		smooth: string;
-		pixel: string;
-	}
-> = {
-	// Balanced faceted plate
-	equilateral: {
-		smooth: '0,-32 66,36 -66,36',
-		pixel: PERFECT_PIXEL_TRIANGLE
+export interface PondShape {
+	smooth: ShapePart[];
+	// Pixel art bitmap: '#' outline, 'o' interior, '*' accent (eye), '.' empty
+	bitmap: string[];
+	pixelSize: number;
+	// How much of the route layout rotation applies (reeds and ripples stay mostly level)
+	rotFactor: number;
+	// How strongly the item sways with the water and leaves wake rings (0 = stays still)
+	bob: number;
+	// Drawing size relative to the shared viewBox
+	size: number;
+}
+
+function circle(cx: number, cy: number, r: number) {
+	return `M ${cx - r},${cy} a ${r},${r} 0 1 0 ${r * 2},0 a ${r},${r} 0 1 0 ${-r * 2},0 Z`;
+}
+
+function ellipse(rx: number, ry: number) {
+	return `M ${-rx},0 a ${rx},${ry} 0 1 0 ${rx * 2},0 a ${rx},${ry} 0 1 0 ${-rx * 2},0 Z`;
+}
+
+// All smooth shapes are drawn facing right (toward the content on the left flank) within the -80 -50 160 100 viewBox
+export const POND_SHAPES: Record<PondVariant, PondShape> = {
+	// Drifting feather with a curved shaft
+	feather: {
+		smooth: [
+			{ kind: 'body', d: 'M -50,30 C -40,0 -10,-30 40,-38 C 30,-10 0,20 -50,30 Z' },
+			{ kind: 'line', d: 'M -58,38 C -30,10 0,-14 40,-38' },
+			{ kind: 'line', d: 'M -12,2 L -2,-14 M 4,-10 L 14,-22' }
+		],
+		bitmap: [
+			'.............##',
+			'...........##o#',
+			'.........##oo#.',
+			'.......##ooo#..',
+			'.....##oooo#...',
+			'....#ooooo#....',
+			'...#oooo##.....',
+			'..#ooo##.......',
+			'.#o##..........',
+			'#..............'
+		],
+		pixelSize: 7,
+		rotFactor: 1,
+		bob: 1.6,
+		size: 1
 	},
-	// Tall needle shard
-	acute: {
-		smooth: '0,-36 38,40 -38,40',
-		pixel: PERFECT_PIXEL_TRIANGLE
+	// Lily pad with its notch facing right
+	lily: {
+		smooth: [
+			{ kind: 'body', d: 'M 0,0 L 49,-12 A 52,36 0 1 0 49,12 Z' },
+			{ kind: 'line', d: 'M 0,0 L -40,-20 M 0,0 L -46,8 M 0,0 L -18,30 M 0,0 L 14,-32' }
+		],
+		bitmap: [
+			'....########....',
+			'..##oooooooo##..',
+			'.#oooooooooooo#.',
+			'#oooooooooo###..',
+			'#oooooooo##.....',
+			'#oooooooooo###..',
+			'.#oooooooooooo#.',
+			'..##oooooooo##..',
+			'....########....'
+		],
+		pixelSize: 7,
+		rotFactor: 0.5,
+		bob: 0.6,
+		size: 1
 	},
-	// Wide wedge shard
-	wide: {
-		smooth: '0,-24 68,28 -68,28',
-		pixel: PERFECT_PIXEL_TRIANGLE
+	// Cattail reed with a leaf
+	reed: {
+		smooth: [
+			{ kind: 'line', d: 'M 0,46 C 2,20 -2,0 0,-12 M 0,40 C 10,20 22,6 30,-6' },
+			{ kind: 'body', d: 'M -6,-42 C -6,-50 6,-50 6,-42 L 6,-18 C 6,-10 -6,-10 -6,-18 Z' }
+		],
+		bitmap: [
+			'.###.',
+			'#ooo#',
+			'#ooo#',
+			'#ooo#',
+			'#ooo#',
+			'#ooo#',
+			'.###.',
+			'..#..',
+			'..#..',
+			'..#.#',
+			'..##.',
+			'..#..',
+			'..#..',
+			'..#..'
+		],
+		pixelSize: 6,
+		rotFactor: 0.3,
+		bob: 1.2,
+		size: 1
 	},
-	// Razor-thin glass sliver / splinter
-	splinter: {
-		smooth: '0,-44 14,44 -14,44',
-		pixel: PERFECT_PIXEL_TRIANGLE
+	// Concentric water ripple rings
+	ripple: {
+		smooth: [
+			{ kind: 'body', d: ellipse(60, 16) },
+			{ kind: 'line', d: ellipse(38, 10) },
+			{ kind: 'line', d: ellipse(16, 4) }
+		],
+		bitmap: [
+			'......########......',
+			'...###........###...',
+			'.##....######....##.',
+			'#....##......##....#',
+			'.##....######....##.',
+			'...###........###...',
+			'......########......'
+		],
+		pixelSize: 6,
+		rotFactor: 0,
+		bob: 0,
+		size: 1
 	},
-	// Sheared asymmetric fracture shard
-	scalene: {
-		smooth: '-18,-38 52,32 -44,38',
-		pixel: PERFECT_PIXEL_TRIANGLE
-	},
-	// Micro crystal chip / dust spark
-	chip: {
-		smooth: '0,-20 24,18 -24,18',
-		pixel: PERFECT_PIXEL_TRIANGLE
+	// Breadcrumb chunk
+	crumb: {
+		smooth: [
+			{
+				kind: 'body',
+				d: 'M -30,-14 C -18,-26 14,-24 26,-12 C 36,-2 30,18 14,22 C -4,28 -28,22 -34,8 C -38,-2 -36,-8 -30,-14 Z'
+			},
+			{ kind: 'line', d: `${circle(-10, -4, 3)} ${circle(8, 4, 2.5)} ${circle(-2, 12, 2)}` }
+		],
+		bitmap: ['..####..', '.#oooo#.', '#oo#ooo#', '#ooooo##', '#o#ooo#.', '.#ooo#..', '..###...'],
+		pixelSize: 7,
+		rotFactor: 1,
+		bob: 1.4,
+		size: 1
 	}
 };
 
-// 14 Left Flank Shards with 3 Depth Tiers (Foreground, Midground, Background)
+// Merge horizontal runs of matching bitmap cells into one crisp path, centered on the origin
+export function bitmapToPath(bitmap: string[], s: number, cells: string): string {
+	const width = Math.max(...bitmap.map((row) => row.length));
+	const ox = -(width * s) / 2;
+	const oy = -(bitmap.length * s) / 2;
+	let d = '';
+	bitmap.forEach((row, y) => {
+		let x = 0;
+		while (x < row.length) {
+			if (!cells.includes(row[x])) {
+				x++;
+				continue;
+			}
+			const start = x;
+			while (x < row.length && cells.includes(row[x])) x++;
+			d += `M ${ox + start * s},${oy + y * s} h ${(x - start) * s} v ${s} h ${-(x - start) * s} Z `;
+		}
+	});
+	return d.trim();
+}
+
+export const POND_PIXEL_PATHS = Object.fromEntries(
+	Object.entries(POND_SHAPES).map(([variant, shape]) => [
+		variant,
+		{
+			outline: bitmapToPath(shape.bitmap, shape.pixelSize, '#*'),
+			fill: bitmapToPath(shape.bitmap, shape.pixelSize, 'o')
+		}
+	])
+) as Record<PondVariant, { outline: string; fill: string }>;
+
+// --- Underwater scene: revealed as scrolling sinks the page into the pond ---
+
+export const UNDERWATER = {
+	bubbleStroke: 'rgba(170, 200, 255, 0.5)',
+	bubbleFill: 'rgba(170, 200, 255, 0.06)',
+	weedStroke: 'rgba(110, 190, 170, 0.42)'
+};
+
+export interface Bubble {
+	x: number; // percentage across the flank
+	size: number; // px
+	duration: number; // seconds to rise the full height
+	delay: number; // seconds (negative so bubbles are already mid-rise)
+	drift: number; // px of sideways wobble
+}
+
+export interface Weed {
+	x: number; // percentage across the flank
+	height: number; // px
+	delay: number; // seconds offset for the sway
+}
+
+// Small deterministic generator so bubbles look scattered but render identically on server and client
+function seededRandom(seed: number) {
+	return () => {
+		seed = (seed * 16807) % 2147483647;
+		return (seed - 1) / 2147483646;
+	};
+}
+
+function makeBubbles(seed: number, count: number, weedXs: number[]): Bubble[] {
+	const rand = seededRandom(seed);
+	const scattered = Array.from({ length: count }, (_, i) => {
+		const size = 6 + Math.round(rand() * 12);
+		return {
+			x: 8 + (i / count) * 84 + rand() * 8,
+			size,
+			// Small bubbles rise slowly, big ones hurry up to the surface
+			duration: 20 - size * 0.6 + rand() * 3,
+			delay: -rand() * 18,
+			drift: 6 + rand() * 14
+		};
+	});
+	// Thin streams of tiny bubbles trickling up from the pondweed
+	const streams = weedXs.flatMap((x) =>
+		Array.from({ length: 2 }, (_, i) => ({
+			x: x + (rand() - 0.5) * 3,
+			size: 4 + Math.round(rand() * 3),
+			duration: 16 + rand() * 4,
+			delay: -(i * 8 + rand() * 8),
+			drift: 3 + rand() * 4
+		}))
+	);
+	return [...scattered, ...streams];
+}
+
+export const POND_FLOOR: Record<'left' | 'right', { weeds: Weed[] }> = {
+	left: {
+		weeds: [
+			{ x: 14, height: 210, delay: 0 },
+			{ x: 30, height: 130, delay: -1.2 },
+			{ x: 52, height: 250, delay: -2.1 },
+			{ x: 74, height: 160, delay: -0.6 },
+			{ x: 88, height: 110, delay: -1.7 }
+		]
+	},
+	right: {
+		weeds: [
+			{ x: 12, height: 120, delay: -0.9 },
+			{ x: 28, height: 240, delay: -1.9 },
+			{ x: 48, height: 150, delay: -0.3 },
+			{ x: 68, height: 220, delay: -1.4 },
+			{ x: 86, height: 140, delay: -2.4 }
+		]
+	}
+};
+
+const frontWeedXs = (side: 'left' | 'right') =>
+	POND_FLOOR[side].weeds.filter((w) => w.height > 180).map((w) => w.x);
+
+export const BUBBLES = {
+	left: makeBubbles(7, 9, frontWeedXs('left')),
+	right: makeBubbles(13, 9, frontWeedXs('right'))
+};
+
+// Wavy pondweed strand rising from (0, 0) at the bottom to (0, -height)
+export function weedPath(height: number): string {
+	const h = height;
+	return `M 0,0 C -10,${-h * 0.2} 10,${-h * 0.4} 0,${-h * 0.6} C -9,${-h * 0.75} 8,${-h * 0.88} 0,${-h}`;
+}
+
+// Pixel pondweed: a strand that zigzags one pixel left and right as it climbs
+export function weedPixelPath(height: number, pixelSize = 5): string {
+	const rows = Math.max(4, Math.round(height / pixelSize));
+	const bitmap = Array.from({ length: rows }, (_, i) => {
+		const col = Math.round(Math.sin(i * 0.45)) + 1;
+		return '...'.slice(0, col) + '#' + '...'.slice(col + 1);
+	});
+	return bitmapToPath(bitmap, pixelSize, '#');
+}
+
+export const BUBBLE_PIXEL_PATH = bitmapToPath(
+	['.###.', '#...#', '#...#', '#...#', '.###.'],
+	2,
+	'#'
+);
+
+// 14 Left Flank Pond Items with 3 Depth Tiers (Foreground, Midground, Background)
 export const LEFT_SHARDS: ShardDefinition[] = [
 	{
 		id: 'shard-l-0',
-		variant: 'equilateral',
+		variant: 'lily',
 		layer: 'fg',
 		animClass: 'anim-shard-float-1',
 		delay: '0s',
@@ -94,7 +328,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-1',
-		variant: 'acute',
+		variant: 'feather',
 		layer: 'mg',
 		animClass: 'anim-shard-float-2',
 		delay: '0.7s',
@@ -105,7 +339,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-2',
-		variant: 'scalene',
+		variant: 'feather',
 		layer: 'fg',
 		animClass: 'anim-shard-float-3',
 		delay: '1.4s',
@@ -116,7 +350,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-3',
-		variant: 'splinter',
+		variant: 'reed',
 		layer: 'mg',
 		animClass: 'anim-shard-float-4',
 		delay: '2.1s',
@@ -127,7 +361,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-4',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-5',
 		delay: '0.3s',
@@ -138,7 +372,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-5',
-		variant: 'wide',
+		variant: 'lily',
 		layer: 'mg',
 		animClass: 'anim-shard-float-1',
 		delay: '1.8s',
@@ -149,7 +383,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-6',
-		variant: 'acute',
+		variant: 'feather',
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '2.8s',
@@ -160,7 +394,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-7',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-3',
 		delay: '3.5s',
@@ -171,7 +405,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-8',
-		variant: 'splinter',
+		variant: 'reed',
 		layer: 'mg',
 		animClass: 'anim-shard-float-4',
 		delay: '1.1s',
@@ -182,7 +416,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-9',
-		variant: 'scalene',
+		variant: 'ripple',
 		layer: 'mg',
 		animClass: 'anim-shard-float-5',
 		delay: '2.4s',
@@ -193,7 +427,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-10',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-1',
 		delay: '4.2s',
@@ -204,7 +438,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-11',
-		variant: 'wide',
+		variant: 'reed',
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '1.6s',
@@ -215,7 +449,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-12',
-		variant: 'acute',
+		variant: 'feather',
 		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '0.9s',
@@ -226,7 +460,7 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-l-13',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-5',
 		delay: '3.1s',
@@ -237,11 +471,11 @@ export const LEFT_SHARDS: ShardDefinition[] = [
 	}
 ];
 
-// 14 Right Flank Shards with 3 Depth Tiers (Foreground, Midground, Background)
+// 14 Right Flank Pond Items with 3 Depth Tiers (Foreground, Midground, Background)
 export const RIGHT_SHARDS: ShardDefinition[] = [
 	{
 		id: 'shard-r-0',
-		variant: 'scalene',
+		variant: 'feather',
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '0.4s',
@@ -252,7 +486,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-1',
-		variant: 'wide',
+		variant: 'lily',
 		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '1.2s',
@@ -263,7 +497,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-2',
-		variant: 'splinter',
+		variant: 'reed',
 		layer: 'fg',
 		animClass: 'anim-shard-float-1',
 		delay: '0.2s',
@@ -274,7 +508,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-3',
-		variant: 'acute',
+		variant: 'feather',
 		layer: 'mg',
 		animClass: 'anim-shard-float-4',
 		delay: '1.9s',
@@ -285,7 +519,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-4',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-5',
 		delay: '0.8s',
@@ -296,7 +530,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-5',
-		variant: 'equilateral',
+		variant: 'lily',
 		layer: 'fg',
 		animClass: 'anim-shard-float-2',
 		delay: '2.5s',
@@ -307,7 +541,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-6',
-		variant: 'scalene',
+		variant: 'ripple',
 		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '1.5s',
@@ -318,7 +552,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-7',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-1',
 		delay: '3.7s',
@@ -329,7 +563,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-8',
-		variant: 'splinter',
+		variant: 'reed',
 		layer: 'mg',
 		animClass: 'anim-shard-float-4',
 		delay: '2.2s',
@@ -340,7 +574,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-9',
-		variant: 'acute',
+		variant: 'reed',
 		layer: 'fg',
 		animClass: 'anim-shard-float-5',
 		delay: '1.0s',
@@ -351,7 +585,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-10',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-2',
 		delay: '4.0s',
@@ -362,7 +596,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-11',
-		variant: 'wide',
+		variant: 'lily',
 		layer: 'mg',
 		animClass: 'anim-shard-float-3',
 		delay: '2.7s',
@@ -373,7 +607,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-12',
-		variant: 'scalene',
+		variant: 'feather',
 		layer: 'mg',
 		animClass: 'anim-shard-float-1',
 		delay: '1.3s',
@@ -384,7 +618,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 	},
 	{
 		id: 'shard-r-13',
-		variant: 'chip',
+		variant: 'crumb',
 		layer: 'bg',
 		animClass: 'anim-shard-float-4',
 		delay: '3.3s',
@@ -397,7 +631,7 @@ export const RIGHT_SHARDS: ShardDefinition[] = [
 
 // Layout, Rotations, and Wide Variety of Scales per Route
 export const ROUTE_LAYOUTS: Record<string, RouteLayout> = {
-	// Home: Radiating shattered glass constellation with organic drift and dramatic scale range (0.24 to 1.35)
+	// Home: Scattered pond with organic drift and dramatic scale range (0.24 to 1.35)
 	home: {
 		left: [
 			{ x: 38, y: 12, rot: 18, scale: 1.25 },
@@ -433,7 +667,7 @@ export const ROUTE_LAYOUTS: Record<string, RouteLayout> = {
 		]
 	},
 
-	// Projects: Sharp technical fractured lattice with structural interlocking rotations (0°, 45°, 90°, 135°, 180°)
+	// Projects: Structured grid with interlocking rotations (0°, 45°, 90°, 135°, 180°)
 	projects: {
 		left: [
 			{ x: 62, y: 9, rot: 90, scale: 1.32 },
@@ -469,7 +703,7 @@ export const ROUTE_LAYOUTS: Record<string, RouteLayout> = {
 		]
 	},
 
-	// Experiences: Ascending crystalline cascade / vertical fracture ladder (-90° / +90° ascending flow)
+	// Experiences: Ascending cascade (-90° / +90° ascending flow)
 	experiences: {
 		left: [
 			{ x: 48, y: 8, rot: -90, scale: 1.25 },
@@ -505,7 +739,7 @@ export const ROUTE_LAYOUTS: Record<string, RouteLayout> = {
 		]
 	},
 
-	// Contacts: Shattered convergence / inward-pointing focal arrows guiding attention to interaction center
+	// Contacts: Inward convergence guiding attention to the interaction center
 	contacts: {
 		left: [
 			{ x: 58, y: 8, rot: 55, scale: 1.22 },

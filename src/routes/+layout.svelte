@@ -43,7 +43,7 @@
 	} from '$lib/game-mode.svelte';
 	import { projectModal } from '$lib/project-modal.svelte';
 	import { lockScroll, unlockScroll, forceUnlockScroll } from '$lib/scroll-lock';
-	import AbstractTriangleFlanks from '$lib/components/AbstractTriangleFlanks.svelte';
+	import PondFlanks from '$lib/components/PondFlanks.svelte';
 	import DuckReactionModal from '$lib/components/DuckReactionModal.svelte';
 	import BreakContractModal from '$lib/components/BreakContractModal.svelte';
 	import ProjectModal from '$lib/components/ProjectModal.svelte';
@@ -533,8 +533,8 @@
 	</div>
 </aside>
 
-	<!-- Animated Geometric Triangle Flanks (Dynamic Per Tab) -->
-	<AbstractTriangleFlanks {isOpen} />
+	<!-- Animated Duck Pond Flanks (Dynamic Per Tab) -->
+	<PondFlanks {isOpen} />
 
 	<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
 	<DuckReactionModal />

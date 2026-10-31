@@ -6,80 +6,88 @@
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
 
 	interface PianoKey {
-		code: string;
+		codes: string[]; // every physical key that plays this note (first one is shown on the key)
 		label: string;
 		semitone: number; // relative to C4 (MIDI 60)
 	}
 
-	// Four-row tracker layout (FL Studio / Renoise / FastTracker), mapped by physical key position
-	const LOWER_ROW: PianoKey[] = [
-		{ code: 'KeyZ', label: 'Z', semitone: 0 },
-		{ code: 'KeyS', label: 'S', semitone: 1 },
-		{ code: 'KeyX', label: 'X', semitone: 2 },
-		{ code: 'KeyD', label: 'D', semitone: 3 },
-		{ code: 'KeyC', label: 'C', semitone: 4 },
-		{ code: 'KeyV', label: 'V', semitone: 5 },
-		{ code: 'KeyG', label: 'G', semitone: 6 },
-		{ code: 'KeyB', label: 'B', semitone: 7 },
-		{ code: 'KeyH', label: 'H', semitone: 8 },
-		{ code: 'KeyN', label: 'N', semitone: 9 },
-		{ code: 'KeyJ', label: 'J', semitone: 10 },
-		{ code: 'KeyM', label: 'M', semitone: 11 }
+	// Same shortcuts as musicca.com/piano, mapped by physical key position: three octaves (C3–B5).
+	// Left hand plays C3–B3 on Z S X D C + Q 2 W 3 E 4 R, the top letter row (T–]) is C4–C5 with the
+	// number row as sharps, and the bottom/home rows (F V G B N J M K , L .) continue up to B5.
+	const PIANO_KEYS: PianoKey[] = [
+		{ codes: ['KeyZ'], label: 'Z', semitone: -12 },
+		{ codes: ['KeyS'], label: 'S', semitone: -11 },
+		{ codes: ['KeyX'], label: 'X', semitone: -10 },
+		{ codes: ['KeyD'], label: 'D', semitone: -9 },
+		{ codes: ['KeyC'], label: 'C', semitone: -8 },
+		{ codes: ['KeyQ'], label: 'Q', semitone: -7 },
+		{ codes: ['Digit2'], label: '2', semitone: -6 },
+		{ codes: ['KeyW'], label: 'W', semitone: -5 },
+		{ codes: ['Digit3'], label: '3', semitone: -4 },
+		{ codes: ['KeyE'], label: 'E', semitone: -3 },
+		{ codes: ['Digit4'], label: '4', semitone: -2 },
+		{ codes: ['KeyR'], label: 'R', semitone: -1 },
+		{ codes: ['KeyT'], label: 'T', semitone: 0 },
+		{ codes: ['Digit6'], label: '6', semitone: 1 },
+		{ codes: ['KeyY'], label: 'Y', semitone: 2 },
+		{ codes: ['Digit7'], label: '7', semitone: 3 },
+		{ codes: ['KeyU'], label: 'U', semitone: 4 },
+		{ codes: ['KeyI'], label: 'I', semitone: 5 },
+		{ codes: ['Digit9'], label: '9', semitone: 6 },
+		{ codes: ['KeyO'], label: 'O', semitone: 7 },
+		{ codes: ['Digit0'], label: '0', semitone: 8 },
+		{ codes: ['KeyP'], label: 'P', semitone: 9 },
+		{ codes: ['Equal', 'Minus', 'Backspace'], label: '=', semitone: 10 },
+		{ codes: ['BracketLeft'], label: '[', semitone: 11 },
+		{ codes: ['BracketRight'], label: ']', semitone: 12 },
+		{ codes: ['KeyF'], label: 'F', semitone: 13 },
+		{ codes: ['KeyV'], label: 'V', semitone: 14 },
+		{ codes: ['KeyG'], label: 'G', semitone: 15 },
+		{ codes: ['KeyB'], label: 'B', semitone: 16 },
+		{ codes: ['KeyN'], label: 'N', semitone: 17 },
+		{ codes: ['KeyJ'], label: 'J', semitone: 18 },
+		{ codes: ['KeyM'], label: 'M', semitone: 19 },
+		{ codes: ['KeyK'], label: 'K', semitone: 20 },
+		{ codes: ['Comma'], label: ',', semitone: 21 },
+		{ codes: ['KeyL'], label: 'L', semitone: 22 },
+		{ codes: ['Period'], label: '.', semitone: 23 }
 	];
 
-	const UPPER_ROW: PianoKey[] = [
-		{ code: 'KeyQ', label: 'Q', semitone: 12 },
-		{ code: 'Digit2', label: '2', semitone: 13 },
-		{ code: 'KeyW', label: 'W', semitone: 14 },
-		{ code: 'Digit3', label: '3', semitone: 15 },
-		{ code: 'KeyE', label: 'E', semitone: 16 },
-		{ code: 'KeyR', label: 'R', semitone: 17 },
-		{ code: 'Digit5', label: '5', semitone: 18 },
-		{ code: 'KeyT', label: 'T', semitone: 19 },
-		{ code: 'Digit6', label: '6', semitone: 20 },
-		{ code: 'KeyY', label: 'Y', semitone: 21 },
-		{ code: 'Digit7', label: '7', semitone: 22 },
-		{ code: 'KeyU', label: 'U', semitone: 23 },
-		{ code: 'KeyI', label: 'I', semitone: 24 },
-		{ code: 'Digit9', label: '9', semitone: 25 },
-		{ code: 'KeyO', label: 'O', semitone: 26 },
-		{ code: 'Digit0', label: '0', semitone: 27 },
-		{ code: 'KeyP', label: 'P', semitone: 28 },
-		{ code: 'BracketLeft', label: '[', semitone: 29 },
-		{ code: 'Equal', label: '=', semitone: 30 },
-		{ code: 'BracketRight', label: ']', semitone: 31 }
-	];
-
-	const KEY_BY_CODE = new Map([...LOWER_ROW, ...UPPER_ROW].map((k) => [k.code, k]));
+	const KEY_BY_CODE = new Map(PIANO_KEYS.flatMap((k) => k.codes.map((code) => [code, k] as const)));
 	const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 	const BLACK_SEMITONES = new Set([1, 3, 6, 8, 10]);
 
-	// Split a row into white keys and black keys positioned by how many white keys precede them
-	function splitRow(row: PianoKey[]) {
-		const whites: PianoKey[] = [];
-		const blacks: { key: PianoKey; whitesBefore: number }[] = [];
-		for (const key of row) {
-			if (BLACK_SEMITONES.has(key.semitone % 12)) {
-				blacks.push({ key, whitesBefore: whites.length });
-			} else {
-				whites.push(key);
-			}
+	// Split the keys into white keys and black keys positioned by how many white keys precede them
+	const whites: PianoKey[] = [];
+	const blacks: { key: PianoKey; whitesBefore: number }[] = [];
+	for (const key of PIANO_KEYS) {
+		if (BLACK_SEMITONES.has((key.semitone + 12) % 12)) {
+			blacks.push({ key, whitesBefore: whites.length });
+		} else {
+			whites.push(key);
 		}
-		return { whites, blacks };
 	}
-
-	const rows = [
-		{ id: 'upper', ...splitRow(UPPER_ROW) },
-		{ id: 'lower', ...splitRow(LOWER_ROW) }
-	];
 
 	let isClosing = $state(false);
 	let isVisible = $state(false);
 	let transpose = $state(0);
-	const held = new SvelteMap<string, () => void>();
+	// With sustain on, released notes ring out and fade slowly instead of stopping right away
+	let sustain = $state(false);
+	const SUSTAIN_FADE_SECONDS = 2.5;
+	const held = new SvelteMap<string, (fadeSeconds?: number) => void>();
 
 	function noteName(semitone: number) {
-		return NOTE_NAMES[(semitone + transpose) % 12];
+		return NOTE_NAMES[(semitone + transpose + 24) % 12];
+	}
+
+	// Octave number shown on each C so the three octaves are easy to tell apart
+	function octaveOf(semitone: number) {
+		return Math.floor((60 + semitone + transpose) / 12) - 1;
+	}
+
+	// The on-screen key is lit while any of its physical keys (or the mouse) is holding it
+	function isHeld(key: PianoKey) {
+		return key.codes.some((code) => held.has(code));
 	}
 
 	function pressKey(code: string) {
@@ -91,7 +99,7 @@
 	function releaseKey(code: string) {
 		const release = held.get(code);
 		if (!release) return;
-		release();
+		release(sustain ? SUSTAIN_FADE_SECONDS : undefined);
 		held.delete(code);
 	}
 
@@ -184,7 +192,7 @@
 	>
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex w-full max-w-3xl flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
+			class="relative flex w-full max-w-4xl flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -245,7 +253,7 @@
 				</button>
 			</div>
 
-			<div class="mb-5 flex flex-wrap justify-center gap-1">
+			<div class="mb-3 flex flex-wrap justify-center gap-1">
 				{#each NOTE_NAMES as name, i (name)}
 					<button
 						type="button"
@@ -262,61 +270,69 @@
 				{/each}
 			</div>
 
-			<!-- Keyboard: upper row (Q–]) above lower row (Z–M), like the physical keyboard -->
-			<div class="flex w-full flex-col gap-3">
-				{#each rows as row (row.id)}
-					<div class="relative flex h-32 w-full {row.id === 'lower' ? 'max-w-[58%]' : ''}">
-						{#each row.whites as key (key.code)}
-							{@const active = held.has(key.code)}
-							<button
-								type="button"
-								data-custom-sound
-								tabindex="-1"
-								aria-label="{noteName(key.semitone)} ({key.label})"
-								onpointerdown={() => pressKey(key.code)}
-								onpointerup={() => releaseKey(key.code)}
-								onpointerleave={() => releaseKey(key.code)}
-								class="flex flex-1 cursor-pointer flex-col items-center justify-end gap-1 rounded-b-lg border border-black/40 pb-2 transition-colors duration-75 {active
-									? 'bg-accent text-bg'
-									: 'bg-white/90 text-bg/70 hover:bg-white'}"
-							>
-								<span class="font-black {gameDevMode.active ? 'font-pixel text-[8px]' : 'text-xs'}">
-									{key.label}
-								</span>
-								<span
-									class="font-bold opacity-60 {gameDevMode.active
-										? 'font-pixel text-[6px]'
-										: 'text-[10px]'}"
-								>
-									{noteName(key.semitone)}
-								</span>
-							</button>
-						{/each}
+			<!-- Sustain Toggle -->
+			<button
+				type="button"
+				onclick={() => (sustain = !sustain)}
+				aria-pressed={sustain}
+				class="mb-5 cursor-pointer rounded-xl border px-3 py-1.5 font-bold transition-all active:scale-95 {gameDevMode.active
+					? 'font-pixel text-[7px]'
+					: 'text-xs'} {sustain
+					? 'border-accent/60 bg-accent/25 text-accent'
+					: 'border-white/10 bg-white/5 text-muted hover:border-accent/40 hover:text-white'}"
+			>
+				Sustain: {sustain ? 'On' : 'Off'}
+			</button>
 
-						{#each row.blacks as { key, whitesBefore } (key.code)}
-							{@const active = held.has(key.code)}
-							<button
-								type="button"
-								data-custom-sound
-								tabindex="-1"
-								aria-label="{noteName(key.semitone)} ({key.label})"
-								onpointerdown={() => pressKey(key.code)}
-								onpointerup={() => releaseKey(key.code)}
-								onpointerleave={() => releaseKey(key.code)}
-								style="left: calc({(whitesBefore / row.whites.length) * 100}% - {35 /
-									row.whites.length}%); width: {70 / row.whites.length}%;"
-								class="absolute top-0 z-10 flex h-[60%] cursor-pointer items-end justify-center rounded-b-md border border-black/60 pb-1.5 transition-colors duration-75 {active
-									? 'bg-accent text-bg'
-									: 'bg-bg text-muted hover:bg-surface'}"
-							>
-								<span
-									class="font-black {gameDevMode.active ? 'font-pixel text-[7px]' : 'text-[10px]'}"
-								>
-									{key.label}
-								</span>
-							</button>
-						{/each}
-					</div>
+			<!-- Keyboard: three octaves (C3–B5) with each key's shortcut, like musicca.com/piano -->
+			<div class="relative flex h-40 w-full">
+				{#each whites as key (key.label)}
+					{@const active = isHeld(key)}
+					<button
+						type="button"
+						data-custom-sound
+						tabindex="-1"
+						aria-label="{noteName(key.semitone)}{octaveOf(key.semitone)} ({key.label})"
+						onpointerdown={() => pressKey(key.codes[0])}
+						onpointerup={() => releaseKey(key.codes[0])}
+						onpointerleave={() => releaseKey(key.codes[0])}
+						class="flex min-w-0 flex-1 cursor-pointer flex-col items-center justify-end gap-1 rounded-b-md border border-black/40 pb-2 transition-colors duration-75 {active
+							? 'bg-accent text-bg'
+							: 'bg-white/90 text-bg/70 hover:bg-white'}"
+					>
+						<span class="font-black {gameDevMode.active ? 'font-pixel text-[7px]' : 'text-xs'}">
+							{key.label}
+						</span>
+						<span
+							class="font-bold opacity-60 {gameDevMode.active
+								? 'font-pixel text-[5px]'
+								: 'text-[9px]'}"
+						>
+							{noteName(key.semitone)}{noteName(key.semitone) === 'C' ? octaveOf(key.semitone) : ''}
+						</span>
+					</button>
+				{/each}
+
+				{#each blacks as { key, whitesBefore } (key.label)}
+					{@const active = isHeld(key)}
+					<button
+						type="button"
+						data-custom-sound
+						tabindex="-1"
+						aria-label="{noteName(key.semitone)}{octaveOf(key.semitone)} ({key.label})"
+						onpointerdown={() => pressKey(key.codes[0])}
+						onpointerup={() => releaseKey(key.codes[0])}
+						onpointerleave={() => releaseKey(key.codes[0])}
+						style="left: calc({(whitesBefore / whites.length) * 100}% - {32 /
+							whites.length}%); width: {64 / whites.length}%;"
+						class="absolute top-0 z-10 flex h-[60%] cursor-pointer items-end justify-center rounded-b-md border border-black/60 pb-1.5 transition-colors duration-75 {active
+							? 'bg-accent text-bg'
+							: 'bg-bg text-muted hover:bg-surface'}"
+					>
+						<span class="font-black {gameDevMode.active ? 'font-pixel text-[6px]' : 'text-[10px]'}">
+							{key.label}
+						</span>
+					</button>
 				{/each}
 			</div>
 
@@ -326,7 +342,7 @@
 					? 'text-[8px] leading-loose'
 					: 'text-xs'}"
 			>
-				Play with the Z–M and Q–] rows · S D G H J and the number keys are sharps · ← → change key
+				Z–R low octave · T–] middle · F–. high · ← → change key
 			</p>
 		</div>
 	</div>
