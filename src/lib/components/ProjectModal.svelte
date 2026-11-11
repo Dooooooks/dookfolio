@@ -76,13 +76,22 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape') handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
-			? 'anim-modal-backdrop-out'
-			: 'anim-modal-backdrop-in'}"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
 	>
+		<!--
+			Blurred backdrop as a sibling layer (a blurred parent would stop the card's frosted glass
+			from seeing the page). Clicks pass through to the dialog so clicking outside still closes
+		-->
+		<div
+			aria-hidden="true"
+			class="pointer-events-none fixed inset-0 bg-black/20 backdrop-blur-sm {isClosing
+				? 'anim-modal-backdrop-out'
+				: 'anim-modal-backdrop-in'}"
+		></div>
+
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-y-auto overscroll-contain rounded-3xl border border-accent/30 bg-surface/95 p-5 text-left shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-7 {isClosing
+			class="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-y-auto overscroll-contain rounded-none bg-surface/70 p-5 text-left shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform sm:p-7 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -91,7 +100,7 @@
 				type="button"
 				onclick={handleClose}
 				aria-label="Close project details"
-				class="absolute top-4 right-4 z-10 cursor-pointer rounded-xl p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+				class="absolute top-4 right-4 z-10 cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
 			>
 				<X class="size-5" />
 			</button>
@@ -99,7 +108,7 @@
 			<!-- Project Cover Image -->
 			{#if activeProject.cover_url}
 				<div
-					class="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-2xl border border-white/10 bg-bg"
+					class="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-none border border-white/10 bg-bg"
 				>
 					<img
 						src="{base}{activeProject.cover_url}"
@@ -139,7 +148,7 @@
 				<div class="mt-3 flex flex-wrap gap-1.5">
 					{#each activeProject.tags as tag (tag)}
 						<span
-							class="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 font-bold text-muted {gameDevMode.active
+							class="rounded-none border border-white/10 bg-white/5 px-2.5 py-1 font-bold text-muted {gameDevMode.active
 								? 'font-pixel text-[8px]'
 								: 'text-xs'}"
 						>
@@ -162,7 +171,7 @@
 							href={activeProject.demo_url}
 							target="_blank"
 							rel="external noreferrer"
-							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 font-extrabold text-black shadow-lg shadow-accent/20 transition-all duration-200 hover:scale-[1.02] hover:bg-accent-soft active:scale-95 sm:flex-none {gameDevMode.active
+							class="inline-flex flex-1 items-center justify-center gap-2 rounded-none bg-accent px-4 py-2.5 font-extrabold text-black shadow-lg shadow-accent/20 transition-all duration-200 hover:scale-[1.02] hover:bg-accent-soft active:scale-95 sm:flex-none {gameDevMode.active
 								? 'font-pixel text-xs'
 								: 'text-sm'}"
 						>
@@ -176,7 +185,7 @@
 							href={activeProject.github_url}
 							target="_blank"
 							rel="external noreferrer"
-							class="inline-flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-4 py-2.5 font-extrabold text-white transition-all duration-200 hover:scale-[1.02] hover:border-white/30 hover:bg-white/10 active:scale-95 sm:flex-none {gameDevMode.active
+							class="inline-flex flex-1 items-center justify-center gap-2 rounded-none border border-white/15 bg-white/5 px-4 py-2.5 font-extrabold text-white transition-all duration-200 hover:scale-[1.02] hover:border-white/30 hover:bg-white/10 active:scale-95 sm:flex-none {gameDevMode.active
 								? 'font-pixel text-xs'
 								: 'text-sm'}"
 						>

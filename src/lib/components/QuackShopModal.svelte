@@ -89,13 +89,22 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape') handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
-			? 'anim-modal-backdrop-out'
-			: 'anim-modal-backdrop-in'}"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
 	>
+		<!--
+			Blurred backdrop as a sibling layer (a blurred parent would stop the card's frosted glass
+			from seeing the page). Clicks pass through to the dialog so clicking outside still closes
+		-->
+		<div
+			aria-hidden="true"
+			class="pointer-events-none fixed inset-0 bg-black/20 backdrop-blur-sm {isClosing
+				? 'anim-modal-backdrop-out'
+				: 'anim-modal-backdrop-in'}"
+		></div>
+
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex w-full max-w-xl flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
+			class="relative flex w-full max-w-xl flex-col items-center overflow-hidden rounded-none bg-surface/70 p-6 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform sm:p-8 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -104,7 +113,7 @@
 				type="button"
 				onclick={handleClose}
 				aria-label="Close dialog"
-				class="absolute top-4 right-4 cursor-pointer rounded-xl p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+				class="absolute top-4 right-4 cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
 			>
 				<X class="size-5" />
 			</button>
@@ -146,7 +155,7 @@
 
 					<!-- Final Score Badge (Total Lifetime Quacks) -->
 					<div
-						class="mt-5 flex items-center gap-2 rounded-2xl border border-accent/25 bg-accent/10 px-4 py-2 font-bold text-muted shadow-xs {gameDevMode.active
+						class="mt-5 flex items-center gap-2 rounded-none border border-accent/25 bg-accent/10 px-4 py-2 font-bold text-muted shadow-xs {gameDevMode.active
 							? 'text-[9px]'
 							: 'text-xs sm:text-sm'}"
 					>
@@ -165,7 +174,7 @@
 					<button
 						type="button"
 						onclick={handleClose}
-						class="mt-5 cursor-pointer rounded-2xl border border-accent/40 bg-accent/20 px-6 py-2.5 font-bold tracking-wide text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-105 hover:border-accent hover:bg-accent/30 active:scale-95 {gameDevMode.active
+						class="mt-5 cursor-pointer rounded-none border border-accent/40 bg-accent/20 px-6 py-2.5 font-bold tracking-wide text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-105 hover:border-accent hover:bg-accent/30 active:scale-95 {gameDevMode.active
 							? 'font-pixel text-[9.5px]'
 							: 'text-xs sm:text-sm'}"
 					>
@@ -209,7 +218,7 @@
 						{@const isMax = currentLevel >= 5}
 
 						<div
-							class="flex flex-col gap-2 rounded-2xl border border-white/8 bg-white/3 p-3 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+							class="flex flex-col gap-2 rounded-none border border-white/8 bg-white/3 p-3 transition-colors sm:flex-row sm:items-center sm:justify-between sm:gap-4"
 						>
 							<!-- [Upgrade Name] & Info -->
 							<div class="flex flex-col sm:w-42 shrink-0">
@@ -234,7 +243,7 @@
 								{#each [0, 1, 2, 3, 4] as barIndex}
 									{@const isFilled = currentLevel > barIndex}
 									<div
-										class="h-4.5 flex-1 rounded-sm transition-all duration-200 sm:flex-none sm:h-5 sm:w-6 {isFilled
+										class="h-4.5 flex-1 rounded-none transition-all duration-200 sm:flex-none sm:h-5 sm:w-6 {isFilled
 											? 'border border-accent/80 bg-accent shadow-xs shadow-accent/50'
 											: 'border border-white/10 bg-white/8'}"
 									></div>
@@ -253,7 +262,7 @@
 								aria-label={isMax
 									? `${config.name} maxed out`
 									: `Upgrade ${config.name} for ${cost} quacks`}
-								class="flex w-full cursor-pointer items-center justify-center rounded-xl px-3 py-1.5 text-center font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
+								class="flex w-full cursor-pointer items-center justify-center rounded-none px-3 py-1.5 text-center font-extrabold transition-all duration-200 sm:w-32 {gameDevMode.active
 									? 'font-pixel text-[8px]'
 									: 'text-xs'} {isMax
 									? 'cursor-default border border-white/10 bg-white/5 text-muted/50'

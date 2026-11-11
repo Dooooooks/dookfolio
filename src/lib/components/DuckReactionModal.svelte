@@ -201,19 +201,28 @@
 		ontouchmove={(e) => {
 			if (e.target === e.currentTarget) e.preventDefault();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
-			? 'anim-modal-backdrop-out'
-			: 'anim-modal-backdrop-in'}"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
 	>
+		<!--
+			Blurred backdrop as a sibling layer (a blurred parent would stop the card's frosted glass
+			from seeing the page). Clicks pass through to the dialog so clicking outside still closes
+		-->
+		<div
+			aria-hidden="true"
+			class="pointer-events-none fixed inset-0 bg-black/20 backdrop-blur-sm {isClosing
+				? 'anim-modal-backdrop-out'
+				: 'anim-modal-backdrop-in'}"
+		></div>
+
 		<!-- Floating Window Card (At least 70% of the screen) -->
 		<div
-			class="relative flex h-[85dvh] max-h-[640px] min-h-0 w-[94vw] max-w-5xl flex-col overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform md:w-[78vw] lg:w-[72vw] {isClosing
+			class="relative flex h-[85dvh] max-h-[640px] min-h-0 w-[94vw] max-w-5xl flex-col overflow-hidden rounded-none bg-surface/70 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform md:w-[78vw] lg:w-[72vw] {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
 			<!-- Modal Header -->
 			<div
-				class="flex items-center justify-between border-b border-white/8 px-4 py-3 sm:px-8 sm:py-5"
+				class="flex items-center justify-between px-4 py-3 sm:px-8 sm:py-5"
 			>
 				<div class="flex items-center gap-2.5 sm:gap-3">
 					<img
@@ -233,7 +242,7 @@
 					type="button"
 					onclick={close}
 					aria-label="Close reaction test"
-					class="cursor-pointer rounded-xl p-1.5 sm:p-2 text-muted transition-colors hover:bg-white/10 hover:text-white"
+					class="cursor-pointer rounded-none p-1.5 sm:p-2 text-muted transition-colors hover:bg-white/10 hover:text-white"
 				>
 					<X class="size-5 sm:size-6" />
 				</button>
@@ -245,14 +254,14 @@
 				<!-- svelte-ignore a11y_no_static_element_interactions -->
 				<div
 					onpointerdown={handlePondPointerDown}
-					class="relative flex min-h-0 w-full flex-1 cursor-pointer touch-manipulation flex-col items-center justify-center overflow-hidden rounded-2xl border will-change-transform select-none {testPhase ===
+					class="relative flex min-h-0 w-full flex-1 cursor-pointer touch-manipulation flex-col items-center justify-center overflow-hidden rounded-none border will-change-transform select-none {testPhase ===
 					'active'
 						? 'border-emerald-400 bg-emerald-950/85 shadow-[0_0_60px_rgba(52,211,153,0.35)] ring-8 ring-emerald-400/50 transition-none'
 						: testPhase === 'early'
 							? 'border-red-500/50 bg-red-950/25 transition-colors duration-150'
 							: testPhase === 'waiting'
 								? 'border-amber-500/30 bg-surface/90 transition-colors duration-150'
-								: 'border-white/10 bg-bg/70 transition-colors duration-150 hover:border-accent/40'}"
+								: 'border-transparent bg-bg/70 transition-colors duration-150 hover:border-accent/40'}"
 				>
 					<!-- Pre-warmed Active Stimulus: Zero DOM Mount Churn, Instant GPU Reveal -->
 					<div
@@ -280,7 +289,7 @@
 					{#if testPhase === 'idle'}
 						<div class="pointer-events-none max-w-md p-6 text-center">
 							<div
-								class="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-accent/15 text-accent shadow-inner"
+								class="mx-auto mb-4 flex size-16 items-center justify-center rounded-none bg-accent/15 text-accent shadow-inner"
 							>
 								<Zap class="size-8" />
 							</div>
@@ -303,7 +312,7 @@
 					{:else if testPhase === 'early'}
 						<div class="pointer-events-none p-6 text-center">
 							<div
-								class="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-red-500/20 text-red-400"
+								class="mx-auto mb-4 flex size-16 items-center justify-center rounded-none bg-red-500/20 text-red-400"
 							>
 								<AlertTriangle class="size-8" />
 							</div>
@@ -349,7 +358,7 @@
 				<div class="mt-5 flex items-center justify-between text-xs text-muted sm:text-sm">
 					<div class="flex items-center gap-2">
 						<span class="font-bold text-white">Duck Average:</span>
-						<span class="rounded bg-accent/10 px-2 py-0.5 font-extrabold text-accent">~80 ms</span>
+						<span class="rounded-none bg-accent/10 px-2 py-0.5 font-extrabold text-accent">~80 ms</span>
 					</div>
 
 					<div
@@ -361,7 +370,7 @@
 					{#if bestTime !== null}
 						<div class="flex items-center gap-2">
 							<span class="font-bold text-white">Your Session Best:</span>
-							<span class="rounded bg-emerald-500/10 px-2 py-0.5 font-extrabold text-emerald-400">
+							<span class="rounded-none bg-emerald-500/10 px-2 py-0.5 font-extrabold text-emerald-400">
 								{bestTime} ms
 							</span>
 						</div>

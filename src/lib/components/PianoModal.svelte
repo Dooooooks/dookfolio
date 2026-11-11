@@ -186,13 +186,22 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape') handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
-			? 'anim-modal-backdrop-out'
-			: 'anim-modal-backdrop-in'}"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
 	>
+		<!--
+			Blurred backdrop as a sibling layer (a blurred parent would stop the card's frosted glass
+			from seeing the page). Clicks pass through to the dialog so clicking outside still closes
+		-->
+		<div
+			aria-hidden="true"
+			class="pointer-events-none fixed inset-0 bg-black/20 backdrop-blur-sm {isClosing
+				? 'anim-modal-backdrop-out'
+				: 'anim-modal-backdrop-in'}"
+		></div>
+
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex w-full max-w-4xl flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
+			class="relative flex w-full max-w-4xl flex-col items-center overflow-hidden rounded-none bg-surface/70 p-6 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform sm:p-8 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -201,7 +210,7 @@
 				type="button"
 				onclick={handleClose}
 				aria-label="Close dialog"
-				class="absolute top-4 right-4 cursor-pointer rounded-xl p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+				class="absolute top-4 right-4 cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
 			>
 				<X class="size-5" />
 			</button>
@@ -225,7 +234,7 @@
 					type="button"
 					onclick={() => setTranspose(transpose - 1)}
 					aria-label="Previous key"
-					class="flex size-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+					class="flex size-8 cursor-pointer items-center justify-center rounded-none border border-white/10 bg-white/5 text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
 				>
 					<ChevronLeft class="size-4" />
 				</button>
@@ -247,7 +256,7 @@
 					type="button"
 					onclick={() => setTranspose(transpose + 1)}
 					aria-label="Next key"
-					class="flex size-8 cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+					class="flex size-8 cursor-pointer items-center justify-center rounded-none border border-white/10 bg-white/5 text-muted transition-all hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
 				>
 					<ChevronRight class="size-4" />
 				</button>
@@ -259,7 +268,7 @@
 						type="button"
 						onclick={() => setTranspose(i)}
 						aria-pressed={transpose === i}
-						class="w-9 cursor-pointer rounded-lg border py-1 font-bold transition-all active:scale-95 {gameDevMode.active
+						class="w-9 cursor-pointer rounded-none border py-1 font-bold transition-all active:scale-95 {gameDevMode.active
 							? 'font-pixel text-[7px]'
 							: 'text-[11px]'} {transpose === i
 							? 'border-accent/60 bg-accent/25 text-accent'
@@ -275,7 +284,7 @@
 				type="button"
 				onclick={() => (sustain = !sustain)}
 				aria-pressed={sustain}
-				class="mb-5 cursor-pointer rounded-xl border px-3 py-1.5 font-bold transition-all active:scale-95 {gameDevMode.active
+				class="mb-5 cursor-pointer rounded-none border px-3 py-1.5 font-bold transition-all active:scale-95 {gameDevMode.active
 					? 'font-pixel text-[7px]'
 					: 'text-xs'} {sustain
 					? 'border-accent/60 bg-accent/25 text-accent'

@@ -77,13 +77,22 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape') handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain bg-black/80 p-4 backdrop-blur-md select-none {isClosing
-			? 'anim-modal-backdrop-out'
-			: 'anim-modal-backdrop-in'}"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
 	>
+		<!--
+			Blurred backdrop as a sibling layer (a blurred parent would stop the card's frosted glass
+			from seeing the page). Clicks pass through to the dialog so clicking outside still closes
+		-->
+		<div
+			aria-hidden="true"
+			class="pointer-events-none fixed inset-0 bg-black/20 backdrop-blur-sm {isClosing
+				? 'anim-modal-backdrop-out'
+				: 'anim-modal-backdrop-in'}"
+		></div>
+
 		<!-- Modal Dialog Card -->
 		<div
-			class="relative flex w-full max-w-md flex-col items-center overflow-hidden rounded-3xl border border-accent/30 bg-surface/95 p-6 text-center shadow-2xl shadow-accent/20 backdrop-blur-md will-change-transform sm:p-8 {isClosing
+			class="relative flex w-full max-w-md flex-col items-center overflow-hidden rounded-none bg-surface/70 p-6 text-center shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform sm:p-8 {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -92,7 +101,7 @@
 				type="button"
 				onclick={handleClose}
 				aria-label="Close dialog"
-				class="absolute top-4 right-4 cursor-pointer rounded-xl p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+				class="absolute top-4 right-4 cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
 			>
 				<X class="size-5" />
 			</button>
@@ -121,7 +130,7 @@
 				<button
 					type="button"
 					onclick={handleConfirm}
-					class="flex-1 cursor-pointer rounded-2xl border border-accent/40 bg-accent/20 px-5 py-3 font-pixel text-sm font-bold tracking-wider text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-[1.03] hover:border-accent hover:bg-accent/30 focus:outline-hidden active:scale-95"
+					class="flex-1 cursor-pointer rounded-none border border-accent/40 bg-accent/20 px-5 py-3 font-pixel text-sm font-bold tracking-wider text-accent shadow-xs shadow-accent/20 transition-all duration-200 hover:scale-[1.03] hover:border-accent hover:bg-accent/30 focus:outline-hidden active:scale-95"
 				>
 					Quack
 				</button>
@@ -130,7 +139,7 @@
 				<button
 					type="button"
 					onclick={handleClose}
-					class="flex-1 cursor-pointer rounded-2xl border border-white/15 bg-white/5 px-5 py-3 font-pixel text-sm font-bold tracking-wider text-muted shadow-xs transition-all duration-200 hover:scale-[1.03] hover:border-white/30 hover:bg-white/10 hover:text-white focus:outline-hidden active:scale-95"
+					class="flex-1 cursor-pointer rounded-none border border-white/15 bg-white/5 px-5 py-3 font-pixel text-sm font-bold tracking-wider text-muted shadow-xs transition-all duration-200 hover:scale-[1.03] hover:border-white/30 hover:bg-white/10 hover:text-white focus:outline-hidden active:scale-95"
 				>
 					No Way
 				</button>

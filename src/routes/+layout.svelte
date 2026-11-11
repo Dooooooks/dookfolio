@@ -57,6 +57,9 @@
 
 	let { children } = $props();
 
+	const STANDALONE_ROUTES = new Set(['/chords']);
+	const isStandalone = $derived(STANDALONE_ROUTES.has(page.route.id ?? ''));
+
 	let isOpen = $state(true);
 	let activeSection = $state<'home' | 'about' | 'activity' | 'skills' | 'latest'>('home');
 
@@ -216,6 +219,14 @@
 	<link rel="icon" type="image/png" href={gameDevMode.active ? duckYellow : duckWhite} />
 </svelte:head>
 
+<!-- Standalone pages (e.g. /chords, shared with friends) skip the sidebar and the rest of the site chrome -->
+{#if isStandalone}
+	<div class="min-h-dvh bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
+		<div class="anim-page-transition">
+			{@render children()}
+		</div>
+	</div>
+{:else}
 <div class="min-h-screen bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
 	<!-- Floating Top-Left Controls: Sidebar Toggle (Open/Hide) + Game Dev Mode Controls -->
 	<div
@@ -582,3 +593,4 @@
 		{/key}
 	</main>
 </div>
+{/if}
