@@ -57,7 +57,7 @@
 
 	let { children } = $props();
 
-	const STANDALONE_ROUTES = new Set(['/chords']);
+	const STANDALONE_ROUTES = new Set(['/chord-progression']);
 	const isStandalone = $derived(STANDALONE_ROUTES.has(page.route.id ?? ''));
 
 	let isOpen = $state(true);
@@ -219,7 +219,7 @@
 	<link rel="icon" type="image/png" href={gameDevMode.active ? duckYellow : duckWhite} />
 </svelte:head>
 
-<!-- Standalone pages (e.g. /chords, shared with friends) skip the sidebar and the rest of the site chrome -->
+<!-- Standalone pages (e.g. /chord-progression, shared with friends) skip the sidebar and the rest of the site chrome -->
 {#if isStandalone}
 	<div class="min-h-dvh bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
 		<div class="anim-page-transition">
@@ -523,7 +523,7 @@
 					class="group flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
 				>
 					<Music class="size-3.5 shrink-0 text-muted transition-colors group-hover:text-accent" />
-					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Guess the chords</span>
+					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Train relative pitch</span>
 				</button>
 
 			<!-- Email Address (Affected by Game Mode Switch) -->

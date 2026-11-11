@@ -11,7 +11,7 @@
 
 	let isClosing = $state(false);
 	let isVisible = $state(false);
-	// Fullscreen hand-off: the card grows to fill the screen, then we navigate to /chords
+	// Fullscreen hand-off: the card grows to fill the screen, then we navigate to /chord-progression
 	let isExpanding = $state(false);
 	let card = $state<HTMLDivElement | null>(null);
 	let expandStyle = $state('');
@@ -65,9 +65,9 @@
 			isExpanding = true;
 		}
 
-		await goto(resolve('/chords'));
+		await goto(resolve('/chord-progression'));
 
-		// The page underneath is now /chords, so drop the modal instantly (no close animation)
+		// The page underneath is now /chord-progression, so drop the modal instantly (no close animation)
 		chordModal.open = false;
 		isVisible = false;
 		isExpanding = false;
@@ -114,7 +114,7 @@
 				? 'z-10 bg-bg'
 				: 'bg-surface/70'} {isClosing ? 'anim-modal-out' : isExpanding ? '' : 'anim-modal-in'}"
 		>
-			<!-- The game fades out while the card grows, then the /chords page fades it back in -->
+			<!-- The game fades out while the card grows, then the /chord-progression page fades it back in -->
 			<div
 				class="flex w-full flex-col items-center transition-opacity duration-200 {isExpanding
 					? 'opacity-0'

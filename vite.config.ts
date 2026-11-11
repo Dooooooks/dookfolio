@@ -26,8 +26,8 @@ export default defineConfig({
 			},
 
 			prerender: {
-				// /chords is only reached through the modal's fullscreen button, so list it explicitly
-				entries: ['*', '/chords'],
+				// /chord-progression is only reached through the modal's fullscreen button, so list it explicitly
+				entries: ['*', '/chord-progression'],
 				handleUnseenRoutes: 'ignore'
 			}
 		})

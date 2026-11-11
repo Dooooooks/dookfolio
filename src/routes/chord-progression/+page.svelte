@@ -26,22 +26,16 @@
 </script>
 
 <svelte:head>
-	<title>Guess the Chords — Lloyd Nicolas</title>
+	<title>Chord Progression — Lloyd Nicolas</title>
 	<meta
 		name="description"
-		content="An endless ear-training game: hear four chords, name the progression, beat your high score."
+		content="Chord progression ear training: hear four chords, name the progression, beat your high score."
 	/>
 </svelte:head>
 
 <div
-	class="relative flex min-h-dvh w-full flex-col items-center justify-center px-4 py-16 select-none"
+	class="relative flex min-h-dvh w-full flex-col items-center justify-center bg-bg px-4 py-16 select-none"
 >
-	<!-- Soft glow so the page isn't flat -->
-	<div
-		aria-hidden="true"
-		class="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(255,255,255,0.06),transparent_55%)]"
-	></div>
-
 	<div class="fixed top-3.5 right-3 left-3 z-10 flex items-center justify-between">
 		<a
 			href={resolve('/')}

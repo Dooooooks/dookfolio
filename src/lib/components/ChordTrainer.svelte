@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onDestroy, onMount, type Snippet } from 'svelte';
-	import { Heart, Music, Play, RotateCcw, Trophy, Undo2 } from '@lucide/svelte';
+	import { Heart, Play, RotateCcw, Trophy, Undo2 } from '@lucide/svelte';
 	import { gameDevMode } from '$lib/game-mode.svelte';
 	import { synth, midiToFreq } from '$lib/synth.svelte';
 
@@ -9,7 +9,7 @@
 		active?: boolean;
 		// Extra buttons shown in the top-right corner (close, fullscreen…)
 		actions?: Snippet;
-		// Bigger layout for the standalone /chords page
+		// Bigger layout for the standalone /chord-progression page
 		large?: boolean;
 	}
 
@@ -459,15 +459,14 @@
 	{/if}
 
 	<!-- Header -->
-	<div class="mb-1 flex items-center gap-2 text-accent">
-		<Music class="size-5" />
+	<div class="mb-1 flex items-center gap-2">
 		<h3
 			id="chord-title"
 			class="font-extrabold tracking-wide text-white {pixel
 				? 'font-pixel text-xs sm:text-sm'
 				: 'font-sans text-lg sm:text-xl'}"
 		>
-			Guess the Chords
+			Chord Progression
 		</h3>
 	</div>
 	<p class="mb-4 text-center text-muted {pixel ? 'text-[8px] leading-loose' : 'text-xs'}">
