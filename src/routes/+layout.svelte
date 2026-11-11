@@ -19,6 +19,7 @@
 		House,
 		Mail,
 		Menu,
+		Music,
 		Newspaper,
 		Piano,
 		ShoppingBag,
@@ -33,6 +34,8 @@
 		openBreakContractModal,
 		openShopModal,
 		openPianoModal,
+		openChordModal,
+		chordModal,
 		breakContractModal,
 		reactionModal,
 		shopModal,
@@ -49,6 +52,7 @@
 	import ProjectModal from '$lib/components/ProjectModal.svelte';
 	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
 	import PianoModal from '$lib/components/PianoModal.svelte';
+	import ChordTrainerModal from '$lib/components/ChordTrainerModal.svelte';
 	import { synthState, synth, toggleAudioMute } from '$lib/synth.svelte';
 
 	let { children } = $props();
@@ -198,7 +202,8 @@
 			!reactionModal.open &&
 			!projectModal.open &&
 			!shopModal.open &&
-			!pianoModal.open
+			!pianoModal.open &&
+			!chordModal.open
 		) {
 			forceUnlockScroll();
 		}
@@ -500,6 +505,16 @@
 					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Play the duck piano</span>
 				</button>
 
+				<!-- Chord Progression Ear Trainer (works with touch, so shown on every device) -->
+				<button
+					type="button"
+					onclick={openChordModal}
+					class="group flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
+				>
+					<Music class="size-3.5 shrink-0 text-muted transition-colors group-hover:text-accent" />
+					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Guess the chords</span>
+				</button>
+
 			<!-- Email Address (Affected by Game Mode Switch) -->
 			<div class="border-t border-white/6 pt-1">
 				<a
@@ -550,6 +565,9 @@
 
 	<!-- Keyboard Piano Modal (Desktop only) -->
 	<PianoModal />
+
+	<!-- Chord Progression Ear Trainer Modal -->
+	<ChordTrainerModal />
 
 	<!-- Main Content Area -->
 	<main
