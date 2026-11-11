@@ -3,6 +3,10 @@
 	import { ArrowLeft, Maximize, Minimize } from '@lucide/svelte';
 	import { resolve } from '$app/paths';
 	import ChordTrainer from '$lib/components/ChordTrainer.svelte';
+	import PluckStrings from '$lib/components/PluckStrings.svelte';
+
+	// The game's box: the background strings stay out of it
+	let game = $state<HTMLDivElement | null>(null);
 
 	// Optional real browser fullscreen (hides the address bar etc.); not offered where unsupported,
 	// e.g. Safari on iPhone
@@ -36,6 +40,9 @@
 <div
 	class="relative flex min-h-dvh w-full flex-col items-center justify-center bg-bg px-4 py-16 select-none"
 >
+	<!-- Pluckable strings fill the empty space around the game; sweep the mouse across them -->
+	<PluckStrings avoid={game} />
+
 	<div class="fixed top-3.5 right-3 left-3 z-10 flex items-center justify-between">
 		<a
 			href={resolve('/')}
@@ -60,5 +67,7 @@
 		{/if}
 	</div>
 
-	<ChordTrainer large />
+	<div bind:this={game} class="relative flex w-full max-w-xl flex-col items-center">
+		<ChordTrainer large />
+	</div>
 </div>
