@@ -131,10 +131,13 @@
 			bind:this={card}
 			style={expandStyle}
 			class="relative my-auto flex w-full max-w-lg flex-col items-center overflow-hidden rounded-none p-5 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform sm:p-8 {isExpanding
-				? 'z-10 bg-bg'
+				? 'z-10 justify-center bg-bg'
 				: 'bg-surface/70'} {isClosing ? 'anim-modal-out' : isExpanding ? '' : 'anim-modal-in'}"
 		>
-			<!-- The game fades out while the card grows, then the /chord-progression page fades it back in -->
+			<!--
+				The game fades out while the card grows, then the /chord-progression page fades it back in.
+				It stays vertically centered as the card grows, so it fades out where the page's game appears
+			-->
 			<div
 				class="flex w-full flex-col items-center transition-opacity duration-200 {isExpanding
 					? 'opacity-0'

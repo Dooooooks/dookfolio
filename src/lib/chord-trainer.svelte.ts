@@ -131,6 +131,7 @@ class ChordGame {
 	private loaded = false;
 	private poolWarningTimer: ReturnType<typeof setTimeout> | null = null;
 	private keyWarningTimer: ReturnType<typeof setTimeout> | null = null;
+	private keyFoldTimer: ReturnType<typeof setTimeout> | null = null;
 	private confettiTimer: ReturnType<typeof setTimeout> | null = null;
 	private cheatTimer: ReturnType<typeof setTimeout> | null = null;
 	private advanceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -213,7 +214,13 @@ class ChordGame {
 			this.keys = this.keys.filter((k) => k !== key);
 		} else {
 			this.keys = [...this.keys, key].sort((a, b) => a - b);
-			if (this.allKeys) this.keyPickerOpen = false;
+			// Let the just-picked key light up before the chips fold into "Random"
+			if (this.allKeys) {
+				if (this.keyFoldTimer) clearTimeout(this.keyFoldTimer);
+				this.keyFoldTimer = setTimeout(() => {
+					if (this.allKeys) this.keyPickerOpen = false;
+				}, 150);
+			}
 		}
 		this.saveSettings();
 	};

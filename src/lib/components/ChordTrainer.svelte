@@ -104,6 +104,37 @@
 
 	const pixel = $derived(gameDevMode.active);
 
+	// ---- Key picker fold / unfold ----
+
+	// One local transition on the chip grid that animates each chip in a stagger. Being local, it
+	// only plays when the picker switches between "Random" and the chips, never when the whole game
+	// is torn down (e.g. the modal handing off to the full-screen page), so it can't hold that up
+	function staggerChips(node: HTMLElement, { entering }: { entering: boolean }) {
+		const chips = [...node.children] as HTMLElement[];
+		const lead = entering ? 140 : 0; // let the "Random" chip shrink away first
+		const step = entering ? 22 : 14;
+		const each = entering ? 240 : 180;
+		const duration = lead + step * (chips.length - 1) + each;
+		return {
+			duration,
+			tick: (t: number) => {
+				// t runs 0 → 1 when entering and 1 → 0 when leaving
+				const elapsed = (entering ? t : 1 - t) * duration;
+				chips.forEach((chip, i) => {
+					const p = Math.min(1, Math.max(0, (elapsed - lead - i * step) / each));
+					const shown = entering ? backOut(p) : 1 - cubicIn(p);
+					chip.style.opacity = String(Math.min(1, Math.max(0, entering ? p : 1 - p)));
+					chip.style.transform = `scale(${0.4 + 0.6 * shown})`;
+				});
+				// Hand the chips back to their classes (hover, active:scale) once fully in
+				if (entering && t === 1) {
+					for (const chip of chips) chip.style.removeProperty('opacity');
+					for (const chip of chips) chip.style.removeProperty('transform');
+				}
+			}
+		};
+	}
+
 	// ---- Back to the main menu (press twice so a stray tap doesn't end the run) ----
 
 	const QUIT_CONFIRM_MS = 2500;
@@ -343,7 +374,11 @@
 							</button>
 						</div>
 					{:else}
-						<div class="absolute inset-0 grid grid-cols-6 gap-1">
+						<div
+							class="absolute inset-0 grid grid-cols-6 gap-1"
+							in:staggerChips={{ entering: true }}
+							out:staggerChips={{ entering: false }}
+						>
 							{#each KEY_NAMES as name, k (name)}
 								{@const on = keys.includes(k)}
 								<button
@@ -351,13 +386,6 @@
 									onclick={() => toggleKey(k)}
 									aria-pressed={on}
 									aria-label="{on ? 'Remove' : 'Add'} {name} major"
-									in:scale|global={{
-										start: 0.4,
-										duration: 240,
-										delay: 140 + k * 22,
-										easing: backOut
-									}}
-									out:scale|global={{ start: 0.4, duration: 180, delay: k * 14, easing: cubicIn }}
 									class="flex h-8 cursor-pointer items-center justify-center rounded-none border font-black transition-colors active:scale-95 {pixel
 										? 'font-pixel text-[6px]'
 										: 'text-xs'} {on
