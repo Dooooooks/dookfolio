@@ -1,11 +1,24 @@
 <script lang="ts">
-	import { tick } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { Maximize2, X } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { chordModal, closeChordModal } from '$lib/game-mode.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
-	import ChordTrainer from './ChordTrainer.svelte';
+
+	// The game is loaded on first open (and prefetched once the browser is idle) instead of
+	// shipping in every page's initial bundle
+	let trainerModule: Promise<typeof import('./ChordTrainer.svelte')> | undefined;
+	const loadTrainer = () => (trainerModule ??= import('./ChordTrainer.svelte'));
+
+	onMount(() => {
+		if ('requestIdleCallback' in window) {
+			const id = requestIdleCallback(() => loadTrainer(), { timeout: 5000 });
+			return () => cancelIdleCallback(id);
+		}
+		const id = setTimeout(loadTrainer, 2000);
+		return () => clearTimeout(id);
+	});
 
 	const EXPAND_MS = 450;
 
@@ -50,6 +63,9 @@
 
 	async function goFullscreen() {
 		if (!card || isExpanding || isClosing) return;
+		// Keep the current game running: it's shared with the page, so it shouldn't reset when the
+		// modal's copy of the game unmounts during the hand-off
+		chordModal.handoff = true;
 		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 		if (!reduceMotion) {
@@ -65,7 +81,11 @@
 			isExpanding = true;
 		}
 
-		await goto(resolve('/chord-progression'));
+		try {
+			await goto(resolve('/chord-progression'));
+		} finally {
+			chordModal.handoff = false;
+		}
 
 		// The page underneath is now /chord-progression, so drop the modal instantly (no close animation)
 		chordModal.open = false;
@@ -120,27 +140,29 @@
 					? 'opacity-0'
 					: 'opacity-100'}"
 			>
-				<ChordTrainer active={!isClosing && !isExpanding}>
-					{#snippet actions()}
-						<button
-							type="button"
-							onclick={goFullscreen}
-							aria-label="Open full screen"
-							title="Full screen"
-							class="cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
-						>
-							<Maximize2 class="size-4.5" />
-						</button>
-						<button
-							type="button"
-							onclick={handleClose}
-							aria-label="Close dialog"
-							class="cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
-						>
-							<X class="size-5" />
-						</button>
-					{/snippet}
-				</ChordTrainer>
+				{#await loadTrainer() then { default: ChordTrainer }}
+					<ChordTrainer active={!isClosing && !isExpanding}>
+						{#snippet actions()}
+							<button
+								type="button"
+								onclick={goFullscreen}
+								aria-label="Open full screen"
+								title="Full screen"
+								class="cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+							>
+								<Maximize2 class="size-4.5" />
+							</button>
+							<button
+								type="button"
+								onclick={handleClose}
+								aria-label="Close dialog"
+								class="cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+							>
+								<X class="size-5" />
+							</button>
+						{/snippet}
+					</ChordTrainer>
+				{/await}
 			</div>
 		</div>
 	</div>

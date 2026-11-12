@@ -68,6 +68,6 @@
 	</div>
 
 	<div bind:this={game} class="relative flex w-full max-w-xl flex-col items-center">
-		<ChordTrainer large />
+		<ChordTrainer />
 	</div>
 </div>

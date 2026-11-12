@@ -1,425 +1,71 @@
 <script lang="ts">
 	import { onDestroy, onMount, type Snippet } from 'svelte';
 	import { Heart, Play, RotateCcw, Trophy, Undo2 } from '@lucide/svelte';
-	import { gameDevMode } from '$lib/game-mode.svelte';
-	import { synth, midiToFreq } from '$lib/synth.svelte';
+	import { chordModal, gameDevMode } from '$lib/game-mode.svelte';
+	import {
+		chordGame as game,
+		degree,
+		DEGREES,
+		KEY_NAMES,
+		LIFE_SLOTS,
+		MIN_POOL,
+		SLOTS
+	} from '$lib/chord-trainer.svelte';
 
 	interface Props {
 		// Keyboard shortcuts only work while active (e.g. the modal is open and not closing)
 		active?: boolean;
 		// Extra buttons shown in the top-right corner (close, fullscreen…)
 		actions?: Snippet;
-		// Bigger layout for the standalone /chord-progression page
-		large?: boolean;
 	}
 
-	let { active = true, actions, large = false }: Props = $props();
+	let { active = true, actions }: Props = $props();
 
-	interface Degree {
-		num: number; // scale degree 1–7
-		roman: string;
-		quality: '' | 'm' | 'dim';
-		intervals: number[]; // chord tones in semitones above the key's tonic
-	}
-
-	// Diatonic triads of the major scale
-	const DEGREES: Degree[] = [
-		{ num: 1, roman: 'I', quality: '', intervals: [0, 4, 7] },
-		{ num: 2, roman: 'ii', quality: 'm', intervals: [2, 5, 9] },
-		{ num: 3, roman: 'iii', quality: 'm', intervals: [4, 7, 11] },
-		{ num: 4, roman: 'IV', quality: '', intervals: [5, 9, 12] },
-		{ num: 5, roman: 'V', quality: '', intervals: [7, 11, 14] },
-		{ num: 6, roman: 'vi', quality: 'm', intervals: [9, 12, 16] },
-		{ num: 7, roman: 'vii°', quality: 'dim', intervals: [11, 14, 17] }
-	];
-
-	// Major keys by tonic pitch class, named the way they're usually written
-	const KEY_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
-	const LETTERS = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-	const LETTER_PCS = [0, 2, 4, 5, 7, 9, 11];
-
-	// Spell a scale degree's root correctly for the key: each degree gets the next letter name,
-	// so E major's iii is G#m (not Abm) and F major's IV is Bb (not A#)
-	function spellDegree(num: number, pc: number) {
-		const letter = (LETTERS.indexOf(KEY_NAMES[key][0]) + num - 1) % 7;
-		const offset = ((((pc - LETTER_PCS[letter]) % 12) + 18) % 12) - 6;
-		return LETTERS[letter] + (offset > 0 ? '#'.repeat(offset) : 'b'.repeat(-offset));
-	}
-	const PROGRESSION_LENGTH = 4; // the first chord is always the tonic, the rest are guessed
-	const GUESSES = PROGRESSION_LENGTH - 1;
-	const MAX_LIVES = 3;
-	const CHORD_SECONDS = 0.95;
-	const CHORD_GAP_SECONDS = 0.15;
-	const REVEAL_MS = 1600;
-	const SLOTS = Array.from({ length: PROGRESSION_LENGTH }, (_, i) => i);
-	const LIFE_SLOTS = Array.from({ length: MAX_LIVES }, (_, i) => i);
-
-	type Phase = 'idle' | 'round' | 'reveal' | 'over';
-
-	let phase = $state<Phase>('idle');
-	// Scale degrees in the random pool; any chord can be toggled, but at least MIN_POOL stay in
-	const DEFAULT_POOL = [1, 2, 3, 4, 5, 6];
-	const MIN_POOL = 2;
-	let enabled = $state<number[]>([...DEFAULT_POOL]);
-	let poolWarning = $state(false);
-	let poolWarningTimer: ReturnType<typeof setTimeout> | null = null;
-	let key = $state(0); // tonic pitch class of the current round
-	let progression = $state<number[]>([]); // degree numbers, progression[0] === 1
-	let guesses = $state<number[]>([]);
-	let score = $state(0);
-	let lives = $state(MAX_LIVES);
-	let lastCorrect = $state(false);
-	let playingIndex = $state<number | null>(null);
-	let isNewBest = $state(false);
-	let best = $state<Record<string, number>>({}); // high score per pool, keyed like "123456"
-
-	const pool = $derived(DEGREES.filter((d) => enabled.includes(d.num)));
-	const modeKey = $derived(pool.map((d) => d.num).join(''));
-	const bestScore = $derived(best[modeKey] ?? 0);
-
-	function togglePool(num: number) {
-		if (enabled.includes(num)) {
-			if (enabled.length <= MIN_POOL) {
-				poolWarning = true;
-				if (poolWarningTimer) clearTimeout(poolWarningTimer);
-				poolWarningTimer = setTimeout(() => (poolWarning = false), 1600);
-				return;
-			}
-			enabled = enabled.filter((n) => n !== num);
-		} else {
-			enabled = [...enabled, num].sort((a, b) => a - b);
-		}
-		savePool();
-	}
-
-	const STORAGE_KEY = 'dookfolio:chord-trainer-best';
-	const POOL_KEY = 'dookfolio:chord-trainer-pool';
-
-	function loadBest() {
-		try {
-			const raw = localStorage.getItem(STORAGE_KEY);
-			if (raw) {
-				const parsed = JSON.parse(raw) as Record<string, unknown>;
-				const next: Record<string, number> = {};
-				for (const [k, v] of Object.entries(parsed ?? {})) {
-					// Older saves used "triads" (I–vi) and "seventh" (I–vii°)
-					const id = k === 'triads' ? '123456' : k === 'seventh' ? '1234567' : k;
-					if (/^[1-7]+$/.test(id)) next[id] = Math.max(next[id] ?? 0, Number(v) || 0);
-				}
-				best = next;
-			}
-			const savedPool = JSON.parse(localStorage.getItem(POOL_KEY) ?? 'null');
-			if (
-				Array.isArray(savedPool) &&
-				savedPool.length >= MIN_POOL &&
-				savedPool.every((n) => Number.isInteger(n) && n >= 1 && n <= 7)
-			) {
-				enabled = [...new Set(savedPool as number[])].sort((a, b) => a - b);
-			}
-		} catch {
-			// Storage can be blocked (private mode); the high score just won't persist
-		}
-	}
-
-	function savePool() {
-		try {
-			localStorage.setItem(POOL_KEY, JSON.stringify(enabled));
-		} catch {
-			// ignore
-		}
-	}
-
-	function saveBest() {
-		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(best));
-		} catch {
-			// ignore
-		}
-	}
-
-	function degree(num: number) {
-		return DEGREES[num - 1];
-	}
-
-	function chordName(num: number) {
-		const d = degree(num);
-		const root = spellDegree(num, (key + d.intervals[0]) % 12);
-		return d.quality === 'dim' ? `${root}°` : `${root}${d.quality}`;
-	}
-
-	// ---- Audio ----
-
-	let timers: ReturnType<typeof setTimeout>[] = [];
-	let releases: (() => void)[] = [];
-
-	function stopAudio() {
-		for (const t of timers) clearTimeout(t);
-		timers = [];
-		for (const release of releases) release();
-		releases = [];
-		playingIndex = null;
-	}
-
-	// Root-position triad starting from the root in octave 4, exactly the keys you'd press on
-	// the Duck Piano (e.g. D major = D4, F#4, A4)
-	function chordMidi(num: number): number[] {
-		const d = degree(num);
-		const root = 60 + ((key + d.intervals[0]) % 12);
-		return d.intervals.map((iv) => root + iv - d.intervals[0]);
-	}
-
-	// Same notes and tone as the piano modal: press every key of the chord, let go after `seconds`
-	function playChord(num: number, seconds: number) {
-		const notes = chordMidi(num).map((m) => synth.startNote(midiToFreq(m)));
-		const stop = () => {
-			for (const release of notes) release();
-		};
-		releases.push(stop);
-		timers.push(
-			setTimeout(() => {
-				stop();
-				releases = releases.filter((r) => r !== stop);
-			}, seconds * 1000)
-		);
-	}
-
-	function playProgression() {
-		stopAudio();
-		const step = CHORD_SECONDS + CHORD_GAP_SECONDS;
-		progression.forEach((num, i) => {
-			timers.push(
-				setTimeout(
-					() => {
-						playingIndex = i;
-						playChord(num, CHORD_SECONDS);
-					},
-					i * step * 1000
-				)
-			);
-		});
-		timers.push(setTimeout(() => (playingIndex = null), progression.length * step * 1000));
-	}
-
-	function playSingle(num: number) {
-		stopAudio();
-		playChord(num, CHORD_SECONDS);
-		catchCheater();
-	}
-
-	// ---- Dopamine hit for a correct progression ----
-
-	interface Confetti {
-		id: number;
-		dx: number;
-		dy: number;
-		rot: number;
-		delay: number;
-		color: string;
-		wide: boolean;
-	}
-
-	const CONFETTI_COLORS = ['#a78bfa', '#34d399', '#fbbf24', '#f472b6', '#38bdf8', '#ffffff'];
-	let streak = $state(0);
-	let celebration = $state(0); // bumps per win so the effects re-play
-	let confetti = $state<Confetti[]>([]);
-	let confettiTimer: ReturnType<typeof setTimeout> | null = null;
-
-	const winMessage = $derived(
-		streak >= 10
-			? `🎹 Chord wizard! x${streak}`
-			: streak >= 5
-				? `🔥 Unstoppable! x${streak}`
-				: streak >= 3
-					? `🔥 On fire! x${streak}`
-					: streak === 2
-						? 'Nice! 2 in a row'
-						: 'Correct! +1'
-	);
-
-	function celebrate() {
-		celebration += 1;
-
-		// Confetti bursts up and out from the chord boxes; a longer streak throws more of it
-		const count = Math.min(24 + streak * 4, 60);
-		confetti = Array.from({ length: count }, (_, i) => {
-			const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.3;
-			const power = 90 + Math.random() * 130;
-			return {
-				id: celebration * 1000 + i,
-				dx: Math.cos(angle) * power,
-				dy: Math.sin(angle) * power,
-				rot: (Math.random() - 0.5) * 720,
-				delay: Math.random() * 80,
-				color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-				wide: Math.random() < 0.5
-			};
-		});
-		if (confettiTimer) clearTimeout(confettiTimer);
-		confettiTimer = setTimeout(() => (confetti = []), 1300);
-
-		playWinJingle();
-	}
-
-	// Quick rising arpeggio up the tonic chord, landing on the octave (same piano voice)
-	function playWinJingle() {
-		stopAudio();
-		const root = 60 + key;
-		const notes = [root, root + 4, root + 7, root + 12];
-		// Each streak level nudges the jingle up a step for extra "ding"
-		const lift = Math.min(streak - 1, 4) * 2;
-		notes.forEach((m, i) => {
-			timers.push(
-				setTimeout(() => {
-					const release = synth.startNote(midiToFreq(m + lift));
-					const last = i === notes.length - 1;
-					timers.push(setTimeout(() => release(last ? 0.6 : 0.12), last ? 260 : 90));
-				}, i * 75)
-			);
-		});
-	}
-
-	// ---- Easter egg: using the Hear buttons mid-round gets you called out ----
-
-	const CHEATER_LINES = [
-		'Cheater! 👀',
-		'The duck saw that 🦆',
-		'No peeking!',
-		'Quack… cheater',
-		'Ears, not buttons!',
-		'I’m telling your teacher',
-		'Bold move, cheater'
-	];
-	let cheatLine = $state<string | null>(null);
-	let cheatCount = $state(0); // bumps on every press so the bubble re-pops
-	let cheatedThisRound = $state(false);
-	let cheatTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function catchCheater() {
-		if (phase !== 'round') return;
-		cheatedThisRound = true;
-		cheatCount += 1;
-		cheatLine =
-			cheatCount === 1
-				? CHEATER_LINES[0]
-				: CHEATER_LINES[Math.floor(Math.random() * CHEATER_LINES.length)];
-		if (cheatTimer) clearTimeout(cheatTimer);
-		cheatTimer = setTimeout(() => (cheatLine = null), 1400);
-	}
-
-	// Replay just one chord of the progression (e.g. tap the 2nd box to hear the 2nd chord alone)
-	function playSlot(i: number) {
-		const num = progression[i];
-		if (num === undefined) return;
-		stopAudio();
-		playingIndex = i;
-		playChord(num, CHORD_SECONDS);
-		timers.push(setTimeout(() => (playingIndex = null), CHORD_SECONDS * 1000));
-	}
-
-	// ---- Game flow ----
-
-	function newRound() {
-		cheatedThisRound = false;
-		key = Math.floor(Math.random() * 12);
-		const nums = pool.map((d) => d.num);
-		progression = [1];
-		for (let i = 0; i < GUESSES; i++) {
-			progression.push(nums[Math.floor(Math.random() * nums.length)]);
-		}
-		guesses = [];
-		phase = 'round';
-		playProgression();
-	}
-
-	function startGame() {
-		score = 0;
-		streak = 0;
-		lives = MAX_LIVES;
-		isNewBest = false;
-		newRound();
-	}
-
-	function guess(num: number) {
-		if (phase !== 'round' || guesses.length >= GUESSES) return;
-		if (!pool.some((d) => d.num === num)) return;
-		guesses = [...guesses, num];
-		if (guesses.length === GUESSES) checkAnswer();
-	}
-
-	function undo() {
-		if (phase !== 'round') return;
-		guesses = guesses.slice(0, -1);
-	}
-
-	function checkAnswer() {
-		lastCorrect = guesses.every((g, i) => g === progression[i + 1]);
-		if (lastCorrect) {
-			score += 1;
-			streak += 1;
-			celebrate();
-			if (score > (best[modeKey] ?? 0)) {
-				best = { ...best, [modeKey]: score };
-				isNewBest = true;
-				saveBest();
-			}
-		} else {
-			lives -= 1;
-			streak = 0;
-		}
-		phase = 'reveal';
-		// Kept apart from the audio timers so replaying a chord during the reveal can't cancel it
-		clearAdvance();
-		advanceTimer = setTimeout(
-			() => {
-				advanceTimer = null;
-				if (lives <= 0) {
-					stopAudio();
-					phase = 'over';
-				} else {
-					newRound();
-				}
-			},
-			REVEAL_MS + (lastCorrect ? 0 : 900)
-		);
-	}
-
-	let advanceTimer: ReturnType<typeof setTimeout> | null = null;
-
-	function clearAdvance() {
-		if (advanceTimer) clearTimeout(advanceTimer);
-		advanceTimer = null;
-	}
-
-	function slotState(i: number): 'empty' | 'filled' | 'right' | 'wrong' {
-		const g = guesses[i];
-		if (g === undefined) return 'empty';
-		if (phase !== 'reveal') return 'filled';
-		return g === progression[i + 1] ? 'right' : 'wrong';
-	}
+	// The game itself lives in a shared store (chord-trainer.svelte.ts) so the modal and the
+	// /chord-progression page drive the same game; these are read-only views of its state
+	const phase = $derived(game.phase);
+	const enabled = $derived(game.enabled);
+	const poolWarning = $derived(game.poolWarning);
+	const key = $derived(game.key);
+	const progression = $derived(game.progression);
+	const guesses = $derived(game.guesses);
+	const score = $derived(game.score);
+	const lives = $derived(game.lives);
+	const lastCorrect = $derived(game.lastCorrect);
+	const playingIndex = $derived(game.playingIndex);
+	const isNewBest = $derived(game.isNewBest);
+	const celebration = $derived(game.celebration);
+	const confetti = $derived(game.confetti);
+	const cheatLine = $derived(game.cheatLine);
+	const cheatCount = $derived(game.cheatCount);
+	const cheatedThisRound = $derived(game.cheatedThisRound);
+	const pool = $derived(game.pool);
+	const bestScore = $derived(game.bestScore);
+	const winMessage = $derived(game.winMessage);
+	const {
+		chordName,
+		togglePool,
+		playProgression,
+		playSingle,
+		playSlot,
+		startGame,
+		guess,
+		undo,
+		slotState
+	} = game;
 
 	// ---- Lifecycle ----
 
-	onMount(loadBest);
-	onDestroy(reset);
+	onMount(game.load);
 
-	// Stop the music and go back to the start screen when the host deactivates the game
-	$effect(() => {
-		if (!active) reset();
+	// Stop the music and go back to the start screen when the host deactivates or removes the
+	// game, except while the modal is handing the game off to the full-screen page
+	onDestroy(() => {
+		if (!chordModal.handoff) game.reset();
 	});
-
-	function reset() {
-		clearAdvance();
-		stopAudio();
-		if (cheatTimer) clearTimeout(cheatTimer);
-		cheatLine = null;
-		cheatCount = 0;
-		if (confettiTimer) clearTimeout(confettiTimer);
-		confetti = [];
-		streak = 0;
-		phase = 'idle';
-		guesses = [];
-		progression = [];
-	}
+	$effect(() => {
+		if (!active && !chordModal.handoff) game.reset();
+	});
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (!active) return;
@@ -451,7 +97,7 @@
 
 <svelte:window onkeydown={handleKeydown} />
 
-<div class="relative flex w-full flex-col items-center {large ? 'max-w-xl' : ''}">
+<div class="relative flex w-full flex-col items-center">
 	{#if actions}
 		<div class="absolute -top-1 -right-1 flex items-center gap-1 sm:-top-3 sm:-right-3">
 			{@render actions()}

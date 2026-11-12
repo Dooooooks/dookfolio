@@ -9,7 +9,8 @@ export const reactionModal = $state({ open: false });
 export const breakContractModal = $state({ open: false });
 export const shopModal = $state({ open: false });
 export const pianoModal = $state({ open: false });
-export const chordModal = $state({ open: false });
+// handoff: true while the modal expands into the /chord-progression page, so the game keeps running
+export const chordModal = $state({ open: false, handoff: false });
 
 export function addQuacks(amount: number) {
 	if (amount <= 0) return;
@@ -292,4 +293,3 @@ if (typeof window !== 'undefined') {
 		console.log('🦆 All shop upgrades maxed to Level 5!');
 	};
 }
-
