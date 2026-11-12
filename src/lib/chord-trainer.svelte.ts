@@ -41,6 +41,10 @@ export const MIN_POOL = 2;
 
 const STORAGE_KEY = 'dookfolio:chord-trainer-best';
 const POOL_KEY = 'dookfolio:chord-trainer-pool';
+const SETTINGS_KEY = 'dookfolio:chord-trainer-settings';
+
+// Key selection: rounds pick a random key from the selected ones; all 12 selected = "Random"
+export const ALL_KEYS = Array.from({ length: 12 }, (_, i) => i);
 
 export type Phase = 'idle' | 'round' | 'reveal' | 'over';
 
@@ -76,6 +80,13 @@ class ChordGame {
 	poolWarning = $state(false);
 	key = $state(0); // tonic pitch class of the current round
 	progression = $state<number[]>([]); // degree numbers, progression[0] === 1
+	// Octave shift per chord of the round: 0 = at/above the tonic, -1 = below it (only with tonicLowest off)
+	octaveShifts = $state<number[]>([]);
+	// Settings: which keys rounds can be in (all 12 = random), and whether the tonic is always the
+	// lowest chord (on) or chords may also drop below it, e.g. a low V or a high V (off)
+	keys = $state<number[]>([...ALL_KEYS]);
+	keyWarning = $state(false);
+	tonicLowest = $state(true);
 	guesses = $state<number[]>([]);
 	score = $state(0);
 	lives = $state(MAX_LIVES);
@@ -91,7 +102,19 @@ class ChordGame {
 	cheatedThisRound = $state(false);
 
 	pool = $derived(DEGREES.filter((d) => this.enabled.includes(d.num)));
-	modeKey = $derived(this.pool.map((d) => d.num).join(''));
+	// All 12 keys selected plays a random key every round (and shares the "random" high score)
+	allKeys = $derived(this.keys.length === ALL_KEYS.length);
+	// Tapping "Random" opens the key picker with all 12 keys still on; it folds back into "Random"
+	// once the player selects all 12 again after changing something (e.g. a key tapped off and on)
+	keyPickerOpen = $state(false);
+	isRandomKey = $derived(this.allKeys && !this.keyPickerOpen);
+	// High scores are kept per pool + settings, e.g. "123456" (random key), "123456@0.7" (C and G only),
+	// "123456~" (chords can drop below the tonic)
+	modeKey = $derived(
+		this.pool.map((d) => d.num).join('') +
+			(this.allKeys ? '' : `@${this.keys.join('.')}`) +
+			(this.tonicLowest ? '' : '~')
+	);
 	bestScore = $derived(this.best[this.modeKey] ?? 0);
 	winMessage = $derived(
 		this.streak >= 10
@@ -107,6 +130,7 @@ class ChordGame {
 
 	private loaded = false;
 	private poolWarningTimer: ReturnType<typeof setTimeout> | null = null;
+	private keyWarningTimer: ReturnType<typeof setTimeout> | null = null;
 	private confettiTimer: ReturnType<typeof setTimeout> | null = null;
 	private cheatTimer: ReturnType<typeof setTimeout> | null = null;
 	private advanceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -127,7 +151,8 @@ class ChordGame {
 				for (const [k, v] of Object.entries(parsed ?? {})) {
 					// Older saves used "triads" (I–vi) and "seventh" (I–vii°)
 					const id = k === 'triads' ? '123456' : k === 'seventh' ? '1234567' : k;
-					if (/^[1-7]+$/.test(id)) next[id] = Math.max(next[id] ?? 0, Number(v) || 0);
+					if (/^[1-7]+(@\d{1,2}(\.\d{1,2})*)?~?$/.test(id))
+						next[id] = Math.max(next[id] ?? 0, Number(v) || 0);
 				}
 				this.best = next;
 			}
@@ -138,6 +163,19 @@ class ChordGame {
 				savedPool.every((n) => Number.isInteger(n) && n >= 1 && n <= 7)
 			) {
 				this.enabled = [...new Set(savedPool as number[])].sort((a, b) => a - b);
+			}
+			const settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? 'null');
+			if (settings && typeof settings === 'object') {
+				const { keys, fixedKey, tonicLowest } = settings as Record<string, unknown>;
+				const isKey = (k: unknown) =>
+					Number.isInteger(k) && (k as number) >= 0 && (k as number) < 12;
+				if (Array.isArray(keys) && keys.length > 0 && keys.every(isKey)) {
+					this.keys = [...new Set(keys as number[])].sort((a, b) => a - b);
+				} else if (isKey(fixedKey)) {
+					// Older saves stored a single fixed key
+					this.keys = [fixedKey as number];
+				}
+				if (typeof tonicLowest === 'boolean') this.tonicLowest = tonicLowest;
 			}
 		} catch {
 			// Storage can be blocked (private mode); the high score just won't persist
@@ -151,6 +189,43 @@ class ChordGame {
 			// ignore
 		}
 	}
+
+	private saveSettings() {
+		try {
+			localStorage.setItem(
+				SETTINGS_KEY,
+				JSON.stringify({ keys: this.keys, tonicLowest: this.tonicLowest })
+			);
+		} catch {
+			// ignore
+		}
+	}
+
+	// Add or remove a key; at least one always stays selected
+	toggleKey = (key: number) => {
+		if (this.keys.includes(key)) {
+			if (this.keys.length <= 1) {
+				this.keyWarning = true;
+				if (this.keyWarningTimer) clearTimeout(this.keyWarningTimer);
+				this.keyWarningTimer = setTimeout(() => (this.keyWarning = false), 1600);
+				return;
+			}
+			this.keys = this.keys.filter((k) => k !== key);
+		} else {
+			this.keys = [...this.keys, key].sort((a, b) => a - b);
+			if (this.allKeys) this.keyPickerOpen = false;
+		}
+		this.saveSettings();
+	};
+
+	leaveRandomKey = () => {
+		this.keyPickerOpen = true;
+	};
+
+	setTonicLowest = (on: boolean) => {
+		this.tonicLowest = on;
+		this.saveSettings();
+	};
 
 	private saveBest() {
 		try {
@@ -201,17 +276,17 @@ class ChordGame {
 		this.playingIndex = null;
 	}
 
-	// Root-position triad starting from the root in octave 4, exactly the keys you'd press on
-	// the Duck Piano (e.g. D major = D4, F#4, A4)
-	private chordMidi(num: number): number[] {
+	// Root-position triad built up from the tonic in octave 4 (e.g. in D: I = D4 F#4 A4, V = A4 C#5 E5).
+	// octaveShift -1 drops the chord below the tonic (a "low V" = A3 C#4 E4)
+	private chordMidi(num: number, octaveShift = 0): number[] {
 		const d = degree(num);
-		const root = 60 + ((this.key + d.intervals[0]) % 12);
+		const root = 60 + this.key + d.intervals[0] + octaveShift * 12;
 		return d.intervals.map((iv) => root + iv - d.intervals[0]);
 	}
 
-	// Same notes and tone as the piano modal: press every key of the chord, let go after `seconds`
-	private playChord(num: number, seconds: number) {
-		const notes = this.chordMidi(num).map((m) => synth.startNote(midiToFreq(m)));
+	// Same tone as the piano modal: press every key of the chord, let go after `seconds`
+	private playChord(num: number, seconds: number, octaveShift = 0) {
+		const notes = this.chordMidi(num, octaveShift).map((m) => synth.startNote(midiToFreq(m)));
 		const stop = () => {
 			for (const release of notes) release();
 		};
@@ -232,7 +307,7 @@ class ChordGame {
 				setTimeout(
 					() => {
 						this.playingIndex = i;
-						this.playChord(num, CHORD_SECONDS);
+						this.playChord(num, CHORD_SECONDS, this.octaveShifts[i]);
 					},
 					i * step * 1000
 				)
@@ -255,7 +330,7 @@ class ChordGame {
 		if (num === undefined) return;
 		this.stopAudio();
 		this.playingIndex = i;
-		this.playChord(num, CHORD_SECONDS);
+		this.playChord(num, CHORD_SECONDS, this.octaveShifts[i]);
 		this.timers.push(setTimeout(() => (this.playingIndex = null), CHORD_SECONDS * 1000));
 	};
 
@@ -321,13 +396,17 @@ class ChordGame {
 
 	private newRound() {
 		this.cheatedThisRound = false;
-		this.key = Math.floor(Math.random() * 12);
+		this.key = this.keys[Math.floor(Math.random() * this.keys.length)];
 		const nums = this.pool.map((d) => d.num);
 		const progression = [1];
+		// The opening tonic stays put; with tonicLowest off, each later chord lands above or below it
+		const shifts = [0];
 		for (let i = 0; i < GUESSES; i++) {
 			progression.push(nums[Math.floor(Math.random() * nums.length)]);
+			shifts.push(!this.tonicLowest && Math.random() < 0.5 ? -1 : 0);
 		}
 		this.progression = progression;
+		this.octaveShifts = shifts;
 		this.guesses = [];
 		this.phase = 'round';
 		this.playProgression();
@@ -410,6 +489,7 @@ class ChordGame {
 		this.phase = 'idle';
 		this.guesses = [];
 		this.progression = [];
+		this.octaveShifts = [];
 	};
 }
 

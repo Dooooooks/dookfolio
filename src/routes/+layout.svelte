@@ -490,8 +490,8 @@
 			<!-- Playground Section & Email Address -->
 			<div class="flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
 				<!-- Playground Header -->
-				<div class="flex items-center gap-1.5 px-1">
-					<Gamepad2 class="size-3.5 text-accent" />
+				<div class="flex items-center justify-center gap-1.5 px-1">
+					<!-- <Gamepad2 class="size-3.5 text-accent" /> -->
 					<span class="font-extrabold tracking-wider text-muted uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
 						Hobby Playground
 					</span>

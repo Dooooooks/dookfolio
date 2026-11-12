@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onDestroy, onMount, type Snippet } from 'svelte';
-	import { Heart, Play, RotateCcw, Trophy, Undo2 } from '@lucide/svelte';
+	import { scale } from 'svelte/transition';
+	import { backOut, cubicIn } from 'svelte/easing';
+	import { ChevronLeft, Heart, Play, RotateCcw, Trophy, Undo2 } from '@lucide/svelte';
 	import { chordModal, gameDevMode } from '$lib/game-mode.svelte';
 	import {
 		chordGame as game,
@@ -28,6 +30,11 @@
 	const poolWarning = $derived(game.poolWarning);
 	const key = $derived(game.key);
 	const progression = $derived(game.progression);
+	const octaveShifts = $derived(game.octaveShifts);
+	const keys = $derived(game.keys);
+	const isRandomKey = $derived(game.isRandomKey);
+	const keyWarning = $derived(game.keyWarning);
+	const tonicLowest = $derived(game.tonicLowest);
 	const guesses = $derived(game.guesses);
 	const score = $derived(game.score);
 	const lives = $derived(game.lives);
@@ -45,6 +52,9 @@
 	const {
 		chordName,
 		togglePool,
+		toggleKey,
+		leaveRandomKey,
+		setTonicLowest,
 		playProgression,
 		playSingle,
 		playSlot,
@@ -93,11 +103,60 @@
 	}
 
 	const pixel = $derived(gameDevMode.active);
+
+	// ---- Back to the main menu (press twice so a stray tap doesn't end the run) ----
+
+	const QUIT_CONFIRM_MS = 2500;
+	const inGame = $derived(phase === 'round' || phase === 'reveal');
+	let quitArmed = $state(false);
+	let quitTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function disarmQuit() {
+		if (quitTimer) clearTimeout(quitTimer);
+		quitTimer = null;
+		quitArmed = false;
+	}
+
+	function pressQuit() {
+		if (!quitArmed) {
+			quitArmed = true;
+			if (quitTimer) clearTimeout(quitTimer);
+			quitTimer = setTimeout(disarmQuit, QUIT_CONFIRM_MS);
+			return;
+		}
+		disarmQuit();
+		game.reset();
+	}
+
+	// A finished or reset game shouldn't leave the button armed for the next one
+	$effect(() => {
+		if (!inGame) disarmQuit();
+	});
+	onDestroy(disarmQuit);
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
 <div class="relative flex w-full flex-col items-center">
+	{#if inGame}
+		<div class="absolute -top-1 -left-1 sm:-top-3 sm:-left-3">
+			<button
+				type="button"
+				onclick={pressQuit}
+				aria-label={quitArmed ? 'Confirm quitting to the main menu' : 'Back to main menu'}
+				title={quitArmed ? 'Click again to confirm' : 'Back to main menu'}
+				class="flex h-8 cursor-pointer items-center gap-1 rounded-none px-2 font-bold transition-colors focus:outline-hidden {pixel
+					? 'font-pixel text-[7px]'
+					: 'text-xs'} {quitArmed
+					? 'bg-accent/20 text-accent hover:bg-accent/30'
+					: 'text-muted hover:bg-white/10 hover:text-white'}"
+			>
+				<ChevronLeft class="size-4" />
+				{quitArmed ? 'Confirm' : 'Menu'}
+			</button>
+		</div>
+	{/if}
+
 	{#if actions}
 		<div class="absolute -top-1 -right-1 flex items-center gap-1 sm:-top-3 sm:-right-3">
 			{@render actions()}
@@ -256,6 +315,109 @@
 				</span>
 			</div>
 
+			<!-- Key: pick any of the 12 keys; picking all of them folds the chips into "Random" -->
+			<div class="flex flex-col items-center gap-2">
+				<span
+					class="font-bold tracking-[0.2em] text-muted/70 uppercase {pixel
+						? 'text-[6px]'
+						: 'text-[10px]'}"
+				>
+					Key
+				</span>
+				<!-- Fixed size for both states so nothing below jumps while the chips fold and unfold -->
+				<div class="relative h-[4.25rem] w-[16.5rem]">
+					{#if isRandomKey}
+						<div class="absolute inset-0 flex items-center justify-center">
+							<button
+								type="button"
+								onclick={leaveRandomKey}
+								aria-pressed="true"
+								title="Pick your own keys"
+								in:scale={{ start: 0.4, duration: 280, delay: 260, easing: backOut }}
+								out:scale={{ start: 0.4, duration: 160, easing: cubicIn }}
+								class="flex h-10 cursor-pointer items-center justify-center rounded-none border border-accent/50 bg-accent/20 px-6 font-black text-white transition-colors hover:bg-accent/30 {pixel
+									? 'font-pixel text-[8px]'
+									: 'text-sm'}"
+							>
+								Random
+							</button>
+						</div>
+					{:else}
+						<div class="absolute inset-0 grid grid-cols-6 gap-1">
+							{#each KEY_NAMES as name, k (name)}
+								{@const on = keys.includes(k)}
+								<button
+									type="button"
+									onclick={() => toggleKey(k)}
+									aria-pressed={on}
+									aria-label="{on ? 'Remove' : 'Add'} {name} major"
+									in:scale|global={{
+										start: 0.4,
+										duration: 240,
+										delay: 140 + k * 22,
+										easing: backOut
+									}}
+									out:scale|global={{ start: 0.4, duration: 180, delay: k * 14, easing: cubicIn }}
+									class="flex h-8 cursor-pointer items-center justify-center rounded-none border font-black transition-colors active:scale-95 {pixel
+										? 'font-pixel text-[6px]'
+										: 'text-xs'} {on
+										? 'border-accent/50 bg-accent/20 text-white hover:bg-accent/30'
+										: 'border-dashed border-white/20 text-muted/60 hover:border-accent/50 hover:text-white'}"
+								>
+									{name}
+								</button>
+							{/each}
+						</div>
+					{/if}
+				</div>
+				<span
+					class="{keyWarning ? 'font-bold text-accent' : 'text-muted/70'} {pixel
+						? 'text-[6px]'
+						: 'text-[10px]'}"
+				>
+					{keyWarning
+						? 'Keep at least 1 key'
+						: isRandomKey
+							? 'A random key every round · tap to choose your own'
+							: keys.length === 12
+								? 'Tap a key to remove it · selecting all 12 again goes back to random'
+								: 'Tap keys to add or remove · select all 12 for random'}
+				</span>
+			</div>
+
+			<!-- Voicing: tonic always the lowest chord, or chords can also drop below it -->
+			<div class="flex flex-col items-center gap-2">
+				<span
+					class="font-bold tracking-[0.2em] text-muted/70 uppercase {pixel
+						? 'text-[6px]'
+						: 'text-[10px]'}"
+				>
+					Tonic lowest
+				</span>
+				<div class="flex items-center gap-1">
+					{#each [true, false] as value (value)}
+						{@const on = tonicLowest === value}
+						<button
+							type="button"
+							onclick={() => setTonicLowest(value)}
+							aria-pressed={on}
+							class="flex h-8 min-w-12 cursor-pointer items-center justify-center rounded-none border px-2.5 font-black transition-all active:scale-95 {pixel
+								? 'font-pixel text-[6px]'
+								: 'text-xs'} {on
+								? 'border-accent/50 bg-accent/20 text-white hover:bg-accent/30'
+								: 'border-white/15 text-muted/70 hover:border-accent/50 hover:text-white'}"
+						>
+							{value ? 'On' : 'Off'}
+						</button>
+					{/each}
+				</div>
+				<span class="text-center text-muted/70 {pixel ? 'text-[6px]' : 'text-[10px]'}">
+					{tonicLowest
+						? 'Every chord sits above the tonic'
+						: 'Chords can also drop below the tonic: a low V or a high V'}
+				</span>
+			</div>
+
 			<button
 				type="button"
 				data-custom-sound
@@ -328,6 +490,16 @@
 					{:else if shown !== undefined && (i === 0 || phase === 'reveal')}
 						<span class="mt-0.5 font-bold text-muted {pixel ? 'text-[6px]' : 'text-[10px]'}">
 							{chordName(shown)}
+						</span>
+					{/if}
+					<!-- With tonic-lowest off, the reveal says whether each chord sat above or below the tonic -->
+					{#if phase === 'reveal' && i > 0 && !tonicLowest}
+						<span
+							class="mt-0.5 font-bold tracking-wider uppercase {octaveShifts[i] < 0
+								? 'text-sky-300'
+								: 'text-amber-200'} {pixel ? 'font-pixel text-[5px]' : 'text-[9px]'}"
+						>
+							{octaveShifts[i] < 0 ? 'low' : 'high'}
 						</span>
 					{/if}
 				</button>
