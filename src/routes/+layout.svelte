@@ -21,7 +21,6 @@
 		Menu,
 		Music,
 		Newspaper,
-		Piano,
 		ShoppingBag,
 		Sparkles,
 		User,
@@ -30,12 +29,11 @@
 	} from '@lucide/svelte';
 	import {
 		gameDevMode,
-		openReactionModal,
 		openBreakContractModal,
 		openShopModal,
-		openPianoModal,
-		openChordModal,
+		openPlaygroundModal,
 		chordModal,
+		playgroundModal,
 		breakContractModal,
 		reactionModal,
 		shopModal,
@@ -53,6 +51,7 @@
 	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
 	import PianoModal from '$lib/components/PianoModal.svelte';
 	import ChordTrainerModal from '$lib/components/ChordTrainerModal.svelte';
+	import PlaygroundModal from '$lib/components/PlaygroundModal.svelte';
 	import { synthState, synth, toggleAudioMute } from '$lib/synth.svelte';
 
 	let { children } = $props();
@@ -206,7 +205,8 @@
 			!projectModal.open &&
 			!shopModal.open &&
 			!pianoModal.open &&
-			!chordModal.open
+			!chordModal.open &&
+			!playgroundModal.open
 		) {
 			forceUnlockScroll();
 		}
@@ -493,38 +493,27 @@
 				<div class="flex items-center gap-1.5 px-1">
 					<Gamepad2 class="size-3.5 text-accent" />
 					<span class="font-extrabold tracking-wider text-muted uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
-						Playground
+						Hobby Playground
 					</span>
 				</div>
 
-				<!-- Reaction Time Test Button with centered content -->
-				<button
-					type="button"
-					onclick={openReactionModal}
-					class="group flex w-full cursor-pointer items-center justify-center rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
-				>
-					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Are you faster than a duck?</span>
-				</button>
-
-				<!-- Keyboard Piano Button (Desktop + mouse/trackpad only; needs a physical keyboard) -->
-				<button
-					type="button"
-					onclick={openPianoModal}
-					class="group hidden w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95 md:pointer-fine:flex"
-				>
-					<Piano class="size-3.5 shrink-0 text-muted transition-colors group-hover:text-accent" />
-					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Play the duck piano</span>
-				</button>
-
-				<!-- Chord Progression Ear Trainer (works with touch, so shown on every device) -->
-				<button
-					type="button"
-					onclick={openChordModal}
-					class="group flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-2.5 py-2 text-center shadow-xs transition-all duration-150 hover:scale-[1.02] hover:border-accent/40 hover:bg-accent/10 hover:text-white active:scale-95"
-				>
-					<Music class="size-3.5 shrink-0 text-muted transition-colors group-hover:text-accent" />
-					<span class="text-center font-bold text-muted {gameDevMode.active ? 'text-[6px]' : 'text-[10px]'}">Train relative pitch</span>
-				</button>
+				<!-- Hobbies: each opens a hub modal with that hobby's playground activities (styled like the nav links) -->
+				<div class="flex flex-col gap-1">
+					{#each [{ id: 'games', label: 'Games', icon: Gamepad2 }, { id: 'music', label: 'Music', icon: Music }] as const as hobby (hobby.id)}
+						<button
+							type="button"
+							onclick={() => openPlaygroundModal(hobby.id)}
+							class="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left font-bold text-muted transition-all duration-150 hover:translate-x-1 hover:bg-white/5 hover:text-white {gameDevMode.active
+								? 'text-[8.5px]'
+								: 'text-sm'}"
+						>
+							<hobby.icon
+								class="size-4.5 shrink-0 text-muted transition-transform duration-200 group-hover:scale-110 group-hover:text-accent"
+							/>
+							<span>{hobby.label}</span>
+						</button>
+					{/each}
+				</div>
 
 			<!-- Email Address (Affected by Game Mode Switch) -->
 			<div class="border-t border-white/6 pt-1">
@@ -561,6 +550,9 @@
 
 	<!-- Animated Duck Pond Flanks (Dynamic Per Tab) -->
 	<PondFlanks {isOpen} />
+
+	<!-- Playground hub: lists a hobby's activities (rendered first so the chosen activity opens on top) -->
+	<PlaygroundModal />
 
 	<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
 	<DuckReactionModal />

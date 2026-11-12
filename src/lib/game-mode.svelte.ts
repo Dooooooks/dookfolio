@@ -11,6 +11,12 @@ export const shopModal = $state({ open: false });
 export const pianoModal = $state({ open: false });
 // handoff: true while the modal expands into the /chord-progression page, so the game keeps running
 export const chordModal = $state({ open: false, handoff: false });
+// Playground hub: groups the playground's activities by hobby
+export type PlaygroundCategory = 'games' | 'music';
+export const playgroundModal = $state<{ open: boolean; category: PlaygroundCategory }>({
+	open: false,
+	category: 'games'
+});
 
 export function addQuacks(amount: number) {
 	if (amount <= 0) return;
@@ -159,6 +165,15 @@ export function openPianoModal() {
 
 export function closePianoModal() {
 	pianoModal.open = false;
+}
+
+export function openPlaygroundModal(category: PlaygroundCategory) {
+	playgroundModal.category = category;
+	playgroundModal.open = true;
+}
+
+export function closePlaygroundModal() {
+	playgroundModal.open = false;
 }
 
 export function openChordModal() {
