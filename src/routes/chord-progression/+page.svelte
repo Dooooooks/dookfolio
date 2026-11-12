@@ -4,6 +4,7 @@
 	import { resolve } from '$app/paths';
 	import ChordTrainer from '$lib/components/ChordTrainer.svelte';
 	import PluckStrings from '$lib/components/PluckStrings.svelte';
+	import VolumeControl from '$lib/components/VolumeControl.svelte';
 
 	// The game's box: the background strings stay out of it
 	let game = $state<HTMLDivElement | null>(null);
@@ -68,6 +69,10 @@
 	</div>
 
 	<div bind:this={game} class="relative flex w-full max-w-xl flex-col items-center">
-		<ChordTrainer />
+		<ChordTrainer>
+			{#snippet actions()}
+				<VolumeControl />
+			{/snippet}
+		</ChordTrainer>
 	</div>
 </div>

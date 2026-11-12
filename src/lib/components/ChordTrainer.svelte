@@ -194,8 +194,8 @@
 		</div>
 	{/if}
 
-	<!-- Header -->
-	<div class="mb-1 flex items-center gap-2">
+	<!-- Header (pushed down when there are corner buttons, so they get their own row above the title) -->
+	<div class="mb-1 flex items-center gap-2 {actions || inGame ? 'mt-8 sm:mt-6' : ''}">
 		<h3
 			id="chord-title"
 			class="font-extrabold tracking-wide text-white {pixel

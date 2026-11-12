@@ -9,6 +9,25 @@ export const synthState = $state<SynthState>({
 	muted: true // Muted by default for UX design & autoplay compliance
 });
 
+// Volume (0–1) for the playable instruments (Duck Piano, chord trainer); UI sounds aren't affected
+const VOLUME_KEY = 'dookfolio:instrument-volume';
+export const instrumentVolume = $state({ value: 1 });
+
+function loadInstrumentVolume() {
+	try {
+		const saved = Number(localStorage.getItem(VOLUME_KEY));
+		if (localStorage.getItem(VOLUME_KEY) !== null && saved >= 0 && saved <= 1) {
+			instrumentVolume.value = saved;
+		}
+	} catch {
+		// Storage can be blocked (private mode); the volume just won't persist
+	}
+}
+if (typeof window !== 'undefined') loadInstrumentVolume();
+
+// Perceived loudness is roughly logarithmic, so a squared curve makes the slider feel even
+const volumeToGain = (volume: number) => volume * volume;
+
 // Note frequencies (Hz) for retro arpeggios
 const NOTE = {
 	A3: 220.0,
@@ -29,6 +48,7 @@ class ChiptuneSoundEngine {
 	private ctx: AudioContext | null = null;
 	private masterGain: GainNode | null = null;
 	private filter: BiquadFilterNode | null = null;
+	private instrumentGain: GainNode | null = null;
 
 	private initContext(): boolean {
 		if (typeof window === 'undefined') return false;
@@ -53,6 +73,14 @@ class ChiptuneSoundEngine {
 
 			this.filter.connect(this.masterGain);
 			this.masterGain.connect(this.ctx.destination);
+
+			// Instrument notes pass through their own volume stage before the shared filter
+			this.instrumentGain = this.ctx.createGain();
+			this.instrumentGain.gain.setValueAtTime(
+				volumeToGain(instrumentVolume.value),
+				this.ctx.currentTime
+			);
+			this.instrumentGain.connect(this.filter);
 		}
 
 		if (this.ctx.state === 'suspended') {
@@ -239,7 +267,7 @@ class ChiptuneSoundEngine {
 	// Sustained 8-bit piano note; returns a release function. Ignores mute (piano is opt-in)
 	// The release function takes how long (seconds) the note fades out, e.g. longer with sustain on
 	startNote(freq: number): (fadeSeconds?: number) => void {
-		if (!this.initContext() || !this.ctx || !this.filter) return () => {};
+		if (!this.initContext() || !this.ctx || !this.instrumentGain) return () => {};
 
 		const ctx = this.ctx;
 		const now = ctx.currentTime;
@@ -264,7 +292,7 @@ class ChiptuneSoundEngine {
 		body.connect(gain);
 		bite.connect(biteGain);
 		biteGain.connect(gain);
-		gain.connect(this.filter);
+		gain.connect(this.instrumentGain);
 
 		body.start(now);
 		bite.start(now);
@@ -280,6 +308,20 @@ class ChiptuneSoundEngine {
 			body.stop(t + fadeSeconds + 0.01);
 			bite.stop(t + fadeSeconds + 0.01);
 		};
+	}
+
+	// Glide (rather than jump) to the new volume so dragging the slider doesn't click
+	setInstrumentVolume(volume: number) {
+		const value = Math.min(1, Math.max(0, volume));
+		instrumentVolume.value = value;
+		try {
+			localStorage.setItem(VOLUME_KEY, String(value));
+		} catch {
+			// ignore
+		}
+		if (this.ctx && this.instrumentGain) {
+			this.instrumentGain.gain.setTargetAtTime(volumeToGain(value), this.ctx.currentTime, 0.02);
+		}
 	}
 
 	// 8-bit Power down / break contract sound

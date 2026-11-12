@@ -5,6 +5,7 @@
 	import { resolve } from '$app/paths';
 	import { chordModal, closeChordModal } from '$lib/game-mode.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
+	import VolumeControl from './VolumeControl.svelte';
 
 	// The game is loaded on first open (and prefetched once the browser is idle) instead of
 	// shipping in every page's initial bundle
@@ -146,6 +147,7 @@
 				{#await loadTrainer() then { default: ChordTrainer }}
 					<ChordTrainer active={!isClosing && !isExpanding}>
 						{#snippet actions()}
+							<VolumeControl />
 							<button
 								type="button"
 								onclick={goFullscreen}

@@ -4,6 +4,7 @@
 	import { gameDevMode, pianoModal, closePianoModal } from '$lib/game-mode.svelte';
 	import { synth, midiToFreq } from '$lib/synth.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
+	import VolumeControl from './VolumeControl.svelte';
 
 	interface PianoKey {
 		codes: string[]; // every physical key that plays this note (first one is shown on the key)
@@ -205,6 +206,11 @@
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
+			<!-- Volume (grows leftward from beside the close button) -->
+			<div class="absolute top-4 right-14 z-10">
+				<VolumeControl />
+			</div>
+
 			<!-- Close Button -->
 			<button
 				type="button"
