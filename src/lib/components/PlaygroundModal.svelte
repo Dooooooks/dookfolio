@@ -47,8 +47,7 @@
 					description:
 						'Type the words on incoming meteors before they hit the duck. How long can you survive?',
 					icon: Keyboard,
-					open: openTypingModal,
-					desktopOnly: true
+					open: openTypingModal
 				}
 			]
 		},

@@ -19,6 +19,12 @@
 	const HIT_SLOWDOWN = 0.25;
 	const HIT_COOLDOWN = 2.5;
 	const SHOCKWAVE_SECONDS = 0.6;
+	// On phones the game keeps this fixed internal resolution and is scaled down to fit the little
+	// Game Boy screen, so the playfield is the same no matter how small the display is
+	const HANDHELD_WIDTH = 600;
+	const HANDHELD_HEIGHT = 480;
+	// Rows of the on-screen keyboard shown on phones and tablets
+	const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((row) => row.split(''));
 	const BULLET_SPEED = 1600;
 	const ACCENT = '#b694ff';
 	const BEST_KEY = 'dookfolio:keyboard-warrior-best';
@@ -149,6 +155,10 @@
 	let width = 0;
 	let height = 0;
 	let dpr = 1;
+	let viewScale = 1; // CSS pixels per game pixel (below 1 on the handheld screen)
+	// Touch devices and narrow screens get the handheld layout with an on-screen keyboard
+	let handheld = $state(false);
+	let pressedVirtual = $state<string | null>(null);
 
 	let meteors: Meteor[] = [];
 	let particles: Particle[] = [];
@@ -179,20 +189,32 @@
 	let lastTime = 0;
 	let reducedMotion = false;
 
+	// The handheld screen is scaled down, so its words are drawn a little larger to stay readable
 	const font = () =>
 		gameDevMode.active
-			? '10px "Press Start 2P", monospace'
-			: '700 17px "Nunito Variable", sans-serif';
+			? `${handheld ? 13 : 10}px "Press Start 2P", monospace`
+			: `700 ${handheld ? 21 : 17}px "Nunito Variable", sans-serif`;
+
+	// Class for the current layout: [desktop, desktop pixel mode, handheld, handheld pixel mode]
+	const sz = (desktop: string, pixel: string, small: string, smallPixel: string) =>
+		handheld ? (gameDevMode.active ? smallPixel : small) : gameDevMode.active ? pixel : desktop;
 
 	// --- Setup ---
 	function resize() {
 		if (!canvas || !wrapper) return;
 		const rect = wrapper.getBoundingClientRect();
-		width = rect.width;
-		height = rect.height;
+		if (handheld) {
+			width = HANDHELD_WIDTH;
+			height = HANDHELD_HEIGHT;
+			viewScale = rect.width / HANDHELD_WIDTH;
+		} else {
+			width = rect.width;
+			height = rect.height;
+			viewScale = 1;
+		}
 		dpr = Math.min(2, window.devicePixelRatio || 1);
-		canvas.width = Math.round(width * dpr);
-		canvas.height = Math.round(height * dpr);
+		canvas.width = Math.round(rect.width * dpr);
+		canvas.height = Math.round(rect.height * dpr);
 		ctx = canvas.getContext('2d');
 		if (!running()) draw();
 	}
@@ -424,7 +446,35 @@
 		m.x > -m.r * 0.4 && m.x < width + m.r * 0.4 && m.y > -m.r * 0.4 && m.y < height + m.r * 0.4;
 
 	// --- Input ---
-	function handleKeydown(e: KeyboardEvent) {
+	type KeyInput = Pick<
+		KeyboardEvent,
+		'key' | 'code' | 'repeat' | 'ctrlKey' | 'metaKey' | 'altKey' | 'preventDefault'
+	>;
+
+	// On-screen keyboard: a tap is a key press, lifting the finger releases it
+	function pressVirtual(key: string, e: PointerEvent) {
+		e.preventDefault();
+		pressedVirtual = key;
+		navigator.vibrate?.(8);
+		handleKeydown({
+			key,
+			code: `Virtual${key}`,
+			repeat: false,
+			ctrlKey: false,
+			metaKey: false,
+			altKey: false,
+			preventDefault: () => {}
+		});
+	}
+
+	function releaseVirtual() {
+		if (pressedVirtual === null) return;
+		heldKeys.delete(`Virtual${pressedVirtual}`);
+		typingPose = heldKeys.size > 0;
+		pressedVirtual = null;
+	}
+
+	function handleKeydown(e: KeyInput) {
 		if (!active || e.ctrlKey || e.metaKey || e.altKey) return;
 		if (e.key === 'Escape') {
 			e.preventDefault();
@@ -666,7 +716,7 @@
 		const cx = width / 2;
 		const cy = height / 2;
 
-		ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+		ctx.setTransform(dpr * viewScale, 0, 0, dpr * viewScale, 0, 0);
 		ctx.clearRect(0, 0, width, height);
 		if (shake > 0) ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
 
@@ -775,6 +825,18 @@
 		if (!running()) draw();
 	});
 
+	// The screen element is swapped when switching between the desktop and handheld layouts, so
+	// re-measure and re-observe whichever one is on the page
+	$effect(() => {
+		const el = wrapper;
+		void handheld;
+		if (!el || !canvas) return;
+		resize();
+		const observer = new ResizeObserver(resize);
+		observer.observe(el);
+		return () => observer.disconnect();
+	});
+
 	// Pause the loop while the modal closes, resume when it's active again
 	$effect(() => {
 		if (active) wake();
@@ -790,17 +852,19 @@
 		sprite.src = '/GameAssets/KeyboardWarrior.png';
 		sprite.onload = () => draw();
 
-		resize();
-		const observer = new ResizeObserver(resize);
-		if (wrapper) observer.observe(wrapper);
+		const handheldQuery = window.matchMedia('(max-width: 767px), (pointer: coarse)');
+		handheld = handheldQuery.matches;
+		const handleHandheldChange = (e: MediaQueryListEvent) => (handheld = e.matches);
+		handheldQuery.addEventListener('change', handleHandheldChange);
+
 		document.addEventListener('visibilitychange', handleVisibility);
 		wake();
 
 		return () => {
 			cancelAnimationFrame(rafId);
 			rafId = 0;
-			observer.disconnect();
 			document.removeEventListener('visibilitychange', handleVisibility);
+			handheldQuery.removeEventListener('change', handleHandheldChange);
 		};
 	});
 
@@ -812,231 +876,410 @@
 
 <svelte:window onkeydown={handleKeydown} onkeyup={handleKeyup} onblur={handleBlur} />
 
-<div
-	bind:this={wrapper}
-	class="relative min-h-0 w-full flex-1 overflow-hidden bg-[#07060d] {gameDevMode.active
-		? 'font-pixel'
-		: ''}"
->
-	<canvas bind:this={canvas} class="absolute inset-0 size-full" aria-hidden="true"></canvas>
+{#snippet vkey(key: string, label: string, grow: string)}
+	<button
+		type="button"
+		tabindex="-1"
+		aria-label={key === ' ' ? 'Space' : label}
+		onpointerdown={(e) => pressVirtual(key, e)}
+		onpointerup={releaseVirtual}
+		onpointerleave={releaseVirtual}
+		onpointercancel={releaseVirtual}
+		class="h-11 min-w-0 {grow} touch-none border font-bold text-white/90 uppercase backdrop-blur-md transition-all duration-75 select-none {pressedVirtual ===
+		key
+			? 'translate-y-0.5 border-accent bg-accent/25 text-accent shadow-[0_0_18px_-6px_rgba(182,148,255,0.6)]'
+			: 'border-white/15 bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'} {gameDevMode.active
+			? 'text-[9px]'
+			: 'text-sm'}"
+	>
+		{label}
+	</button>
+{/snippet}
 
-	<!-- HUD -->
-	{#if phase !== 'menu'}
-		<div
-			class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between p-3 sm:p-4"
-		>
-			<div class="flex gap-1.5" aria-label="{lives} of {MAX_LIVES} lives left">
-				{#each [...Array(MAX_LIVES).keys()] as i (i)}
-					<Heart
-						class="size-6 transition-all duration-200 {i < lives
-							? 'fill-accent/80 text-accent'
-							: 'scale-90 text-accent/30'}"
-					/>
-				{/each}
-			</div>
-			<div class="text-right">
-				<p
-					class="font-extrabold text-white {gameDevMode.active
-						? 'text-sm'
-						: 'text-2xl sm:text-3xl'}"
-				>
-					WPM: {wpm}
-				</p>
-				{#if phase === 'playing' || phase === 'paused' || phase === 'countdown'}
-					<p class="mt-1 text-muted {gameDevMode.active ? 'text-[8px]' : 'text-xs'}">
-						{DIFFICULTIES[difficulty].label} · {formatTime(clock)}
-					</p>
-				{/if}
-			</div>
-		</div>
-	{/if}
+{#snippet screen()}
+	<div
+		bind:this={wrapper}
+		class="relative w-full overflow-hidden bg-[#07060d] {handheld
+			? 'aspect-[5/4] shrink-0'
+			: 'min-h-0 flex-1'}"
+	>
+		<canvas bind:this={canvas} class="absolute inset-0 size-full" aria-hidden="true"></canvas>
 
-	<!-- Overlays -->
-	{#if phase === 'menu'}
-		<div class="absolute inset-0 flex items-center justify-center overflow-y-auto bg-black/30 p-4">
-			<div class="flex w-full max-w-2xl flex-col items-center text-center">
-				<!-- Menu duck: same sprite sheet, typing frame while a key is held -->
-				<div
-					aria-hidden="true"
-					class="size-32 bg-no-repeat pixelated"
-					style="background-image: url('/GameAssets/KeyboardWarrior.png'); background-size: 256px 128px; background-position: {typingPose
-						? '-128px'
-						: '0'} 0;"
-				></div>
-				<h2
-					class="mt-1 font-extrabold tracking-wide text-white {gameDevMode.active
-						? 'text-base sm:text-xl'
-						: 'text-3xl sm:text-4xl'}"
-				>
-					Keyboard Warrior
-				</h2>
-				<p
-					class="mx-auto mt-2 max-w-md text-muted {gameDevMode.active
-						? 'text-[8px] leading-loose'
-						: 'text-sm'}"
-				>
-					Type a meteor's word to blast it before it reaches the duck. The first letter locks on,
-					Backspace lets it go. Three hits and it's over.
-				</p>
-
-				<!-- Difficulty -->
-				<div
-					class="mt-6 grid w-full grid-cols-1 gap-2.5 sm:grid-cols-3"
-					role="radiogroup"
-					aria-label="Difficulty"
-				>
-					{#each DIFFICULTY_ORDER as d, i (d)}
-						{@const config = DIFFICULTIES[d]}
-						{@const selected = d === difficulty}
-						<button
-							type="button"
-							role="radio"
-							aria-checked={selected}
-							onclick={() => chooseDifficulty(d)}
-							class="flex cursor-pointer flex-col items-start gap-1 border p-3.5 text-left backdrop-blur-md transition-all duration-150 {selected
-								? 'border-accent bg-accent/25 shadow-[0_0_24px_-8px_rgba(182,148,255,0.6)]'
-								: 'border-white/15 bg-white/[0.09] hover:border-white/30 hover:bg-white/[0.13]'}"
-						>
-							<span class="flex w-full items-center justify-between">
-								<span
-									class="font-extrabold {selected
-										? 'text-accent'
-										: 'text-white'} {gameDevMode.active ? 'text-[10px]' : 'text-base'}"
-								>
-									{config.label}
-								</span>
-								<span class="text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}"
-									>{i + 1}</span
-								>
-							</span>
-							<span
-								class="text-muted {gameDevMode.active ? 'text-[7px] leading-relaxed' : 'text-xs'}"
-							>
-								{config.blurb}
-							</span>
-							<span
-								class="mt-1 {bests[d].seconds
-									? 'text-accent-soft'
-									: 'text-faint'} {gameDevMode.active
-									? 'text-[7px] leading-relaxed'
-									: 'text-xs font-bold'}"
-							>
-								{bests[d].seconds
-									? `Best: ${bests[d].wpm} WPM · ${formatTime(bests[d].seconds)}`
-									: 'No best yet'}
-							</span>
-						</button>
+		<!-- HUD -->
+		{#if phase !== 'menu'}
+			<div
+				class="pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between {handheld
+					? 'p-2'
+					: 'p-3 sm:p-4'}"
+			>
+				<div class="flex gap-1" aria-label="{lives} of {MAX_LIVES} lives left">
+					{#each [...Array(MAX_LIVES).keys()] as i (i)}
+						<Heart
+							class="transition-all duration-200 {handheld ? 'size-4' : 'size-6'} {i < lives
+								? 'fill-accent/80 text-accent'
+								: 'scale-90 text-accent/30'}"
+						/>
 					{/each}
 				</div>
-
-				<button
-					type="button"
-					onclick={startGame}
-					class="mt-6 inline-flex cursor-pointer items-center gap-2 border border-accent/50 bg-accent/25 px-7 py-3 font-extrabold text-accent backdrop-blur-md transition-colors hover:bg-accent hover:text-bg {gameDevMode.active
-						? 'text-[10px]'
-						: 'text-base'}"
-				>
-					<Play class="size-4" />
-					Start (Space)
-				</button>
-				<p class="mt-3 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-					Arrow keys or 1 / 2 / 3 to pick a difficulty
-				</p>
-			</div>
-		</div>
-	{:else if phase === 'paused'}
-		<div
-			class="absolute inset-0 flex flex-col items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
-		>
-			<p class="font-extrabold text-white {gameDevMode.active ? 'text-sm' : 'text-3xl'}">Paused</p>
-			<div class="mt-5 flex w-full max-w-xs flex-col gap-2.5" role="menu" aria-label="Pause menu">
-				{#each PAUSE_OPTIONS as option, i (option.label)}
-					{@const selected = i === pauseChoice}
-					<button
-						type="button"
-						role="menuitem"
-						onclick={option.run}
-						onpointerenter={() => (pauseChoice = i)}
-						class="flex cursor-pointer items-center gap-3 border px-4 py-3 text-left font-extrabold backdrop-blur-md transition-all duration-150 {selected
-							? 'border-accent bg-accent/25 text-accent shadow-[0_0_24px_-8px_rgba(182,148,255,0.6)]'
-							: 'border-white/15 bg-white/[0.09] text-white/85'} {gameDevMode.active
-							? 'text-[10px]'
-							: 'text-base'}"
+				<div class="text-right">
+					<p
+						class="font-extrabold text-white {sz(
+							'text-2xl sm:text-3xl',
+							'text-sm',
+							'text-sm',
+							'text-[9px]'
+						)}"
 					>
-						<span
-							class="flex size-6 shrink-0 items-center justify-center border text-xs {selected
-								? 'border-accent/60'
-								: 'border-white/20 text-muted'}">{i + 1}</span
-						>
-						{#if i === 0}<Play class="size-4" />{:else}<House class="size-4" />{/if}
-						{option.label}
-					</button>
-				{/each}
-			</div>
-			<p class="mt-4 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-				1 / 2 to choose, Enter to confirm, Esc to resume
-			</p>
-		</div>
-	{:else if phase === 'countdown'}
-		<div class="pointer-events-none absolute inset-x-0 top-[18%] flex flex-col items-center">
-			<p class="text-muted {gameDevMode.active ? 'text-[9px]' : 'text-sm font-bold'}">Get ready</p>
-			{#key countdownShown}
-				<p
-					class="anim-fade-in-up font-extrabold text-accent {gameDevMode.active
-						? 'mt-3 text-4xl'
-						: 'text-8xl'}"
-				>
-					{countdownShown}
-				</p>
-			{/key}
-		</div>
-	{:else if phase === 'over'}
-		<div class="absolute inset-0 flex items-center justify-center bg-black/55 p-4">
-			<div class="w-full max-w-sm text-center">
-				<p class="font-extrabold text-red-300 {gameDevMode.active ? 'text-sm' : 'text-2xl'}">
-					The duck got hit!
-				</p>
-				<p class="mt-1 text-muted {gameDevMode.active ? 'text-[8px]' : 'text-sm'}">
-					{DIFFICULTIES[difficulty].label}
-					{#if result.newBest}
-						· <span class="font-bold text-accent">New best!</span>
+						WPM: {wpm}
+					</p>
+					{#if phase === 'playing' || phase === 'paused' || phase === 'countdown'}
+						<p class="mt-0.5 text-muted {sz('text-xs', 'text-[8px]', 'text-[10px]', 'text-[6px]')}">
+							{DIFFICULTIES[difficulty].label} · {formatTime(clock)}
+						</p>
 					{/if}
-				</p>
-				<div class="mt-5 grid grid-cols-2 gap-2.5">
-					{#each [{ label: 'WPM', value: result.wpm }, { label: 'Accuracy', value: `${result.accuracy}%` }, { label: 'Words', value: result.words }, { label: 'Survived', value: formatTime(result.seconds) }] as stat (stat.label)}
-						<div class="bg-white/[0.09] p-3 backdrop-blur-md">
-							<p class="text-muted {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">{stat.label}</p>
-							<p
-								class="mt-1 font-extrabold text-white {gameDevMode.active ? 'text-sm' : 'text-2xl'}"
-							>
-								{stat.value}
-							</p>
-						</div>
-					{/each}
 				</div>
-				<div class="mt-5 flex flex-wrap justify-center gap-2.5">
+			</div>
+		{/if}
+
+		<!-- Overlays -->
+		{#if phase === 'menu'}
+			<div
+				class="absolute inset-0 flex items-center justify-center overflow-y-auto bg-black/30 {handheld
+					? 'p-2.5'
+					: 'p-4'}"
+			>
+				<div class="flex w-full max-w-2xl flex-col items-center text-center">
+					{#if !handheld}
+						<!-- Menu duck: same sprite sheet, typing frame while a key is held -->
+						<div
+							aria-hidden="true"
+							class="size-32 bg-no-repeat pixelated"
+							style="background-image: url('/GameAssets/KeyboardWarrior.png'); background-size: 256px 128px; background-position: {typingPose
+								? '-128px'
+								: '0'} 0;"
+						></div>
+					{/if}
+					<h2
+						class="font-extrabold tracking-wide text-white {sz(
+							'mt-1 text-3xl sm:text-4xl',
+							'mt-1 text-base sm:text-xl',
+							'text-xl',
+							'text-[11px]'
+						)}"
+					>
+						Keyboard Warrior
+					</h2>
+					{#if !handheld}
+						<p
+							class="mx-auto mt-2 max-w-md text-muted {gameDevMode.active
+								? 'text-[8px] leading-loose'
+								: 'text-sm'}"
+						>
+							Type a meteor's word to blast it before it reaches the duck. The first letter locks
+							on, Backspace lets it go. Three hits and it's over.
+						</p>
+					{/if}
+
+					<!-- Difficulty: an arcade-style list with a pointer instead of boxed cards -->
+					<div
+						class="flex flex-col {handheld ? 'mt-2.5 w-52 gap-0.5' : 'mt-7 w-72 gap-1'}"
+						role="radiogroup"
+						aria-label="Difficulty"
+					>
+						{#each DIFFICULTY_ORDER as d, i (d)}
+							{@const selected = d === difficulty}
+							<button
+								type="button"
+								role="radio"
+								aria-checked={selected}
+								onclick={() => chooseDifficulty(d)}
+								class="group relative flex cursor-pointer items-center gap-2 transition-colors duration-150 {handheld
+									? 'px-2 py-1'
+									: 'px-3 py-1.5'} {selected ? 'text-accent' : 'text-faint hover:text-muted'}"
+							>
+								<!-- Soft glow line behind the selected row -->
+								<span
+									aria-hidden="true"
+									class="pointer-events-none absolute inset-0 bg-linear-to-r from-transparent via-accent/15 to-transparent transition-opacity duration-200 {selected
+										? 'opacity-100'
+										: 'opacity-0'}"
+								></span>
+								<span
+									aria-hidden="true"
+									class="relative w-10 shrink-0 text-left transition-transform duration-150 {selected
+										? 'translate-x-0 opacity-100'
+										: '-translate-x-1 opacity-0'} {sz(
+										'text-sm',
+										'text-[9px]',
+										'text-xs',
+										'text-[7px]'
+									)}">▶</span
+								>
+								<span
+									class="relative flex-1 pl-[0.2em] text-center font-extrabold tracking-[0.2em] uppercase {selected
+										? 'drop-shadow-[0_0_10px_rgba(182,148,255,0.55)]'
+										: ''} {sz('text-lg', 'text-[11px]', 'text-sm', 'text-[8px]')}"
+								>
+									{DIFFICULTIES[d].label}
+								</span>
+								<!-- Intensity bars, in a slot as wide as the pointer's so the label sits dead center -->
+								<span aria-hidden="true" class="relative flex w-10 shrink-0 justify-end gap-1">
+									{#each [0, 1, 2] as bar (bar)}
+										<span
+											class="{handheld ? 'h-2.5 w-1.5' : 'h-3.5 w-2'} {bar <= i
+												? selected
+													? 'bg-accent'
+													: 'bg-current'
+												: selected
+													? 'bg-accent/20'
+													: 'bg-faint/25'}"
+										></span>
+									{/each}
+								</span>
+							</button>
+						{/each}
+					</div>
+
+					<!-- Only the selected difficulty's details -->
+					{#if !handheld}
+						<p
+							class="mt-4 text-muted {gameDevMode.active ? 'text-[8px] leading-loose' : 'text-sm'}"
+						>
+							{DIFFICULTIES[difficulty].blurb}
+						</p>
+					{/if}
+					<p
+						class="font-bold tracking-widest uppercase {bests[difficulty].seconds
+							? 'text-accent-soft'
+							: 'text-faint'} {sz(
+							'mt-1.5 text-xs',
+							'mt-2 text-[7px]',
+							'mt-2 text-[10px]',
+							'mt-2 text-[6px]'
+						)}"
+					>
+						{bests[difficulty].seconds
+							? `Hi ${bests[difficulty].wpm} WPM · ${formatTime(bests[difficulty].seconds)}`
+							: 'No best yet'}
+					</p>
+
 					<button
 						type="button"
 						onclick={startGame}
-						class="inline-flex cursor-pointer items-center gap-2 border border-accent/50 bg-accent/25 px-5 py-2.5 font-extrabold text-accent backdrop-blur-md transition-colors hover:bg-accent hover:text-bg {gameDevMode.active
-							? 'text-[9px]'
-							: 'text-sm'}"
+						class="inline-flex cursor-pointer items-center gap-2 border border-accent/50 bg-accent/25 font-extrabold text-accent backdrop-blur-md transition-colors hover:bg-accent hover:text-bg {sz(
+							'mt-6 px-7 py-3 text-base',
+							'mt-6 px-7 py-3 text-[10px]',
+							'mt-3 px-5 py-2 text-sm',
+							'mt-3 px-4 py-2 text-[8px]'
+						)}"
 					>
-						<RotateCcw class="size-4" />
-						Play again (Space)
+						<Play class="size-4" />
+						{handheld ? 'Start' : 'Start (Space)'}
 					</button>
-					<button
-						type="button"
-						onclick={toMenu}
-						class="inline-flex cursor-pointer items-center gap-2 border border-white/20 bg-white/[0.12] px-5 py-2.5 font-bold text-white/85 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white {gameDevMode.active
-							? 'text-[9px]'
-							: 'text-sm'}"
+					{#if !handheld}
+						<p class="mt-3 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
+							Arrow keys or 1 / 2 / 3 to pick a difficulty
+						</p>
+					{/if}
+				</div>
+			</div>
+		{:else if phase === 'paused'}
+			<div
+				class="absolute inset-0 flex flex-col items-center justify-center bg-black/45 p-4 backdrop-blur-sm"
+			>
+				<p class="font-extrabold text-white {sz('text-3xl', 'text-sm', 'text-lg', 'text-[10px]')}">
+					Paused
+				</p>
+				<div
+					class="flex w-full max-w-xs flex-col {handheld ? 'mt-3 gap-1.5' : 'mt-5 gap-2.5'}"
+					role="menu"
+					aria-label="Pause menu"
+				>
+					{#each PAUSE_OPTIONS as option, i (option.label)}
+						{@const selected = i === pauseChoice}
+						<button
+							type="button"
+							role="menuitem"
+							onclick={option.run}
+							onpointerenter={() => (pauseChoice = i)}
+							class="flex cursor-pointer items-center gap-3 border text-left font-extrabold backdrop-blur-md transition-all duration-150 {handheld
+								? 'px-3 py-2'
+								: 'px-4 py-3'} {selected
+								? 'border-accent bg-accent/25 text-accent shadow-[0_0_24px_-8px_rgba(182,148,255,0.6)]'
+								: 'border-white/15 bg-white/[0.09] text-white/85'} {sz(
+								'text-base',
+								'text-[10px]',
+								'text-sm',
+								'text-[8px]'
+							)}"
+						>
+							<span
+								class="flex size-6 shrink-0 items-center justify-center border text-xs {selected
+									? 'border-accent/60'
+									: 'border-white/20 text-muted'}">{i + 1}</span
+							>
+							{#if i === 0}<Play class="size-4" />{:else}<House class="size-4" />{/if}
+							{option.label}
+						</button>
+					{/each}
+				</div>
+				{#if !handheld}
+					<p class="mt-4 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
+						1 / 2 to choose, Enter to confirm, Esc to resume
+					</p>
+				{/if}
+			</div>
+		{:else if phase === 'countdown'}
+			<div class="pointer-events-none absolute inset-x-0 top-[14%] flex flex-col items-center">
+				<p
+					class="text-muted {sz(
+						'text-sm font-bold',
+						'text-[9px]',
+						'text-xs font-bold',
+						'text-[7px]'
+					)}"
+				>
+					Get ready
+				</p>
+				{#key countdownShown}
+					<p
+						class="anim-fade-in-up font-extrabold text-accent {sz(
+							'text-8xl',
+							'mt-3 text-4xl',
+							'text-5xl',
+							'mt-2 text-2xl'
+						)}"
 					>
-						<House class="size-4" />
-						Main menu (Esc)
-					</button>
+						{countdownShown}
+					</p>
+				{/key}
+			</div>
+		{:else if phase === 'over'}
+			<div
+				class="absolute inset-0 flex items-center justify-center bg-black/55 {handheld
+					? 'p-2.5'
+					: 'p-4'}"
+			>
+				<div class="w-full max-w-sm text-center">
+					<p
+						class="font-extrabold text-red-300 {sz(
+							'text-2xl',
+							'text-sm',
+							'text-base',
+							'text-[10px]'
+						)}"
+					>
+						The duck got hit!
+					</p>
+					<p class="mt-1 text-muted {sz('text-sm', 'text-[8px]', 'text-xs', 'text-[7px]')}">
+						{DIFFICULTIES[difficulty].label}
+						{#if result.newBest}
+							· <span class="font-bold text-accent">New best!</span>
+						{/if}
+					</p>
+					<div class="grid {handheld ? 'mt-2.5 grid-cols-4 gap-1.5' : 'mt-5 grid-cols-2 gap-2.5'}">
+						{#each [{ label: 'WPM', value: result.wpm }, { label: 'Accuracy', value: `${result.accuracy}%` }, { label: 'Words', value: result.words }, { label: 'Survived', value: formatTime(result.seconds) }] as stat (stat.label)}
+							<div class="bg-white/[0.09] backdrop-blur-md {handheld ? 'p-1.5' : 'p-3'}">
+								<p class="text-muted {sz('text-xs', 'text-[7px]', 'text-[9px]', 'text-[5px]')}">
+									{stat.label}
+								</p>
+								<p
+									class="mt-1 font-extrabold text-white {sz(
+										'text-2xl',
+										'text-sm',
+										'text-base',
+										'text-[9px]'
+									)}"
+								>
+									{stat.value}
+								</p>
+							</div>
+						{/each}
+					</div>
+					<div class="flex flex-wrap justify-center {handheld ? 'mt-2.5 gap-1.5' : 'mt-5 gap-2.5'}">
+						<button
+							type="button"
+							onclick={startGame}
+							class="inline-flex cursor-pointer items-center gap-2 border border-accent/50 bg-accent/25 font-extrabold text-accent backdrop-blur-md transition-colors hover:bg-accent hover:text-bg {sz(
+								'px-5 py-2.5 text-sm',
+								'px-5 py-2.5 text-[9px]',
+								'px-3 py-1.5 text-xs',
+								'px-3 py-1.5 text-[7px]'
+							)}"
+						>
+							<RotateCcw class="size-4" />
+							{handheld ? 'Play again' : 'Play again (Space)'}
+						</button>
+						<button
+							type="button"
+							onclick={toMenu}
+							class="inline-flex cursor-pointer items-center gap-2 border border-white/20 bg-white/[0.12] font-bold text-white/85 backdrop-blur-md transition-colors hover:bg-white/20 hover:text-white {sz(
+								'px-5 py-2.5 text-sm',
+								'px-5 py-2.5 text-[9px]',
+								'px-3 py-1.5 text-xs',
+								'px-3 py-1.5 text-[7px]'
+							)}"
+						>
+							<House class="size-4" />
+							{handheld ? 'Menu' : 'Main menu (Esc)'}
+						</button>
+					</div>
+				</div>
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
+{#if handheld}
+	<!-- Handheld: a Game Boy style body with the screen on top and a keyboard below -->
+	<div
+		class="flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto {gameDevMode.active
+			? 'font-pixel'
+			: ''}"
+	>
+		<div
+			class="flex h-fit w-full max-w-md flex-col gap-3 rounded-t-2xl rounded-b-2xl rounded-br-[44px] bg-[#1b1828]/60 p-3 shadow-[inset_0_2px_0_rgba(255,255,255,0.06),inset_0_-4px_0_rgba(0,0,0,0.35),0_14px_30px_-14px_rgba(0,0,0,0.8)] backdrop-blur-lg"
+		>
+			<!-- Screen bezel -->
+			<div
+				class="rounded-md rounded-br-3xl bg-[#0c0a14] px-2.5 pt-2 pb-3 shadow-[inset_0_2px_6px_rgba(0,0,0,0.6)]"
+			>
+				<div class="mb-1.5 flex items-center justify-between px-0.5">
+					<span class="flex items-center gap-1.5 text-[8px] font-bold tracking-widest text-faint">
+						<span
+							class="size-1.5 rounded-full {phase === 'playing' || phase === 'countdown'
+								? 'bg-accent shadow-[0_0_6px_rgba(182,148,255,0.9)]'
+								: 'bg-faint/50'}"
+						></span>
+						POWER
+					</span>
+					<span class="text-[8px] font-bold tracking-widest text-faint">KEYBOARD WARRIOR</span>
+				</div>
+				{@render screen()}
+			</div>
+
+			<!-- On-screen keyboard -->
+			<div class="flex flex-col gap-1.5" role="group" aria-label="On-screen keyboard">
+				{#each KEY_ROWS as row, r (r)}
+					<div class="flex gap-1 {r === 1 ? 'px-[4.5%]' : ''}">
+						{#each row as key (key)}
+							{@render vkey(key, key, 'flex-1')}
+						{/each}
+						{#if r === 2}
+							{@render vkey('Backspace', '⌫', 'flex-[1.7]')}
+						{/if}
+					</div>
+				{/each}
+				<div class="mt-1 flex gap-1.5">
+					{@render vkey('Escape', 'Esc', 'flex-[1.3]')}
+					{@render vkey(' ', 'Space', 'flex-[4]')}
+					{@render vkey('Enter', 'Enter', 'flex-[1.7]')}
 				</div>
 			</div>
 		</div>
-	{/if}
-</div>
+	</div>
+{:else}
+	<div class="flex min-h-0 w-full flex-1 flex-col {gameDevMode.active ? 'font-pixel' : ''}">
+		{@render screen()}
+	</div>
+{/if}

@@ -79,7 +79,7 @@
 		onkeydown={(e) => {
 			if (e.key === 'Escape' && !gameReady) handleClose();
 		}}
-		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-4 select-none"
+		class="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto overscroll-contain p-0 select-none md:p-4"
 	>
 		<!-- Blurred backdrop as a sibling layer so the card's frosted glass can see the page -->
 		<div
@@ -91,7 +91,7 @@
 
 		<!-- Liquid glass card -->
 		<div
-			class="relative flex h-[92dvh] max-h-[900px] min-h-0 w-[96vw] max-w-[1500px] flex-col overflow-hidden rounded-none bg-surface/70 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform {isClosing
+			class="relative flex h-dvh min-h-0 w-full flex-col overflow-hidden rounded-none bg-surface/70 shadow-[0_20px_50px_-25px_rgba(0,0,0,0.5)] backdrop-blur-lg will-change-transform md:h-[92dvh] md:max-h-[900px] md:w-[96vw] md:max-w-[1500px] {isClosing
 				? 'anim-modal-out'
 				: 'anim-modal-in'}"
 		>
@@ -112,20 +112,20 @@
 						</p>
 					</div>
 				</div>
-				<div class="flex items-center gap-1">
-					<VolumeControl />
+				<div class="flex items-center gap-1.5">
+					<VolumeControl class="border border-white/15 bg-white/[0.09] backdrop-blur-md" />
 					<button
 						type="button"
 						onclick={handleClose}
 						aria-label="Close dialog"
-						class="cursor-pointer rounded-none p-1.5 text-muted transition-colors hover:bg-white/10 hover:text-white focus:outline-hidden"
+						class="flex size-8 cursor-pointer items-center justify-center border border-white/15 bg-white/[0.09] text-muted backdrop-blur-md transition-colors hover:border-white/30 hover:bg-white/[0.15] hover:text-white focus:outline-hidden"
 					>
-						<X class="size-5" />
+						<X class="size-4.5" />
 					</button>
 				</div>
 			</div>
 
-			<div class="flex min-h-0 flex-1 flex-col px-3 pb-3 sm:px-6 sm:pb-6">
+			<div class="flex min-h-0 flex-1 flex-col px-2 pb-2 sm:px-6 sm:pb-6">
 				{#await loadGame() then { default: KeyboardWarrior }}
 					<KeyboardWarrior active={!isClosing} onexit={handleClose} />
 				{/await}
