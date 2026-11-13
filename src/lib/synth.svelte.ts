@@ -310,6 +310,47 @@ class ChiptuneSoundEngine {
 		};
 	}
 
+	// Short arcade effects for Keyboard Warrior. Like the instruments they ignore mute and follow the
+	// volume slider, since the game is opt-in
+	playGameSfx(kind: 'shot' | 'boom' | 'hit' | 'miss') {
+		if (!this.initContext() || !this.ctx || !this.instrumentGain) return;
+		const ctx = this.ctx;
+		const now = ctx.currentTime;
+		const sweep = (
+			type: OscillatorType,
+			from: number,
+			to: number,
+			duration: number,
+			volume: number,
+			start = now
+		) => {
+			const osc = ctx.createOscillator();
+			const gain = ctx.createGain();
+			osc.type = type;
+			osc.frequency.setValueAtTime(from, start);
+			osc.frequency.exponentialRampToValueAtTime(to, start + duration);
+			gain.gain.setValueAtTime(volume, start);
+			gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+			osc.connect(gain);
+			gain.connect(this.instrumentGain!);
+			osc.start(start);
+			osc.stop(start + duration + 0.01);
+		};
+
+		if (kind === 'shot') {
+			sweep('square', 1400, 700, 0.045, 0.05);
+		} else if (kind === 'miss') {
+			sweep('square', 140, 110, 0.06, 0.06);
+		} else if (kind === 'boom') {
+			sweep('square', 520, 90, 0.16, 0.09);
+			sweep('triangle', 260, 60, 0.2, 0.12);
+		} else {
+			[NOTE.E4, NOTE.C4, NOTE.A3].forEach((freq, i) =>
+				sweep('square', freq, freq * 0.8, 0.09, 0.1, now + i * 0.08)
+			);
+		}
+	}
+
 	// Glide (rather than jump) to the new volume so dragging the slider doesn't click
 	setInstrumentVolume(volume: number) {
 		const value = Math.min(1, Math.max(0, volume));

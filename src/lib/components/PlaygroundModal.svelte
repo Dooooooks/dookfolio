@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { ChevronRight, Ear, Gamepad2, Music, Piano, Timer, X } from '@lucide/svelte';
+	import { ChevronRight, Ear, Gamepad2, Keyboard, Music, Piano, Timer, X } from '@lucide/svelte';
 	import type { Component } from 'svelte';
 	import {
 		gameDevMode,
@@ -8,6 +8,7 @@
 		openChordModal,
 		openPianoModal,
 		openReactionModal,
+		openTypingModal,
 		type PlaygroundCategory
 	} from '$lib/game-mode.svelte';
 	import { lockScroll, unlockScroll } from '$lib/scroll-lock';
@@ -40,6 +41,14 @@
 					description: 'A reaction-time test. Click the moment the screen changes.',
 					icon: Timer,
 					open: openReactionModal
+				},
+				{
+					title: 'Keyboard Warrior',
+					description:
+						'Type the words on incoming meteors before they hit the duck. How long can you survive?',
+					icon: Keyboard,
+					open: openTypingModal,
+					desktopOnly: true
 				}
 			]
 		},

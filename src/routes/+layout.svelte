@@ -36,6 +36,7 @@
 		playgroundModal,
 		breakContractModal,
 		reactionModal,
+		typingModal,
 		shopModal,
 		pianoModal,
 		upgrades,
@@ -51,6 +52,7 @@
 	import QuackShopModal from '$lib/components/QuackShopModal.svelte';
 	import PianoModal from '$lib/components/PianoModal.svelte';
 	import ChordTrainerModal from '$lib/components/ChordTrainerModal.svelte';
+	import KeyboardWarriorModal from '$lib/components/KeyboardWarriorModal.svelte';
 	import PlaygroundModal from '$lib/components/PlaygroundModal.svelte';
 	import { synthState, synth, toggleAudioMute } from '$lib/synth.svelte';
 
@@ -202,6 +204,7 @@
 		if (
 			!breakContractModal.open &&
 			!reactionModal.open &&
+			!typingModal.open &&
 			!projectModal.open &&
 			!shopModal.open &&
 			!pianoModal.open &&
@@ -227,362 +230,387 @@
 		</div>
 	</div>
 {:else}
-<div class="min-h-screen bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
-	<!-- Floating Top-Left Controls: Sidebar Toggle (Open/Hide) + Game Dev Mode Controls -->
-	<div
-		class="fixed top-3.5 z-30 flex items-center gap-2 transition-all duration-300 ease-in-out {isOpen
-			? 'left-[216px]'
-			: 'left-3'}"
-	>
-		<!-- Sidebar Toggle Button (Hide when open, 3-line menu icon when closed) -->
-		<button
-			type="button"
-			onclick={() => (isOpen = !isOpen)}
-			aria-label={isOpen ? 'Hide sidebar' : 'Open sidebar'}
-			title={isOpen ? 'Hide sidebar' : 'Open sidebar'}
-			class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white active:scale-95"
-		>
-			{#if isOpen}
-				<ChevronLeft class="size-4.5" strokeWidth={1.75} />
-			{:else}
-				<Menu class="size-4.5" strokeWidth={1.75} />
-			{/if}
-		</button>
-
-		<!-- 8-Bit Synthesizer Unmute / Mute Button (Always visible; muted by default for UX) -->
-		<button
-			type="button"
-			onclick={toggleAudioMute}
-			data-custom-sound
-			aria-label={synthState.muted ? 'Unmute 8-bit UI sounds' : 'Mute 8-bit UI sounds'}
-			title={synthState.muted ? 'Unmute UI sounds' : 'Mute UI sounds'}
-			class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all duration-300 hover:scale-110 hover:border-white/20 hover:bg-surface hover:text-white active:scale-95 {!synthState.muted
-				? 'border-accent/40 bg-accent/20 text-accent ring-1 ring-accent/60 shadow-accent/20'
-				: ''}"
-		>
-			{#if synthState.muted}
-				<VolumeX class="size-4.5" strokeWidth={1.75} />
-			{:else}
-				<Volume2 class="size-4.5" strokeWidth={1.75} />
-			{/if}
-		</button>
-
-		<!-- Break Contract Book Button (Only visible after entering Game Dev Mode) -->
-		{#if gameDevMode.active}
-			<button
-				type="button"
-				onclick={openBreakContractModal}
-				aria-label="Break Contract with Duck"
-				title="Break Contract with Duck (Return to Software Dev Mode)"
-				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95"
-			>
-				<BookOpen class="size-4.5" strokeWidth={1.75}>
-					<line x1="2" y1="2" x2="22" y2="22" />
-				</BookOpen>
-			</button>
-		{/if}
-	</div>
-
-	<!-- Mobile-only Floating Top-Right Controls: Total Quacks & Shop Upgrade -->
-	{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
+	<div class="min-h-screen bg-bg {gameDevMode.active ? 'font-pixel' : 'font-sans'}">
+		<!-- Floating Top-Left Controls: Sidebar Toggle (Open/Hide) + Game Dev Mode Controls -->
 		<div
-			class="fixed top-3.5 right-3 z-30 flex items-center gap-1.5 transition-all duration-300 ease-in-out md:hidden {isOpen
-				? 'pointer-events-none opacity-0'
-				: 'opacity-100'}"
+			class="fixed top-3.5 z-30 flex items-center gap-2 transition-all duration-300 ease-in-out {isOpen
+				? 'left-[216px]'
+				: 'left-3'}"
 		>
-			<!-- Total Quacks Pill (Tapping also opens Upgrade Shop) -->
+			<!-- Sidebar Toggle Button (Hide when open, 3-line menu icon when closed) -->
 			<button
 				type="button"
-				onclick={openShopModal}
-				aria-label="Total Quacks: {gameDevMode.quacks.toLocaleString()}. Tap to open Upgrade Shop"
-				title="Total Quacks: {gameDevMode.quacks.toLocaleString()}"
-				class="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/30 bg-surface/90 px-2.5 text-accent shadow-lg backdrop-blur transition-all duration-200 hover:border-accent hover:bg-accent/10 active:scale-95"
+				onclick={() => (isOpen = !isOpen)}
+				aria-label={isOpen ? 'Hide sidebar' : 'Open sidebar'}
+				title={isOpen ? 'Hide sidebar' : 'Open sidebar'}
+				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all hover:border-white/20 hover:bg-surface hover:text-white active:scale-95"
 			>
-				<img
-					src={gameDevMode.active ? duckYellow : duckWhite}
-					alt="Duck"
-					class="size-4 shrink-0 pixelated"
-				/>
-				<span
-					class="font-black tracking-tight text-white {gameDevMode.active
-						? 'font-pixel text-[8px]'
-						: 'text-xs'}"
-				>
-					{gameDevMode.quacks.toLocaleString()}
-				</span>
+				{#if isOpen}
+					<ChevronLeft class="size-4.5" strokeWidth={1.75} />
+				{:else}
+					<Menu class="size-4.5" strokeWidth={1.75} />
+				{/if}
 			</button>
 
-			<!-- Upgrade Shop Button -->
+			<!-- 8-Bit Synthesizer Unmute / Mute Button (Always visible; muted by default for UX) -->
 			<button
 				type="button"
-				onclick={openShopModal}
-				aria-label="Open Upgrade Shop"
-				title="Open Upgrade Shop"
-				class="relative flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/20 px-2.5 font-bold text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-200 hover:scale-105 hover:bg-accent/30 active:scale-95 {gameDevMode.active
-					? 'font-pixel text-[8px]'
-					: 'text-xs'}"
+				onclick={toggleAudioMute}
+				data-custom-sound
+				aria-label={synthState.muted ? 'Unmute 8-bit UI sounds' : 'Mute 8-bit UI sounds'}
+				title={synthState.muted ? 'Unmute UI sounds' : 'Mute UI sounds'}
+				class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-white/10 bg-surface/90 text-muted shadow-lg backdrop-blur transition-all duration-300 hover:scale-110 hover:border-white/20 hover:bg-surface hover:text-white active:scale-95 {!synthState.muted
+					? 'border-accent/40 bg-accent/20 text-accent ring-1 shadow-accent/20 ring-accent/60'
+					: ''}"
 			>
-				{#if hasAffordableUpgrade}
-					<span class="absolute -top-1 -right-1 flex size-2.5">
-						<span
-							class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
-						></span>
-						<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
-					</span>
+				{#if synthState.muted}
+					<VolumeX class="size-4.5" strokeWidth={1.75} />
+				{:else}
+					<Volume2 class="size-4.5" strokeWidth={1.75} />
 				{/if}
-				<ShoppingBag class="size-3.5 shrink-0" />
-				<span>Shop</span>
 			</button>
-		</div>
-	{/if}
 
-	<!-- Backdrop on Mobile -->
-	{#if isOpen}
-		<button
-			type="button"
-			onclick={() => (isOpen = false)}
-			aria-label="Close sidebar backdrop"
-			class="fixed inset-0 z-10 bg-black/50 backdrop-blur-xs touch-none md:hidden"
-		></button>
-	{/if}
-
-	<!-- Sidebar -->
-	<aside
-		class="fixed inset-y-0 left-0 z-20 flex w-52 flex-col bg-surface px-4 py-6 shadow-xl transition-transform duration-300 ease-in-out {isOpen
-			? 'translate-x-0'
-			: '-translate-x-full'}"
-	>
-
-		<div class="flex items-center gap-3 px-1 pt-1">
-			<img src={profile} alt="Lloyd Nicolas" width="36" height="36" decoding="async" class="size-9 shrink-0 rounded-full object-cover" />
-			<div>
-				<p class="font-extrabold text-white {gameDevMode.active ? 'text-[8.5px]' : 'text-sm'}">Lloyd Nicolas</p>
-				<p class="font-bold text-accent {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
-					{gameDevMode.active ? 'Game' : 'Software'} Developer
-				</p>
-			</div>
+			<!-- Break Contract Book Button (Only visible after entering Game Dev Mode) -->
+			{#if gameDevMode.active}
+				<button
+					type="button"
+					onclick={openBreakContractModal}
+					aria-label="Break Contract with Duck"
+					title="Break Contract with Duck (Return to Software Dev Mode)"
+					class="flex size-8 cursor-pointer items-center justify-center rounded-lg border border-accent/40 bg-surface/90 text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-300 hover:scale-110 hover:border-accent hover:bg-accent/20 active:scale-95"
+				>
+					<BookOpen class="size-4.5" strokeWidth={1.75}>
+						<line x1="2" y1="2" x2="22" y2="22" />
+					</BookOpen>
+				</button>
+			{/if}
 		</div>
 
-		<nav class="mt-8 flex flex-1 flex-col gap-1.5 overflow-x-hidden overflow-y-auto overscroll-contain">
-			<!-- Home and its Subsections -->
-			<div class="flex flex-col gap-1">
-				<a
-					href={resolve('/')}
-					onclick={() => {
-						activeSection = 'home';
-						if (window.innerWidth < 768) isOpen = false;
-					}}
-					aria-current={isHomeActive ? 'page' : undefined}
-					class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
-						? 'text-[8.5px]'
-						: 'text-sm'} {isHomeActive
-						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
-						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
+		<!-- Mobile-only Floating Top-Right Controls: Total Quacks & Shop Upgrade -->
+		{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
+			<div
+				class="fixed top-3.5 right-3 z-30 flex items-center gap-1.5 transition-all duration-300 ease-in-out md:hidden {isOpen
+					? 'pointer-events-none opacity-0'
+					: 'opacity-100'}"
+			>
+				<!-- Total Quacks Pill (Tapping also opens Upgrade Shop) -->
+				<button
+					type="button"
+					onclick={openShopModal}
+					aria-label="Total Quacks: {gameDevMode.quacks.toLocaleString()}. Tap to open Upgrade Shop"
+					title="Total Quacks: {gameDevMode.quacks.toLocaleString()}"
+					class="flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/30 bg-surface/90 px-2.5 text-accent shadow-lg backdrop-blur transition-all duration-200 hover:border-accent hover:bg-accent/10 active:scale-95"
 				>
-					<House
-						class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isHomeActive
-							? 'text-accent'
-							: 'text-muted group-hover:text-white'}"
+					<img
+						src={gameDevMode.active ? duckYellow : duckWhite}
+						alt="Duck"
+						class="size-4 shrink-0 pixelated"
 					/>
-					<span>Home</span>
-				</a>
-
-				<!-- Subsections under Home (Only displayed when active on Home tab) -->
-				{#if page.url.pathname === '/'}
-					<div
-						transition:slide={{ duration: 200 }}
-						class="ml-4.5 flex flex-col gap-0.5 border-l border-white/10 pl-3"
-					>
-						{#each homeSubsections as sub (sub.href)}
-							{@const isSubActive = page.url.pathname === '/' && activeSection === sub.id}
-							<a
-								href={resolve(sub.href)}
-								onclick={() => {
-									activeSection = sub.id;
-									if (window.innerWidth < 768) isOpen = false;
-								}}
-								aria-current={isSubActive ? 'page' : undefined}
-								class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-bold transition-all duration-150 {gameDevMode.active
-									? 'text-[7.5px]'
-									: 'text-xs'} {isSubActive
-									? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
-									: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
-							>
-								<sub.icon
-									class="size-3.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isSubActive
-										? 'text-accent'
-										: 'text-muted group-hover:text-white'}"
-								/>
-								<span>{sub.label}</span>
-							</a>
-						{/each}
-					</div>
-				{/if}
-			</div>
-
-			<!-- Other Main Links -->
-			{#each otherLinks as link (link.href)}
-				{@const active = page.url.pathname === link.href}
-				<a
-					href={resolve(link.href)}
-					onclick={() => {
-						if (window.innerWidth < 768) isOpen = false;
-					}}
-					aria-current={active ? 'page' : undefined}
-					class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
-						? 'text-[8.5px]'
-						: 'text-sm'} {active
-						? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
-						: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
-				>
-					<link.icon
-						class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {active
-							? 'text-accent'
-							: 'text-muted group-hover:text-white'}"
-					/>
-					<span>{link.label}</span>
-				</a>
-			{/each}
-		</nav>
-
-		<!-- Bottom Section: Quack Counter & Playground -->
-		<div class="mt-auto flex flex-col">
-			{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
-				<!-- Quack Counter Section (Desktop only inside sidebar; mobile uses top navbar) -->
-				<div
-					class="anim-fade-in-up mb-3 hidden md:flex flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300"
-				>
-					<span class="font-extrabold tracking-wider text-accent uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
-						Quack Counter
-					</span>
-
-					<div class="flex items-baseline justify-center gap-1.5">
-						<span class="font-black text-white tracking-tight {gameDevMode.active ? 'text-lg' : 'text-xl sm:text-2xl'}">
-							{gameDevMode.quacks.toLocaleString()}
-						</span>
-						<span class="font-bold text-muted {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
-							{gameDevMode.quacks === 1 ? 'quack' : 'quacks'}
-						</span>
-					</div>
-
-					<!-- Upgrade Shop Button -->
-					<button
-						type="button"
-						onclick={openShopModal}
-						class="relative mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
+					<span
+						class="font-black tracking-tight text-white {gameDevMode.active
 							? 'font-pixel text-[8px]'
 							: 'text-xs'}"
 					>
-						{#if hasAffordableUpgrade}
-							<span class="absolute -top-1 -right-1 flex size-2.5">
-								<span
-									class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
-								></span>
-								<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
-							</span>
-						{/if}
-						<ShoppingBag class="size-3.5" />
-						<span>Upgrade Shop</span>
-					</button>
-				</div>
-			{/if}
-
-			<!-- Playground Section & Email Address -->
-			<div class="flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
-				<!-- Playground Header -->
-				<div class="flex items-center justify-center gap-1.5 px-1">
-					<!-- <Gamepad2 class="size-3.5 text-accent" /> -->
-					<span class="font-extrabold tracking-wider text-muted uppercase {gameDevMode.active ? 'text-[7.5px]' : 'text-[10px]'}">
-						Hobby Playground
+						{gameDevMode.quacks.toLocaleString()}
 					</span>
+				</button>
+
+				<!-- Upgrade Shop Button -->
+				<button
+					type="button"
+					onclick={openShopModal}
+					aria-label="Open Upgrade Shop"
+					title="Open Upgrade Shop"
+					class="relative flex h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/20 px-2.5 font-bold text-accent shadow-lg shadow-accent/20 backdrop-blur transition-all duration-200 hover:scale-105 hover:bg-accent/30 active:scale-95 {gameDevMode.active
+						? 'font-pixel text-[8px]'
+						: 'text-xs'}"
+				>
+					{#if hasAffordableUpgrade}
+						<span class="absolute -top-1 -right-1 flex size-2.5">
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
+							></span>
+							<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
+						</span>
+					{/if}
+					<ShoppingBag class="size-3.5 shrink-0" />
+					<span>Shop</span>
+				</button>
+			</div>
+		{/if}
+
+		<!-- Backdrop on Mobile -->
+		{#if isOpen}
+			<button
+				type="button"
+				onclick={() => (isOpen = false)}
+				aria-label="Close sidebar backdrop"
+				class="fixed inset-0 z-10 touch-none bg-black/50 backdrop-blur-xs md:hidden"
+			></button>
+		{/if}
+
+		<!-- Sidebar -->
+		<aside
+			class="fixed inset-y-0 left-0 z-20 flex w-52 flex-col bg-surface px-4 py-6 shadow-xl transition-transform duration-300 ease-in-out {isOpen
+				? 'translate-x-0'
+				: '-translate-x-full'}"
+		>
+			<div class="flex items-center gap-3 px-1 pt-1">
+				<img
+					src={profile}
+					alt="Lloyd Nicolas"
+					width="36"
+					height="36"
+					decoding="async"
+					class="size-9 shrink-0 rounded-full object-cover"
+				/>
+				<div>
+					<p class="font-extrabold text-white {gameDevMode.active ? 'text-[8.5px]' : 'text-sm'}">
+						Lloyd Nicolas
+					</p>
+					<p class="font-bold text-accent {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
+						{gameDevMode.active ? 'Game' : 'Software'} Developer
+					</p>
+				</div>
+			</div>
+
+			<nav
+				class="mt-8 flex flex-1 flex-col gap-1.5 overflow-x-hidden overflow-y-auto overscroll-contain"
+			>
+				<!-- Home and its Subsections -->
+				<div class="flex flex-col gap-1">
+					<a
+						href={resolve('/')}
+						onclick={() => {
+							activeSection = 'home';
+							if (window.innerWidth < 768) isOpen = false;
+						}}
+						aria-current={isHomeActive ? 'page' : undefined}
+						class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
+							? 'text-[8.5px]'
+							: 'text-sm'} {isHomeActive
+							? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
+							: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
+					>
+						<House
+							class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isHomeActive
+								? 'text-accent'
+								: 'text-muted group-hover:text-white'}"
+						/>
+						<span>Home</span>
+					</a>
+
+					<!-- Subsections under Home (Only displayed when active on Home tab) -->
+					{#if page.url.pathname === '/'}
+						<div
+							transition:slide={{ duration: 200 }}
+							class="ml-4.5 flex flex-col gap-0.5 border-l border-white/10 pl-3"
+						>
+							{#each homeSubsections as sub (sub.href)}
+								{@const isSubActive = page.url.pathname === '/' && activeSection === sub.id}
+								<a
+									href={resolve(sub.href)}
+									onclick={() => {
+										activeSection = sub.id;
+										if (window.innerWidth < 768) isOpen = false;
+									}}
+									aria-current={isSubActive ? 'page' : undefined}
+									class="group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 font-bold transition-all duration-150 {gameDevMode.active
+										? 'text-[7.5px]'
+										: 'text-xs'} {isSubActive
+										? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent'
+										: 'text-muted hover:translate-x-0.5 hover:bg-white/5 hover:text-white'}"
+								>
+									<sub.icon
+										class="size-3.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {isSubActive
+											? 'text-accent'
+											: 'text-muted group-hover:text-white'}"
+									/>
+									<span>{sub.label}</span>
+								</a>
+							{/each}
+						</div>
+					{/if}
 				</div>
 
-				<!-- Hobbies: each opens a hub modal with that hobby's playground activities (styled like the nav links) -->
-				<div class="flex flex-col gap-1">
-					{#each [{ id: 'games', label: 'Games', icon: Gamepad2 }, { id: 'music', label: 'Music', icon: Music }] as const as hobby (hobby.id)}
+				<!-- Other Main Links -->
+				{#each otherLinks as link (link.href)}
+					{@const active = page.url.pathname === link.href}
+					<a
+						href={resolve(link.href)}
+						onclick={() => {
+							if (window.innerWidth < 768) isOpen = false;
+						}}
+						aria-current={active ? 'page' : undefined}
+						class="group flex items-center gap-3 rounded-lg px-3 py-2 font-bold transition-all duration-150 {gameDevMode.active
+							? 'text-[8.5px]'
+							: 'text-sm'} {active
+							? 'border-l-2 border-accent bg-accent/10 font-extrabold text-accent shadow-sm'
+							: 'text-muted hover:translate-x-1 hover:bg-white/5 hover:text-white'}"
+					>
+						<link.icon
+							class="size-4.5 shrink-0 transition-transform duration-200 group-hover:scale-110 {active
+								? 'text-accent'
+								: 'text-muted group-hover:text-white'}"
+						/>
+						<span>{link.label}</span>
+					</a>
+				{/each}
+			</nav>
+
+			<!-- Bottom Section: Quack Counter & Playground -->
+			<div class="mt-auto flex flex-col">
+				{#if gameDevMode.quacks > 0 || gameDevMode.totalQuacksEarned > 0 || gameDevMode.active}
+					<!-- Quack Counter Section (Desktop only inside sidebar; mobile uses top navbar) -->
+					<div
+						class="anim-fade-in-up mb-3 hidden flex-col items-center justify-center gap-1 rounded-2xl border border-accent/25 bg-accent/10 p-2.5 text-center shadow-xs transition-all duration-300 md:flex"
+					>
+						<span
+							class="font-extrabold tracking-wider text-accent uppercase {gameDevMode.active
+								? 'text-[7.5px]'
+								: 'text-[10px]'}"
+						>
+							Quack Counter
+						</span>
+
+						<div class="flex items-baseline justify-center gap-1.5">
+							<span
+								class="font-black tracking-tight text-white {gameDevMode.active
+									? 'text-lg'
+									: 'text-xl sm:text-2xl'}"
+							>
+								{gameDevMode.quacks.toLocaleString()}
+							</span>
+							<span class="font-bold text-muted {gameDevMode.active ? 'text-[7.5px]' : 'text-xs'}">
+								{gameDevMode.quacks === 1 ? 'quack' : 'quacks'}
+							</span>
+						</div>
+
+						<!-- Upgrade Shop Button -->
 						<button
 							type="button"
-							onclick={() => openPlaygroundModal(hobby.id)}
-							class="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left font-bold text-muted transition-all duration-150 hover:translate-x-1 hover:bg-white/5 hover:text-white {gameDevMode.active
-								? 'text-[8.5px]'
-								: 'text-sm'}"
+							onclick={openShopModal}
+							class="relative mt-1 flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-accent/30 bg-accent/15 px-3 py-1.5 font-extrabold text-accent shadow-xs transition-all duration-200 hover:scale-[1.02] hover:border-accent hover:bg-accent/25 active:scale-95 {gameDevMode.active
+								? 'font-pixel text-[8px]'
+								: 'text-xs'}"
 						>
-							<hobby.icon
-								class="size-4.5 shrink-0 text-muted transition-transform duration-200 group-hover:scale-110 group-hover:text-accent"
-							/>
-							<span>{hobby.label}</span>
+							{#if hasAffordableUpgrade}
+								<span class="absolute -top-1 -right-1 flex size-2.5">
+									<span
+										class="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75"
+									></span>
+									<span class="relative inline-flex size-2.5 rounded-full bg-accent"></span>
+								</span>
+							{/if}
+							<ShoppingBag class="size-3.5" />
+							<span>Upgrade Shop</span>
 						</button>
-					{/each}
+					</div>
+				{/if}
+
+				<!-- Playground Section & Email Address -->
+				<div class="flex flex-col gap-2.5 border-t border-white/8 pt-3.5">
+					<!-- Playground Header -->
+					<div class="flex items-center justify-center gap-1.5 px-1">
+						<!-- <Gamepad2 class="size-3.5 text-accent" /> -->
+						<span
+							class="font-extrabold tracking-wider text-muted uppercase {gameDevMode.active
+								? 'text-[7.5px]'
+								: 'text-[10px]'}"
+						>
+							Hobby Playground
+						</span>
+					</div>
+
+					<!-- Hobbies: each opens a hub modal with that hobby's playground activities (styled like the nav links) -->
+					<div class="flex flex-col gap-1">
+						{#each [{ id: 'games', label: 'Games', icon: Gamepad2 }, { id: 'music', label: 'Music', icon: Music }] as const as hobby (hobby.id)}
+							<button
+								type="button"
+								onclick={() => openPlaygroundModal(hobby.id)}
+								class="group flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-left font-bold text-muted transition-all duration-150 hover:translate-x-1 hover:bg-white/5 hover:text-white {gameDevMode.active
+									? 'text-[8.5px]'
+									: 'text-sm'}"
+							>
+								<hobby.icon
+									class="size-4.5 shrink-0 text-muted transition-transform duration-200 group-hover:scale-110 group-hover:text-accent"
+								/>
+								<span>{hobby.label}</span>
+							</button>
+						{/each}
+					</div>
+
+					<!-- Email Address (Affected by Game Mode Switch) -->
+					<div class="border-t border-white/6 pt-1">
+						<a
+							href="mailto:dook13s@proton.me"
+							class="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-150 {gameDevMode.active
+								? 'border border-[#ffe794]/25 bg-[#ffe794]/10 hover:border-[#ffe794]/45 hover:bg-[#ffe794]/20 hover:shadow-xs hover:shadow-[#ffe794]/15'
+								: 'hover:bg-white/5'}"
+							title="Send email to dook13s@proton.me"
+						>
+							{#if gameDevMode.active}
+								<img
+									src={duckYellow}
+									alt="Duck"
+									class="size-4 shrink-0 transition-transform duration-200 pixelated group-hover:scale-110 group-hover:rotate-12"
+								/>
+							{:else}
+								<Mail
+									class="size-4 shrink-0 text-accent transition-transform duration-200 group-hover:scale-110"
+								/>
+							{/if}
+							<span
+								class="font-medium transition-colors {gameDevMode.active
+									? 'font-pixel text-[7.5px] tracking-wider text-[#ffe794] group-hover:text-white'
+									: 'truncate font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
+							>
+								dook13s@proton.me
+							</span>
+						</a>
+					</div>
 				</div>
-
-			<!-- Email Address (Affected by Game Mode Switch) -->
-			<div class="border-t border-white/6 pt-1">
-				<a
-					href="mailto:dook13s@proton.me"
-					class="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-all duration-150 {gameDevMode.active
-						? 'border border-[#ffe794]/25 bg-[#ffe794]/10 hover:border-[#ffe794]/45 hover:bg-[#ffe794]/20 hover:shadow-xs hover:shadow-[#ffe794]/15'
-						: 'hover:bg-white/5'}"
-					title="Send email to dook13s@proton.me"
-				>
-					{#if gameDevMode.active}
-						<img
-							src={duckYellow}
-							alt="Duck"
-							class="size-4 shrink-0 transition-transform duration-200 pixelated group-hover:scale-110 group-hover:rotate-12"
-						/>
-					{:else}
-						<Mail
-							class="size-4 shrink-0 text-accent transition-transform duration-200 group-hover:scale-110"
-						/>
-					{/if}
-					<span
-						class="font-medium transition-colors {gameDevMode.active
-							? 'font-pixel text-[7.5px] tracking-wider text-[#ffe794] group-hover:text-white'
-							: 'truncate font-mono text-[11px] tracking-tight text-muted group-hover:text-accent'}"
-					>
-						dook13s@proton.me
-					</span>
-				</a>
 			</div>
-		</div>
+		</aside>
+
+		<!-- Animated Duck Pond Flanks (Dynamic Per Tab) -->
+		<PondFlanks {isOpen} />
+
+		<!-- Playground hub: lists a hobby's activities (rendered first so the chosen activity opens on top) -->
+		<PlaygroundModal />
+
+		<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
+		<DuckReactionModal />
+
+		<!-- Break Contract Confirmation Modal -->
+		<BreakContractModal />
+
+		<!-- Project Details Modal (Always Centered in Viewport) -->
+		<ProjectModal />
+
+		<!-- Quack Upgrade Shop Modal (Centered in Viewport) -->
+		<QuackShopModal />
+
+		<!-- Keyboard Piano Modal (Desktop only) -->
+		<PianoModal />
+
+		<!-- Chord Progression Ear Trainer Modal -->
+		<ChordTrainerModal />
+
+		<!-- Keyboard Warrior typing game (Desktop only) -->
+		<KeyboardWarriorModal />
+
+		<!-- Main Content Area -->
+		<main
+			class="relative z-10 min-h-screen overflow-x-clip transition-all duration-300 ease-in-out {isOpen
+				? 'md:ml-52'
+				: 'ml-0'}"
+		>
+			{#key page.url.pathname}
+				<div class="anim-page-transition">
+					{@render children()}
+				</div>
+			{/key}
+		</main>
 	</div>
-</aside>
-
-	<!-- Animated Duck Pond Flanks (Dynamic Per Tab) -->
-	<PondFlanks {isOpen} />
-
-	<!-- Playground hub: lists a hobby's activities (rendered first so the chosen activity opens on top) -->
-	<PlaygroundModal />
-
-	<!-- Global Reaction Time Challenge Modal (Centered in Viewport) -->
-	<DuckReactionModal />
-
-	<!-- Break Contract Confirmation Modal -->
-	<BreakContractModal />
-
-	<!-- Project Details Modal (Always Centered in Viewport) -->
-	<ProjectModal />
-
-	<!-- Quack Upgrade Shop Modal (Centered in Viewport) -->
-	<QuackShopModal />
-
-	<!-- Keyboard Piano Modal (Desktop only) -->
-	<PianoModal />
-
-	<!-- Chord Progression Ear Trainer Modal -->
-	<ChordTrainerModal />
-
-	<!-- Main Content Area -->
-	<main
-		class="relative z-10 min-h-screen overflow-x-clip transition-all duration-300 ease-in-out {isOpen
-			? 'md:ml-52'
-			: 'ml-0'}"
-	>
-		{#key page.url.pathname}
-			<div class="anim-page-transition">
-				{@render children()}
-			</div>
-		{/key}
-	</main>
-</div>
 {/if}

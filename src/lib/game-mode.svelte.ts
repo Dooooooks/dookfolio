@@ -6,6 +6,7 @@ export const gameDevMode = $state({
 	active: false
 });
 export const reactionModal = $state({ open: false });
+export const typingModal = $state({ open: false });
 export const breakContractModal = $state({ open: false });
 export const shopModal = $state({ open: false });
 export const pianoModal = $state({ open: false });
@@ -275,6 +276,14 @@ export function openReactionModal() {
 
 export function closeReactionModal() {
 	reactionModal.open = false;
+}
+
+export function openTypingModal() {
+	typingModal.open = true;
+}
+
+export function closeTypingModal() {
+	typingModal.open = false;
 }
 
 // DevTools Debugging Console Commands
