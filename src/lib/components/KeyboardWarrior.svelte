@@ -14,6 +14,11 @@
 	const SPRITE_SCALE = 3;
 	const DUCK_RADIUS = 22;
 	const INVULNERABLE_SECONDS = 1;
+	// Taking a hit wipes every meteor off the screen, winds the speed-up back by this fraction and
+	// holds off new meteors for a moment, so a mistake gives you room to recover
+	const HIT_SLOWDOWN = 0.25;
+	const HIT_COOLDOWN = 2.5;
+	const SHOCKWAVE_SECONDS = 0.6;
 	const BULLET_SPEED = 1600;
 	const ACCENT = '#b694ff';
 	const BEST_KEY = 'dookfolio:keyboard-warrior-best';
@@ -119,7 +124,8 @@
 		raw: number;
 		seconds: number;
 	}
-	// Net counts only the words you finish; raw counts every letter you press, mistakes included
+	// Both are measured every run; this only picks which one the HUD shows first.
+	// Net counts only finished words; raw also counts correct letters of unfinished words
 	type WpmMode = 'net' | 'raw';
 
 	// --- HUD state (reactive) ---
@@ -142,7 +148,6 @@
 		hard: { wpm: 0, raw: 0, seconds: 0 }
 	});
 	const wpmLabel = $derived(wpmMode === 'raw' ? 'Raw WPM' : 'WPM');
-	const bestFor = (d: Difficulty) => (wpmMode === 'raw' ? bests[d].raw : bests[d].wpm);
 
 	// --- Game state (plain, mutated every frame) ---
 	let canvas: HTMLCanvasElement | undefined = $state();
@@ -159,6 +164,9 @@
 	let target: Meteor | null = null;
 
 	let elapsed = 0;
+	// Drives the speed-up; it runs with the clock but is wound back when the duck gets hit
+	let rampTime = 0;
+	let shockwave = -1; // seconds since the last hit's shockwave started, -1 when there isn't one
 	let spawnTimer = 0;
 	let wpmTimer = 0;
 	let invulnerable = 0;
@@ -270,6 +278,8 @@
 		bullets = [];
 		target = null;
 		elapsed = 0;
+		rampTime = 0;
+		shockwave = -1;
 		spawnTimer = 0.6;
 		wpmTimer = 0;
 		invulnerable = 0;
@@ -286,10 +296,11 @@
 	}
 
 	// monkeytype: every 5 characters is one word. Net counts the letters of finished words plus
-	// the space after each; raw counts every letter pressed, wrong ones included
+	// the space after each; raw counts every correct letter typed (mistakes never count), so it
+	// also credits words you were partway through
 	function computeWpm(mode: WpmMode = wpmMode) {
 		const minutes = Math.max(elapsed, 2) / 60;
-		const chars = mode === 'raw' ? keystrokes + wordsDestroyed : correctChars;
+		const chars = mode === 'raw' ? correctKeystrokes + wordsDestroyed : correctChars;
 		return Math.round(chars / 5 / minutes);
 	}
 
@@ -356,7 +367,7 @@
 
 	// --- Spawning ---
 	function pickWord(): string {
-		const { min, max } = wordLengths(elapsed);
+		const { min, max } = wordLengths(rampTime);
 		const sized = TYPING_WORDS.filter((w) => w.length >= min && w.length <= max);
 		// Prefer a word whose first letter isn't already on screen, so each letter locks one meteor
 		const taken = new Set(meteors.map((m) => m.word[0]));
@@ -403,6 +414,15 @@
 	}
 
 	// --- Effects ---
+	function clearAfterHit() {
+		for (const m of meteors) burst(m, 'rgba(200, 200, 215, 0.8)');
+		meteors = [];
+		target = null;
+		rampTime *= 1 - HIT_SLOWDOWN;
+		spawnTimer = Math.max(spawnTimer, HIT_COOLDOWN);
+		shockwave = 0;
+	}
+
 	function burst(m: Meteor, color: string) {
 		const pixel = gameDevMode.active;
 		const count = 26 + m.word.length * 2;
@@ -583,15 +603,16 @@
 			if (countdown <= 0) phase = 'playing';
 		} else if (phase === 'playing') {
 			elapsed += dt;
+			rampTime += dt;
 			invulnerable = Math.max(0, invulnerable - dt);
 
 			spawnTimer -= dt;
 			if (spawnTimer <= 0) {
 				spawnMeteor();
-				spawnTimer = spawnInterval(elapsed);
+				spawnTimer = spawnInterval(rampTime);
 			}
 
-			const travel = travelTime(elapsed);
+			const travel = travelTime(rampTime);
 			for (const m of [...meteors]) {
 				// Steer toward the duck every frame, so meteors still home in after the window resizes
 				const dx = cx + m.aimX - m.x;
@@ -615,6 +636,8 @@
 						endGame();
 						break;
 					}
+					clearAfterHit();
+					break;
 				}
 			}
 
@@ -662,6 +685,10 @@
 		particles = particles.filter((p) => p.life > 0);
 
 		shake = Math.max(0, shake - 40 * dt);
+		if (shockwave >= 0) {
+			shockwave += dt;
+			if (shockwave > SHOCKWAVE_SECONDS) shockwave = -1;
+		}
 	}
 
 	// --- Drawing ---
@@ -680,6 +707,18 @@
 			ctx.fillStyle = `rgba(255, 255, 255, ${0.15 + s.z * 0.45})`;
 			const size = s.z > 0.75 ? 2 : 1;
 			ctx.fillRect(Math.round(s.x * width), Math.round(s.y * height), size, size);
+		}
+
+		// Shockwave ring from the duck after a hit
+		if (shockwave >= 0) {
+			const progress = shockwave / SHOCKWAVE_SECONDS;
+			ctx.globalAlpha = 1 - progress;
+			ctx.strokeStyle = ACCENT;
+			ctx.lineWidth = 3;
+			ctx.beginPath();
+			ctx.arc(cx, cy, Math.hypot(cx, cy) * (1 - (1 - progress) ** 3), 0, Math.PI * 2);
+			ctx.stroke();
+			ctx.globalAlpha = 1;
 		}
 
 		// Bullets
@@ -869,7 +908,7 @@
 						: 'text-sm'}"
 				>
 					Type a meteor's word to blast it before it reaches the duck. The first letter locks on,
-					Backspace lets go. Three hits and it's over.
+					Backspace lets it go. Three hits and it's over.
 				</p>
 
 				<!-- Difficulty -->
@@ -908,52 +947,34 @@
 								{config.blurb}
 							</span>
 							<span
-								class="mt-1 {bestFor(d) ? 'text-accent-soft' : 'text-faint'} {gameDevMode.active
-									? 'text-[7px]'
+								class="mt-1 {bests[d].seconds
+									? 'text-accent-soft'
+									: 'text-faint'} {gameDevMode.active
+									? 'text-[7px] leading-relaxed'
 									: 'text-xs font-bold'}"
 							>
-								{bestFor(d)
-									? `Best: ${bestFor(d)} ${wpmLabel} · ${formatTime(bests[d].seconds)}`
+								{bests[d].seconds
+									? `Best: ${bests[d].wpm} WPM · ${bests[d].raw} raw · ${formatTime(bests[d].seconds)}`
 									: 'No best yet'}
 							</span>
 						</button>
 					{/each}
 				</div>
 
-				<!-- WPM mode toggle -->
-				<div class="mt-4 flex flex-wrap items-center justify-center gap-3">
-					<span class="text-muted {gameDevMode.active ? 'text-[8px]' : 'text-sm font-bold'}"
-						>Measure</span
-					>
-					<div
-						class="flex border border-white/15 bg-white/[0.09] p-1 backdrop-blur-md"
-						role="radiogroup"
-						aria-label="WPM measurement"
-					>
-						{#each [{ mode: 'net', label: 'WPM', hint: 'Only finished words count' }, { mode: 'raw', label: 'Raw WPM', hint: 'Every key you press counts, mistakes included' }] as const as option (option.mode)}
-							<button
-								type="button"
-								role="radio"
-								aria-checked={wpmMode === option.mode}
-								title={option.hint}
-								onclick={() => setWpmMode(option.mode)}
-								class="cursor-pointer px-3.5 py-1.5 font-extrabold transition-colors {wpmMode ===
-								option.mode
-									? 'bg-accent/30 text-accent'
-									: 'text-white/70 hover:text-white'} {gameDevMode.active
-									? 'text-[9px]'
-									: 'text-sm'}"
-							>
-								{option.label}
-							</button>
-						{/each}
-					</div>
-				</div>
-				<p class="mt-2 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-					{wpmMode === 'raw'
-						? 'Raw counts every letter you press, mistakes included.'
-						: 'Counts only the words you finish, like monkeytype.'}
-				</p>
+				<!-- Raw WPM toggle: lit when the HUD shows raw WPM (both are always measured) -->
+				<button
+					type="button"
+					aria-pressed={wpmMode === 'raw'}
+					onclick={() => setWpmMode(wpmMode === 'raw' ? 'net' : 'raw')}
+					class="mt-4 cursor-pointer border px-4 py-2 font-extrabold backdrop-blur-md transition-all duration-150 {wpmMode ===
+					'raw'
+						? 'border-accent bg-accent/25 text-accent shadow-[0_0_24px_-8px_rgba(182,148,255,0.6)]'
+						: 'border-white/15 bg-white/[0.09] text-white/60 hover:border-white/30 hover:text-white'} {gameDevMode.active
+						? 'text-[9px]'
+						: 'text-sm'}"
+				>
+					Raw WPM
+				</button>
 
 				<button
 					type="button"
@@ -966,7 +987,7 @@
 					Start (Space)
 				</button>
 				<p class="mt-3 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-					Arrow keys or 1 / 2 / 3 to pick a difficulty · R to switch WPM / Raw
+					Arrow keys or 1 / 2 / 3 to pick a difficulty · R for raw WPM
 				</p>
 			</div>
 		</div>

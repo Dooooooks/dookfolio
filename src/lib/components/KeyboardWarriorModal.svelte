@@ -108,7 +108,7 @@
 							Keyboard Warrior
 						</h3>
 						<p class="text-muted {gameDevMode.active ? 'text-[7px]' : 'text-[11px] sm:text-xs'}">
-							Typing test, but the words are meteors
+							If you are trying to measure your real WPM, This is not the place :>
 						</p>
 					</div>
 				</div>
