@@ -23,7 +23,6 @@
 	const ACCENT = '#b694ff';
 	const BEST_KEY = 'dookfolio:keyboard-warrior-best';
 	const DIFFICULTY_KEY = 'dookfolio:keyboard-warrior-difficulty';
-	const WPM_MODE_KEY = 'dookfolio:keyboard-warrior-wpm-mode';
 
 	// --- Difficulty ---
 	// Each curve is [starting value, decay per second, floor]. Meteors keep arriving faster and
@@ -121,12 +120,8 @@
 	type Phase = 'menu' | 'playing' | 'paused' | 'countdown' | 'over';
 	interface Best {
 		wpm: number;
-		raw: number;
 		seconds: number;
 	}
-	// Both are measured every run; this only picks which one the HUD shows first.
-	// Net counts only finished words; raw also counts correct letters of unfinished words
-	type WpmMode = 'net' | 'raw';
 
 	// --- HUD state (reactive) ---
 	let phase = $state<Phase>('menu');
@@ -139,15 +134,13 @@
 	let typingPose = $state(false);
 	let lives = $state(MAX_LIVES);
 	let wpm = $state(0);
-	let wpmMode = $state<WpmMode>('net');
 	let clock = $state(0); // elapsed seconds shown in the HUD
-	let result = $state({ wpm: 0, raw: 0, accuracy: 100, words: 0, seconds: 0, newBest: false });
+	let result = $state({ wpm: 0, accuracy: 100, words: 0, seconds: 0, newBest: false });
 	let bests = $state<Record<Difficulty, Best>>({
-		easy: { wpm: 0, raw: 0, seconds: 0 },
-		normal: { wpm: 0, raw: 0, seconds: 0 },
-		hard: { wpm: 0, raw: 0, seconds: 0 }
+		easy: { wpm: 0, seconds: 0 },
+		normal: { wpm: 0, seconds: 0 },
+		hard: { wpm: 0, seconds: 0 }
 	});
-	const wpmLabel = $derived(wpmMode === 'raw' ? 'Raw WPM' : 'WPM');
 
 	// --- Game state (plain, mutated every frame) ---
 	let canvas: HTMLCanvasElement | undefined = $state();
@@ -217,18 +210,13 @@
 			const saved = JSON.parse(localStorage.getItem(BEST_KEY) ?? 'null');
 			for (const d of DIFFICULTY_ORDER) {
 				if (typeof saved?.[d]?.wpm === 'number') {
-					bests[d] = {
-						wpm: saved[d].wpm,
-						raw: saved[d].raw ?? 0,
-						seconds: saved[d].seconds ?? 0
-					};
+					bests[d] = { wpm: saved[d].wpm, seconds: saved[d].seconds ?? 0 };
 				}
 			}
 			const savedDifficulty = localStorage.getItem(DIFFICULTY_KEY);
 			if (DIFFICULTY_ORDER.includes(savedDifficulty as Difficulty)) {
 				difficulty = savedDifficulty as Difficulty;
 			}
-			if (localStorage.getItem(WPM_MODE_KEY) === 'raw') wpmMode = 'raw';
 		} catch {
 			// Storage can be blocked; scores and the chosen difficulty just won't persist
 		}
@@ -246,13 +234,6 @@
 		if (d === difficulty) return;
 		difficulty = d;
 		save(DIFFICULTY_KEY, d);
-		synth.playGameSfx('shot');
-	}
-
-	function setWpmMode(mode: WpmMode) {
-		if (mode === wpmMode) return;
-		wpmMode = mode;
-		save(WPM_MODE_KEY, mode);
 		synth.playGameSfx('shot');
 	}
 
@@ -295,38 +276,26 @@
 		wake();
 	}
 
-	// monkeytype: every 5 characters is one word. Net counts the letters of finished words plus
-	// the space after each; raw counts every correct letter typed (mistakes never count), so it
-	// also credits words you were partway through
-	function computeWpm(mode: WpmMode = wpmMode) {
+	function computeWpm() {
+		// monkeytype: every 5 correct characters (spaces between words included) is one word
 		const minutes = Math.max(elapsed, 2) / 60;
-		const chars = mode === 'raw' ? correctKeystrokes + wordsDestroyed : correctChars;
-		return Math.round(chars / 5 / minutes);
+		return Math.round(correctChars / 5 / minutes);
 	}
 
 	function endGame() {
-		const netWpm = computeWpm('net');
-		const rawWpm = computeWpm('raw');
+		const finalWpm = computeWpm();
 		const accuracy = keystrokes ? Math.round((correctKeystrokes / keystrokes) * 100) : 100;
 		const best = bests[difficulty];
-		const newBest = wpmMode === 'raw' ? rawWpm > best.raw : netWpm > best.wpm;
-		if (netWpm > best.wpm || rawWpm > best.raw || elapsed > best.seconds) {
+		const newBest = finalWpm > best.wpm;
+		if (newBest || elapsed > best.seconds) {
 			bests[difficulty] = {
-				wpm: Math.max(best.wpm, netWpm),
-				raw: Math.max(best.raw, rawWpm),
+				wpm: Math.max(best.wpm, finalWpm),
 				seconds: Math.max(best.seconds, elapsed)
 			};
 			save(BEST_KEY, JSON.stringify(bests));
 		}
-		result = {
-			wpm: netWpm,
-			raw: rawWpm,
-			accuracy,
-			words: wordsDestroyed,
-			seconds: elapsed,
-			newBest
-		};
-		wpm = wpmMode === 'raw' ? rawWpm : netWpm;
+		result = { wpm: finalWpm, accuracy, words: wordsDestroyed, seconds: elapsed, newBest };
+		wpm = finalWpm;
 		for (const m of meteors) burst(m, 'rgba(200, 200, 215, 0.8)');
 		meteors = [];
 		target = null;
@@ -478,7 +447,6 @@
 				chooseDifficulty(DIFFICULTY_ORDER[Math.max(0, index - 1)]);
 			else if (e.key === 'ArrowRight' || e.key === 'ArrowDown')
 				chooseDifficulty(DIFFICULTY_ORDER[Math.min(DIFFICULTY_ORDER.length - 1, index + 1)]);
-			else if (e.key.toLowerCase() === 'r') setWpmMode(wpmMode === 'raw' ? 'net' : 'raw');
 			else if (['1', '2', '3'].includes(e.key))
 				chooseDifficulty(DIFFICULTY_ORDER[Number(e.key) - 1]);
 			return;
@@ -872,7 +840,7 @@
 						? 'text-sm'
 						: 'text-2xl sm:text-3xl'}"
 				>
-					{wpmLabel}: {wpm}
+					WPM: {wpm}
 				</p>
 				{#if phase === 'playing' || phase === 'paused' || phase === 'countdown'}
 					<p class="mt-1 text-muted {gameDevMode.active ? 'text-[8px]' : 'text-xs'}">
@@ -954,27 +922,12 @@
 									: 'text-xs font-bold'}"
 							>
 								{bests[d].seconds
-									? `Best: ${bests[d].wpm} WPM · ${bests[d].raw} raw · ${formatTime(bests[d].seconds)}`
+									? `Best: ${bests[d].wpm} WPM · ${formatTime(bests[d].seconds)}`
 									: 'No best yet'}
 							</span>
 						</button>
 					{/each}
 				</div>
-
-				<!-- Raw WPM toggle: lit when the HUD shows raw WPM (both are always measured) -->
-				<button
-					type="button"
-					aria-pressed={wpmMode === 'raw'}
-					onclick={() => setWpmMode(wpmMode === 'raw' ? 'net' : 'raw')}
-					class="mt-4 cursor-pointer border px-4 py-2 font-extrabold backdrop-blur-md transition-all duration-150 {wpmMode ===
-					'raw'
-						? 'border-accent bg-accent/25 text-accent shadow-[0_0_24px_-8px_rgba(182,148,255,0.6)]'
-						: 'border-white/15 bg-white/[0.09] text-white/60 hover:border-white/30 hover:text-white'} {gameDevMode.active
-						? 'text-[9px]'
-						: 'text-sm'}"
-				>
-					Raw WPM
-				</button>
 
 				<button
 					type="button"
@@ -987,7 +940,7 @@
 					Start (Space)
 				</button>
 				<p class="mt-3 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-					Arrow keys or 1 / 2 / 3 to pick a difficulty · R for raw WPM
+					Arrow keys or 1 / 2 / 3 to pick a difficulty
 				</p>
 			</div>
 		</div>
@@ -1050,7 +1003,7 @@
 					{/if}
 				</p>
 				<div class="mt-5 grid grid-cols-2 gap-2.5">
-					{#each [{ label: wpmLabel, value: wpmMode === 'raw' ? result.raw : result.wpm, other: wpmMode === 'raw' ? `${result.wpm} WPM` : `${result.raw} raw` }, { label: 'Accuracy', value: `${result.accuracy}%` }, { label: 'Words', value: result.words }, { label: 'Survived', value: formatTime(result.seconds) }] as stat (stat.label)}
+					{#each [{ label: 'WPM', value: result.wpm }, { label: 'Accuracy', value: `${result.accuracy}%` }, { label: 'Words', value: result.words }, { label: 'Survived', value: formatTime(result.seconds) }] as stat (stat.label)}
 						<div class="bg-white/[0.09] p-3 backdrop-blur-md">
 							<p class="text-muted {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">{stat.label}</p>
 							<p
@@ -1058,11 +1011,6 @@
 							>
 								{stat.value}
 							</p>
-							{#if stat.other}
-								<p class="mt-0.5 text-faint {gameDevMode.active ? 'text-[7px]' : 'text-xs'}">
-									{stat.other}
-								</p>
-							{/if}
 						</div>
 					{/each}
 				</div>
