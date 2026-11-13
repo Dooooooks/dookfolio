@@ -54,10 +54,6 @@ export interface PondShape {
 	size: number;
 }
 
-function circle(cx: number, cy: number, r: number) {
-	return `M ${cx - r},${cy} a ${r},${r} 0 1 0 ${r * 2},0 a ${r},${r} 0 1 0 ${-r * 2},0 Z`;
-}
-
 function ellipse(rx: number, ry: number) {
 	return `M ${-rx},0 a ${rx},${ry} 0 1 0 ${rx * 2},0 a ${rx},${ry} 0 1 0 ${-rx * 2},0 Z`;
 }
@@ -67,9 +63,7 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 	// Drifting feather with a curved shaft
 	feather: {
 		smooth: [
-			{ kind: 'body', d: 'M -50,30 C -40,0 -10,-30 40,-38 C 30,-10 0,20 -50,30 Z' },
-			{ kind: 'line', d: 'M -58,38 C -30,10 0,-14 40,-38' },
-			{ kind: 'line', d: 'M -12,2 L -2,-14 M 4,-10 L 14,-22' }
+			{ kind: 'body', d: 'M -50,30 C -40,0 -10,-30 40,-38 C 30,-10 0,20 -50,30 Z' }
 		],
 		bitmap: [
 			'.............##',
@@ -91,8 +85,7 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 	// Lily pad with its notch facing right
 	lily: {
 		smooth: [
-			{ kind: 'body', d: 'M 0,0 L 49,-12 A 52,36 0 1 0 49,12 Z' },
-			{ kind: 'line', d: 'M 0,0 L -40,-20 M 0,0 L -46,8 M 0,0 L -18,30 M 0,0 L 14,-32' }
+			{ kind: 'body', d: 'M 0,0 L 49,-12 A 52,36 0 1 0 49,12 Z' }
 		],
 		bitmap: [
 			'....########....',
@@ -110,10 +103,10 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 		bob: 0.6,
 		size: 1
 	},
-	// Cattail reed with a leaf
+	// Cattail reed
 	reed: {
 		smooth: [
-			{ kind: 'line', d: 'M 0,46 C 2,20 -2,0 0,-12 M 0,40 C 10,20 22,6 30,-6' },
+			{ kind: 'line', d: 'M 0,46 C 2,20 -2,0 0,-12' },
 			{ kind: 'body', d: 'M -6,-42 C -6,-50 6,-50 6,-42 L 6,-18 C 6,-10 -6,-10 -6,-18 Z' }
 		],
 		bitmap: [
@@ -126,8 +119,8 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 			'.###.',
 			'..#..',
 			'..#..',
-			'..#.#',
-			'..##.',
+			'..#..',
+			'..#..',
 			'..#..',
 			'..#..',
 			'..#..'
@@ -141,8 +134,7 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 	ripple: {
 		smooth: [
 			{ kind: 'body', d: ellipse(60, 16) },
-			{ kind: 'line', d: ellipse(38, 10) },
-			{ kind: 'line', d: ellipse(16, 4) }
+			{ kind: 'line', d: ellipse(32, 8) }
 		],
 		bitmap: [
 			'......########......',
@@ -164,10 +156,9 @@ export const POND_SHAPES: Record<PondVariant, PondShape> = {
 			{
 				kind: 'body',
 				d: 'M -30,-14 C -18,-26 14,-24 26,-12 C 36,-2 30,18 14,22 C -4,28 -28,22 -34,8 C -38,-2 -36,-8 -30,-14 Z'
-			},
-			{ kind: 'line', d: `${circle(-10, -4, 3)} ${circle(8, 4, 2.5)} ${circle(-2, 12, 2)}` }
+			}
 		],
-		bitmap: ['..####..', '.#oooo#.', '#oo#ooo#', '#ooooo##', '#o#ooo#.', '.#ooo#..', '..###...'],
+		bitmap: ['..####..', '.#oooo#.', '#oooooo#', '#ooooo##', '#ooooo#.', '.#ooo#..', '..###...'],
 		pixelSize: 7,
 		rotFactor: 1,
 		bob: 1.4,

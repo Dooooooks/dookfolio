@@ -1,5 +1,12 @@
 [
 	{
+		"period": "September 2026 - Present",
+		"role": "Quality Assurance Tester ( Intern )",
+		"company": "Mega Cat Studios",
+		"description": "An amazing opportunity to test Mega Cat Studios' games before they release. I hunt down bugs during playtesting and write clear reports for the development team so issues get fixed before launch. It has been a lot of fun scouting for bugs, and the leads and seniors have been very kind and welcoming throughout.",
+		"date": "2026-09"
+	},
+	{
 		"period": "March 2025 - April 2025",
 		"role": "App Developer ( Intern )",
 		"company": "Binladin Contracting Group",
@@ -8,9 +15,9 @@
 	},
   {
 		"period": "August 03 2025 - August 17 2025",
-		"role": "Main Developer",
+		"role": "Game Developer",
 		"company": "scream game jam - itch.io",
 		"description": "Developed for a game jam centered around the theme SCREAM and conducted under strict \"no ai tools\" regulations, been here before is a 2d psychological horror game inspired by the exit 8. built by a three-person team (hoyyyyyy \"was my alias at the time\", jeepney, and apakc), i served as the main developer, leading core architecture, gameplay systems, and overall technical execution. trapped inside an unsettling, looping apartment complex, players must meticulously inspect their surroundings to spot subtle environmental anomalies, decide whether to advance or retreat, and break the cycle before reality distorts completely.",
-		"date": "2025-03"
+		"date": "2025-08"
 	}
 ]
