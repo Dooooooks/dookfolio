@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { Heart, House, Play, RotateCcw } from '@lucide/svelte';
+	import { Heart, House, Keyboard, Pause, Play, RotateCcw } from '@lucide/svelte';
 	import { gameDevMode } from '$lib/game-mode.svelte';
 	import { synth } from '$lib/synth.svelte';
 	import { TYPING_WORDS } from '$lib/data/typing-words';
@@ -23,8 +23,7 @@
 	// Game Boy screen, so the playfield is the same no matter how small the display is
 	const HANDHELD_WIDTH = 600;
 	const HANDHELD_HEIGHT = 480;
-	// Rows of the on-screen keyboard shown on phones and tablets
-	const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'].map((row) => row.split(''));
+
 	const BULLET_SPEED = 1600;
 	const ACCENT = '#b694ff';
 	const BEST_KEY = 'dookfolio:keyboard-warrior-best';
@@ -158,7 +157,16 @@
 	let viewScale = 1; // CSS pixels per game pixel (below 1 on the handheld screen)
 	// Touch devices and narrow screens get the handheld layout with an on-screen keyboard
 	let handheld = $state(false);
-	let pressedVirtual = $state<string | null>(null);
+	// Phones type with their own keyboard: a hidden text field stays focused so the system keyboard
+	// stays up, and typing is read from its input events (phone keyboards rarely report real key
+	// names in keydown). The field always holds a couple of filler characters so Backspace has
+	// something to delete
+	const NATIVE_FILLER = '__';
+	let nativeInput: HTMLInputElement | undefined = $state();
+	let keyboardOpen = $state(false);
+	let nativeValue = NATIVE_FILLER;
+	let composing = false;
+	let poseTimer: ReturnType<typeof setTimeout> | undefined;
 
 	let meteors: Meteor[] = [];
 	let particles: Particle[] = [];
@@ -276,6 +284,7 @@
 	}
 
 	function startGame() {
+		focusKeyboard();
 		meteors = [];
 		particles = [];
 		bullets = [];
@@ -327,6 +336,7 @@
 
 	function resume() {
 		if (phase !== 'paused') return;
+		focusKeyboard();
 		countdown = RESUME_COUNTDOWN;
 		countdownShown = RESUME_COUNTDOWN;
 		phase = 'countdown';
@@ -451,27 +461,71 @@
 		'key' | 'code' | 'repeat' | 'ctrlKey' | 'metaKey' | 'altKey' | 'preventDefault'
 	>;
 
-	// On-screen keyboard: a tap is a key press, lifting the finger releases it
-	function pressVirtual(key: string, e: PointerEvent) {
-		e.preventDefault();
-		pressedVirtual = key;
-		navigator.vibrate?.(8);
+	// Bring up the phone's keyboard. Phones only open it from a tap, so this runs inside tap handlers
+	function focusKeyboard() {
+		if (!handheld || !nativeInput || document.activeElement === nativeInput) return;
+		nativeInput.focus({ preventScroll: true });
+	}
+
+	function sendKey(key: string) {
 		handleKeydown({
 			key,
-			code: `Virtual${key}`,
+			code: 'NativeKeyboard',
 			repeat: false,
 			ctrlKey: false,
 			metaKey: false,
 			altKey: false,
 			preventDefault: () => {}
 		});
+		// Phone keyboards don't report key releases, so show the typing frame briefly per letter
+		clearTimeout(poseTimer);
+		poseTimer = setTimeout(() => {
+			heldKeys.delete('NativeKeyboard');
+			typingPose = heldKeys.size > 0;
+		}, 120);
 	}
 
-	function releaseVirtual() {
-		if (pressedVirtual === null) return;
-		heldKeys.delete(`Virtual${pressedVirtual}`);
-		typingPose = heldKeys.size > 0;
-		pressedVirtual = null;
+	function resetNativeInput() {
+		if (!nativeInput) return;
+		nativeInput.value = NATIVE_FILLER;
+		nativeValue = NATIVE_FILLER;
+	}
+
+	// Compare the field with what it held before: removed characters are Backspaces and new ones
+	// are typed letters. This also copes with keyboards that compose whole words at once
+	function handleNativeInput() {
+		if (!nativeInput) return;
+		const value = nativeInput.value;
+		let same = 0;
+		while (same < value.length && same < nativeValue.length && value[same] === nativeValue[same]) {
+			same++;
+		}
+		for (let i = same; i < nativeValue.length; i++) sendKey('Backspace');
+		for (const char of value.slice(same)) sendKey(char);
+		nativeValue = value;
+		if (!composing) resetNativeInput();
+	}
+
+	function handleNativeBlur() {
+		keyboardOpen = false;
+		// Closing the keyboard mid-run pauses, unless focus comes straight back (a tap on the screen)
+		setTimeout(() => {
+			if (document.activeElement !== nativeInput) pause();
+		}, 150);
+	}
+
+	// Tapping the game screen opens the keyboard, and keeps it open when it already is
+	function handleScreenPointerDown(e: PointerEvent) {
+		if (!handheld) return;
+		if (document.activeElement === nativeInput) e.preventDefault();
+		else focusKeyboard();
+	}
+
+	// Typing in the hidden field arrives through its input event, so only Enter and Escape are
+	// taken from keydown there (anything else would count twice)
+	function handleWindowKeydown(e: KeyboardEvent) {
+		if (e.target === nativeInput && e.key !== 'Enter' && e.key !== 'Escape') return;
+		handleKeydown(e);
 	}
 
 	function handleKeydown(e: KeyInput) {
@@ -874,36 +928,42 @@
 	};
 </script>
 
-<svelte:window onkeydown={handleKeydown} onkeyup={handleKeyup} onblur={handleBlur} />
-
-{#snippet vkey(key: string, label: string, grow: string)}
-	<button
-		type="button"
-		tabindex="-1"
-		aria-label={key === ' ' ? 'Space' : label}
-		onpointerdown={(e) => pressVirtual(key, e)}
-		onpointerup={releaseVirtual}
-		onpointerleave={releaseVirtual}
-		onpointercancel={releaseVirtual}
-		class="h-11 min-w-0 {grow} touch-none border font-bold text-white/90 uppercase backdrop-blur-md transition-all duration-75 select-none {pressedVirtual ===
-		key
-			? 'translate-y-0.5 border-accent bg-accent/25 text-accent shadow-[0_0_18px_-6px_rgba(182,148,255,0.6)]'
-			: 'border-white/15 bg-white/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'} {gameDevMode.active
-			? 'text-[9px]'
-			: 'text-sm'}"
-	>
-		{label}
-	</button>
-{/snippet}
+<svelte:window onkeydown={handleWindowKeydown} onkeyup={handleKeyup} onblur={handleBlur} />
 
 {#snippet screen()}
 	<div
 		bind:this={wrapper}
+		onpointerdown={handleScreenPointerDown}
+		role="presentation"
 		class="relative w-full overflow-hidden bg-[#07060d] {handheld
 			? 'aspect-[5/4] shrink-0'
 			: 'min-h-0 flex-1'}"
 	>
 		<canvas bind:this={canvas} class="absolute inset-0 size-full" aria-hidden="true"></canvas>
+
+		{#if handheld}
+			<!-- Hidden field that summons the phone's own keyboard (16px text stops iOS zooming in) -->
+			<input
+				bind:this={nativeInput}
+				type="text"
+				value={NATIVE_FILLER}
+				aria-label="Type here"
+				autocomplete="off"
+				autocapitalize="none"
+				spellcheck="false"
+				enterkeyhint="go"
+				class="absolute top-0 left-0 h-px w-px border-0 p-0 text-[16px] opacity-0"
+				style="caret-color: transparent;"
+				oninput={handleNativeInput}
+				oncompositionstart={() => (composing = true)}
+				oncompositionend={() => {
+					composing = false;
+					resetNativeInput();
+				}}
+				onfocus={() => (keyboardOpen = true)}
+				onblur={handleNativeBlur}
+			/>
+		{/if}
 
 		<!-- HUD -->
 		{#if phase !== 'menu'}
@@ -1231,9 +1291,9 @@
 {/snippet}
 
 {#if handheld}
-	<!-- Handheld: a Game Boy style body with the screen on top and a keyboard below -->
+	<!-- Handheld: a Game Boy style body, kept at the top so the phone's keyboard doesn't cover it -->
 	<div
-		class="flex min-h-0 w-full flex-1 items-center justify-center overflow-y-auto {gameDevMode.active
+		class="flex min-h-0 w-full flex-1 items-start justify-center overflow-y-auto {gameDevMode.active
 			? 'font-pixel'
 			: ''}"
 	>
@@ -1258,23 +1318,34 @@
 				{@render screen()}
 			</div>
 
-			<!-- On-screen keyboard -->
-			<div class="flex flex-col gap-1.5" role="group" aria-label="On-screen keyboard">
-				{#each KEY_ROWS as row, r (r)}
-					<div class="flex gap-1 {r === 1 ? 'px-[4.5%]' : ''}">
-						{#each row as key (key)}
-							{@render vkey(key, key, 'flex-1')}
-						{/each}
-						{#if r === 2}
-							{@render vkey('Backspace', '⌫', 'flex-[1.7]')}
-						{/if}
-					</div>
-				{/each}
-				<div class="mt-1 flex gap-1.5">
-					{@render vkey('Escape', 'Esc', 'flex-[1.3]')}
-					{@render vkey(' ', 'Space', 'flex-[4]')}
-					{@render vkey('Enter', 'Enter', 'flex-[1.7]')}
-				</div>
+			<!-- Controls: phones have no Esc key, and the keyboard can be dismissed by the system -->
+			<div class="flex gap-2">
+				<button
+					type="button"
+					onclick={focusKeyboard}
+					class="flex flex-1 cursor-pointer items-center justify-center gap-2 border py-2.5 font-bold backdrop-blur-md transition-colors {keyboardOpen
+						? 'border-white/15 bg-white/[0.06] text-faint'
+						: 'border-accent/50 bg-accent/25 text-accent'} {gameDevMode.active
+						? 'text-[8px]'
+						: 'text-sm'}"
+				>
+					<Keyboard class="size-4" />
+					{keyboardOpen ? 'Keyboard on' : 'Show keyboard'}
+				</button>
+				{#if phase === 'playing' || phase === 'countdown'}
+					<button
+						type="button"
+						onpointerdown={(e) => e.preventDefault()}
+						onclick={pause}
+						aria-label="Pause"
+						class="flex cursor-pointer items-center justify-center gap-2 border border-white/15 bg-white/[0.09] px-4 py-2.5 font-bold text-white/85 backdrop-blur-md {gameDevMode.active
+							? 'text-[8px]'
+							: 'text-sm'}"
+					>
+						<Pause class="size-4" />
+						Pause
+					</button>
+				{/if}
 			</div>
 		</div>
 	</div>
